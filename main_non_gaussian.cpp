@@ -49,8 +49,20 @@ int main() {
     barcode_map.insert(std::make_pair(7, 19));
     barcode_map.insert(std::make_pair(63, 20));
 
+    std::string parent_dir = std::string("");
+    for(const auto& p : std::filesystem::directory_iterator("../"))
+    {
+        const auto abs_p = std::filesystem::canonical(p);
+        const auto flag_find = abs_p.string().find("data");
+        if(flag_find != std::string::npos) {
+            parent_dir = abs_p.string();
+            break;
+        }
+    }
+    parent_dir += "/MRCLAM_Dataset1/";
+
     std::map<size_t, LandMark> landmark_map;
-    std::ifstream landmark_file("/home/yutaka/CLionProjects/MKF/data/MRCLAM_Dataset1/Landmark_Groundtruth.dat");
+    std::ifstream landmark_file(parent_dir + "Landmark_Groundtruth.dat");
     if(landmark_file.fail()) {
         std::cout << "Failed to Open the landmark truth file" << std::endl;
         return -1;
@@ -68,10 +80,10 @@ int main() {
     }
 
     // Reading files
-    const std::string odometry_filename = "/home/yutaka/CLionProjects/MKF/data/MRCLAM_Dataset1/Robot" + std::to_string(robot_num) + "_Odometry.dat";
+    const std::string odometry_filename = parent_dir + "Robot" + std::to_string(robot_num) + "_Odometry.dat";
     std::ifstream odometry_file(odometry_filename);
     if(odometry_file.fail()) {
-        std::cout << "Failed to Open the ground truth file" << std::endl;
+        std::cout << "Failed to open the odometry file" << std::endl;
         return -1;
     }
     std::vector<double> odometry_time;
@@ -94,7 +106,7 @@ int main() {
         odometry_time.at(i) -= base_time;
     }
 
-    const std::string ground_truth_filename = "/home/yutaka/CLionProjects/MKF/data/MRCLAM_Dataset1/Robot" + std::to_string(robot_num) + "_Groundtruth.dat";
+    const std::string ground_truth_filename = parent_dir + "Robot" + std::to_string(robot_num) + "_Groundtruth.dat";
     std::ifstream ground_truth_file(ground_truth_filename);
     if(ground_truth_file.fail()) {
         std::cout << "Failed to Open the ground truth file" << std::endl;
@@ -123,10 +135,10 @@ int main() {
         ground_truth_file.close();
     }
 
-    const std::string measurement_filename = "/home/yutaka/CLionProjects/MKF/data/MRCLAM_Dataset1/Robot" + std::to_string(robot_num) + "_Measurement_updated.dat";
+    const std::string measurement_filename = parent_dir + "Robot" + std::to_string(robot_num) + "_Measurement_updated.dat";
     std::ifstream measurement_file(measurement_filename);
     if(measurement_file.fail()) {
-        std::cout << "Failed to Open the ground truth file" << std::endl;
+        std::cout << "Failed to open the measurement file" << std::endl;
         return -1;
     }
     std::vector<double> measurement_time;
@@ -383,18 +395,18 @@ int main() {
 
     // Output data to file
     {
-        std::string parent_dir = "/home/yutaka/CLionProjects/MKF/result";
+        std::string output_parent_dir = "";
         for(const auto& p : std::filesystem::directory_iterator("../result/"))
         {
             const auto abs_p = std::filesystem::canonical(p);
             const auto flag_find = abs_p.string().find("data");
             if(flag_find != std::string::npos) {
-                parent_dir = abs_p.string();
+                output_parent_dir = abs_p.string();
             }
         }
-        parent_dir += "/robot" + std::to_string(robot_num);
-        std::filesystem::create_directories(parent_dir);
-        const std::string filename = parent_dir + scenario.filename_;
+        output_parent_dir += "/robot" + std::to_string(robot_num);
+        std::filesystem::create_directories(output_parent_dir);
+        const std::string filename = output_parent_dir + scenario.filename_;
         outputResultToFile(filename, times,
                            x_true_vec, y_true_vec, yaw_true_vec,
                            nkf_x_estimate, nkf_y_estimate, nkf_yaw_estimate,

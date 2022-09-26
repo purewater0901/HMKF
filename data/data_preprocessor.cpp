@@ -5,6 +5,7 @@
 #include <Eigen/Eigen>
 #include <fstream>
 #include <algorithm>
+#include <filesystem>
 
 struct LandMark
 {
@@ -30,7 +31,7 @@ inline double normalizeRadian(const double rad, const double min_rad = -M_PI)
 }
 
 int main() {
-    const int robot_num = 2;
+    const int robot_num = 1;
 
     // Creating Map
     std::map<int, int> barcode_map;
@@ -51,8 +52,20 @@ int main() {
     barcode_map.insert(std::make_pair(7, 19));
     barcode_map.insert(std::make_pair(63, 20));
 
+    std::string parent_dir;
+    for(const auto& p : std::filesystem::directory_iterator("../"))
+    {
+        const auto abs_p = std::filesystem::canonical(p);
+        const auto flag_find = abs_p.string().find("data");
+        if(flag_find != std::string::npos) {
+            parent_dir = abs_p.string();
+            break;
+        }
+    }
+    parent_dir += "/MRCLAM_Dataset1/";
+
     std::map<size_t, LandMark> landmark_map;
-    std::ifstream landmark_file("/home/yutaka/CLionProjects/uncertainty_propagation/data/MRCLAM_Dataset1/Landmark_Groundtruth.dat");
+    std::ifstream landmark_file(parent_dir + "Landmark_Groundtruth.dat");
     if(landmark_file.fail()) {
         std::cout << "Failed to Open the landmark truth file" << std::endl;
         return -1;
@@ -70,10 +83,10 @@ int main() {
     }
 
     // Reading files
-    const std::string odometry_filename = "/home/yutaka/CLionProjects/uncertainty_propagation/data/MRCLAM_Dataset1/Robot" + std::to_string(robot_num) + "_Odometry.dat";
+    const std::string odometry_filename = parent_dir + "Robot" + std::to_string(robot_num) + "_Odometry.dat";
     std::ifstream odometry_file(odometry_filename);
     if(odometry_file.fail()) {
-        std::cout << "Failed to Open the ground truth file" << std::endl;
+        std::cout << "Failed to open the odometry file" << std::endl;
         return -1;
     }
     std::vector<double> odometry_time;
@@ -96,7 +109,7 @@ int main() {
         odometry_time.at(i) -= base_time;
     }
 
-    const std::string ground_truth_filename = "/home/yutaka/CLionProjects/uncertainty_propagation/data/MRCLAM_Dataset1/Robot" + std::to_string(robot_num) + "_Groundtruth.dat";
+    const std::string ground_truth_filename = parent_dir + "Robot" + std::to_string(robot_num) + "_Groundtruth.dat";
     std::ifstream ground_truth_file(ground_truth_filename);
     if(ground_truth_file.fail()) {
         std::cout << "Failed to Open the ground truth file" << std::endl;
@@ -125,10 +138,10 @@ int main() {
         ground_truth_file.close();
     }
 
-    const std::string measurement_filename = "/home/yutaka/CLionProjects/uncertainty_propagation/data/MRCLAM_Dataset1/Robot" + std::to_string(robot_num) + "_Measurement_updated.dat";
+    const std::string measurement_filename = parent_dir + "Robot" + std::to_string(robot_num) + "_Measurement.dat";
     std::ifstream measurement_file(measurement_filename);
     if(measurement_file.fail()) {
-        std::cout << "Failed to Open the ground truth file" << std::endl;
+        std::cout << "Failed to open the measurement file" << std::endl;
         return -1;
     }
     std::vector<double> measurement_time;
@@ -145,6 +158,12 @@ int main() {
                 measurement_file >> time >> id >> range >> bearing;
                 continue;
             }
+
+            if(barcode_map.find(id) == barcode_map.end()) {
+                measurement_file >> time >> id >> range >> bearing;
+                continue;
+            }
+
             measurement_time.push_back(time - base_time);
             measurement_subject.push_back(barcode_map.at(id));
             measurement_range.push_back(range);
@@ -186,7 +205,7 @@ int main() {
         ground_truth_bearing.push_back(bearing_true);
     }
 
-    const std::string measurement_updated_filename = "/home/yutaka/CLionProjects/uncertainty_propagation/data/MRCLAM_Dataset1/Robot" + std::to_string(robot_num) + "_Measurement_updated.dat";
+    const std::string measurement_updated_filename = parent_dir + "/Robot" + std::to_string(robot_num) + "_Measurement_updated.dat";
     std::ofstream  measurement_updated_file(measurement_updated_filename);
     for(size_t i=0; i<measurement_time.size(); ++i) {
         measurement_updated_file << measurement_time.at(i) << " " << measurement_subject.at(i) << " "
