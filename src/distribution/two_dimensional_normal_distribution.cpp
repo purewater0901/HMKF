@@ -800,3 +800,111 @@ double TwoDimensionalNormalDistribution::calc_xx_cos_y_sin_y_moment()
            + std::pow(t12/t22, 2) * l2Pow2_cPow2 * l1cPow1_sPow1
            + std::pow(t12/t22, 2) * l2Pow2_cPow1_sPow1 * cl1Pow2;
 }
+
+double TwoDimensionalNormalDistribution::calc_xxx_cos_y_moment()
+{
+    if(!initialization_) {
+        throw std::runtime_error("Need To Initialize two dimensional normal distribution");
+    }
+
+    if(independent_) {
+        NormalDistribution normal_x(mean_(0), covariance_(0, 0));
+        NormalDistribution normal_y(mean_(1), covariance_(1, 1));
+
+        return normal_x.calc_moment(3) * normal_y.calc_cos_moment(1);
+    }
+
+    const auto y_mean = T_.transpose()*mean_;
+    const double t11 = T_(0, 0);
+    const double t12 = T_(0, 1);
+    const double t21 = T_(1, 0);
+    const double t22 = T_(1, 1);
+
+    const double l1_mean = t21*y_mean(0);
+    const double l1_cov = t21*t21/eigen_values_(0);
+    NormalDistribution l1(l1_mean, l1_cov);
+
+    const double l2_mean = t22*y_mean(1);
+    const double l2_cov = t22*t22/eigen_values_(1);
+    NormalDistribution l2(l2_mean, l2_cov);
+
+    const double l1Pow1_cPow1 = l1.calc_x_cos_moment(1, 1);
+    const double l1Pow1_sPow1 = l1.calc_x_sin_moment(1, 1);
+    const double l2Pow1_cPow1 = l2.calc_x_cos_moment(1, 1);
+    const double l2Pow1_sPow1 = l2.calc_x_sin_moment(1, 1);
+    const double l1Pow2_cPow1 = l1.calc_x_cos_moment(2, 1);
+    const double l1Pow2_sPow1 = l1.calc_x_sin_moment(2, 1);
+    const double l2Pow2_cPow1 = l2.calc_x_cos_moment(2, 1);
+    const double l2Pow2_sPow1 = l2.calc_x_sin_moment(2, 1);
+    const double l1Pow3_cPow1 = l1.calc_x_cos_moment(3, 1);
+    const double l1Pow3_sPow1 = l1.calc_x_sin_moment(3, 1);
+    const double l2Pow3_cPow1 = l2.calc_x_cos_moment(3, 1);
+    const double l2Pow3_sPow1 = l2.calc_x_sin_moment(3, 1);
+    const double sinl1 = l1.calc_sin_moment(1);
+    const double cosl1 = l1.calc_cos_moment(1);
+    const double sinl2 = l2.calc_sin_moment(1);
+    const double cosl2 = l2.calc_cos_moment(1);
+
+    return - std::pow(t11/t21, 3) * l1Pow3_sPow1 * sinl2
+           + std::pow(t11/t21, 3) * l1Pow3_cPow1 * cosl2
+           - 3 * std::pow(t11/t21, 2) * t12/t22 * l1Pow2_sPow1 * l2Pow1_sPow1
+           + 3 * std::pow(t11/t21, 2) * t12/t22 * l1Pow2_cPow1 * l2Pow1_cPow1
+           - 3 * t11/t21 * pow(t12/t22, 2) * l1Pow1_sPow1 * l2Pow2_sPow1
+           + 3 * t11/t21 * pow(t12/t22, 2) * l1Pow1_cPow1 * l2Pow2_cPow1
+           - pow(t12/t22, 3) * l2Pow3_sPow1 * sinl1
+           + pow(t12/t22, 3) * l2Pow3_cPow1 * cosl1;
+}
+
+double TwoDimensionalNormalDistribution::calc_xxx_sin_y_moment()
+{
+    if(!initialization_) {
+        throw std::runtime_error("Need To Initialize two dimensional normal distribution");
+    }
+
+    if(independent_) {
+        NormalDistribution normal_x(mean_(0), covariance_(0, 0));
+        NormalDistribution normal_y(mean_(1), covariance_(1, 1));
+
+        return normal_x.calc_moment(3) * normal_y.calc_sin_moment(1);
+    }
+
+    const auto y_mean = T_.transpose()*mean_;
+    const double t11 = T_(0, 0);
+    const double t12 = T_(0, 1);
+    const double t21 = T_(1, 0);
+    const double t22 = T_(1, 1);
+
+    const double l1_mean = t21*y_mean(0);
+    const double l1_cov = t21*t21/eigen_values_(0);
+    NormalDistribution l1(l1_mean, l1_cov);
+
+    const double l2_mean = t22*y_mean(1);
+    const double l2_cov = t22*t22/eigen_values_(1);
+    NormalDistribution l2(l2_mean, l2_cov);
+
+    const double l1Pow1_cPow1 = l1.calc_x_cos_moment(1, 1);
+    const double l1Pow1_sPow1 = l1.calc_x_sin_moment(1, 1);
+    const double l2Pow1_cPow1 = l2.calc_x_cos_moment(1, 1);
+    const double l2Pow1_sPow1 = l2.calc_x_sin_moment(1, 1);
+    const double l1Pow2_cPow1 = l1.calc_x_cos_moment(2, 1);
+    const double l1Pow2_sPow1 = l1.calc_x_sin_moment(2, 1);
+    const double l2Pow2_cPow1 = l2.calc_x_cos_moment(2, 1);
+    const double l2Pow2_sPow1 = l2.calc_x_sin_moment(2, 1);
+    const double l1Pow3_cPow1 = l1.calc_x_cos_moment(3, 1);
+    const double l1Pow3_sPow1 = l1.calc_x_sin_moment(3, 1);
+    const double l2Pow3_cPow1 = l2.calc_x_cos_moment(3, 1);
+    const double l2Pow3_sPow1 = l2.calc_x_sin_moment(3, 1);
+    const double sinl1 = l1.calc_sin_moment(1);
+    const double cosl1 = l1.calc_cos_moment(1);
+    const double sinl2 = l2.calc_sin_moment(1);
+    const double cosl2 = l2.calc_cos_moment(1);
+
+    return  std::pow(t11/t21, 3) * l1Pow3_sPow1 * cosl2
+          + std::pow(t11/t21, 3) * l1Pow3_cPow1 * sinl2
+          + 3 * pow(t11/t21, 2) * t12/t22 * l1Pow2_sPow1 * l2Pow1_cPow1
+          + 3 * pow(t11/t21, 2) * t12/t22 * l1Pow2_cPow1 * l2Pow1_sPow1
+          + 3 * t11/t21 * pow(t12/t22, 2) * l1Pow1_sPow1 * l2Pow2_cPow1
+          + 3 * t11/t21 * pow(t12/t22, 2) * l1Pow1_cPow1 * l2Pow2_sPow1
+          + std::pow(t12/t22, 3) * l2Pow3_cPow1 * sinl1
+          + std::pow(t12/t22, 3) * l2Pow3_sPow1 * cosl1;
+}

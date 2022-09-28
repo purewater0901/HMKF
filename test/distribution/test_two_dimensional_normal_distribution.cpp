@@ -276,7 +276,18 @@ TEST(TwoDimensionalNormalDistribution, FOURTH_ORDER)
     {
         const auto exact_moment = dist.calc_x_cos_y_sin_y_moment();
         EXPECT_NEAR(exact_moment, 1.8366293429964922, epsilon);
-        std::cout << "exact moment: " << exact_moment << std::endl;
+    }
+
+    // E[XXXcos(Y)]
+    {
+        const auto exact_moment = dist.calc_xxx_cos_y_moment();
+        EXPECT_NEAR(exact_moment, 90.25668275632225, epsilon);
+    }
+
+    // E[XXXsin(Y)]
+    {
+        const auto exact_moment = dist.calc_xxx_sin_y_moment();
+        EXPECT_NEAR(exact_moment, 147.043554590238, epsilon);
     }
 }
 

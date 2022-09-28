@@ -40,6 +40,8 @@ public:
     double calc_xx_cos_y_cos_y_moment();
     double calc_xx_sin_y_sin_y_moment();
     double calc_xx_cos_y_sin_y_moment();
+    double calc_xxx_cos_y_moment();
+    double calc_xxx_sin_y_moment();
 
     Eigen::Vector2d mean_;
     Eigen::Matrix2d covariance_;
