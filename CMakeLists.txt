@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(uncertainty_propagation)
+project(HMKF)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -37,6 +37,7 @@ add_library(lib
             src/filter/paper_example_2d_ukf.cpp
             src/filter/paper_example_3d_ukf.cpp
             src/distribution/base_distribution.cpp
+            src/distribution/beta_distribution.cpp
             src/distribution/uniform_distribution.cpp
             src/distribution/normal_distribution.cpp
             src/distribution/exponential_distribution.cpp
@@ -77,6 +78,10 @@ target_link_libraries(data_analyzer Python3::Python Python3::NumPy lib)
 add_executable(test_normal_distribution test/distribution/test_normal_distribution.cpp)
 target_link_libraries(test_normal_distribution GTest::GTest GTest::Main lib)
 gtest_add_tests(TARGET test_normal_distribution)
+
+add_executable(test_beta_distribution test/distribution/test_beta_distribution.cpp)
+target_link_libraries(test_beta_distribution GTest::GTest GTest::Main lib)
+gtest_add_tests(TARGET test_beta_distribution)
 
 add_executable(test_uniform_distribution test/distribution/test_uniform_distribution.cpp)
 target_link_libraries(test_uniform_distribution GTest::GTest GTest::Main lib)
