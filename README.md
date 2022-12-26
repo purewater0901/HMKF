@@ -1,4 +1,4 @@
-# Moment-based Kalman Filter: Nonlinear Kalman Filtering with Exact Moment Propagation
+# Higher-order Moment-based Kalman Filter: Nonlinear Kalman Filtering with Exact Moment Propagation
 
 Moment-based Kalman Filter(MKF) is a nonlinear Kalman filter that uses exact moment propagation method to estimate state from noisy measurements.
 
