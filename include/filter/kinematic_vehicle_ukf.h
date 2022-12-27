@@ -23,7 +23,7 @@ public:
                       const std::map<int, std::shared_ptr<BaseDistribution>>& system_noise_map,
                       const std::map<int, std::shared_ptr<BaseDistribution>>& measurement_noise_map);
 
-    StateInfo update(const KinematicVehicle::StateInfo &state_info,
+    StateInfo update(const StateInfo &state_info,
                      const Eigen::Vector3d &observed_values,
                      const std::map<int, std::shared_ptr<BaseDistribution>>& system_noise_map,
                      const std::map<int, std::shared_ptr<BaseDistribution>>& measurement_noise_map);

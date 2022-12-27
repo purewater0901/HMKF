@@ -6,18 +6,10 @@
 #include <vector>
 #include <Eigen/Eigen>
 
+#include "model/base_model.h"
+
 namespace KinematicVehicle
 {
-    struct StateInfo {
-        Eigen::Vector4d mean;
-        Eigen::Matrix4d covariance;
-    };
-
-    struct ObservedInfo {
-        Eigen::Vector3d mean;
-        Eigen::Matrix3d covariance;
-    };
-
     namespace STATE {
         enum IDX {
             X = 0,
@@ -58,134 +50,49 @@ namespace KinematicVehicle
     }
 }
 
-class KinematicVehicleModel
+class KinematicVehicleModel : public BaseModel
 {
 public:
-    struct StateMoments {
-        double xPow1{0.0};
-        double yPow1{0.0};
-        double vPow1{0.0};
-        double yawPow1{0.0};
-        double cPow1{0.0};
-        double sPow1{0.0};
-
-        double xPow2{0.0};
-        double yPow2{0.0};
-        double vPow2{0.0};
-        double yawPow2{0.0};
-        double cPow2{0.0};
-        double sPow2{0.0};
-        double xPow1_yPow1{0.0};
-        double xPow1_yawPow1{0.0};
-        double yPow1_yawPow1{0.0};
-        double vPow1_xPow1{0.0};
-        double vPow1_yPow1{0.0};
-        double vPow1_yawPow1{0.0};
-        double vPow1_cPow1{0.0};
-        double vPow1_sPow1{0.0};
-        double cPow1_xPow1{0.0};
-        double sPow1_xPow1{0.0};
-        double cPow1_yPow1{0.0};
-        double sPow1_yPow1{0.0};
-        double cPow1_yawPow1{0.0};
-        double sPow1_yawPow1{0.0};
-        double cPow1_sPow1{0.0};
-
-        double vPow1_cPow2{0.0};
-        double vPow1_sPow2{0.0};
-        double vPow2_cPow1{0.0};
-        double vPow2_sPow1{0.0};
-        double vPow1_cPow1_xPow1{0.0};
-        double vPow1_cPow1_yPow1{0.0};
-        double vPow1_cPow1_yawPow1{0.0};
-        double vPow1_sPow1_xPow1{0.0};
-        double vPow1_sPow1_yPow1{0.0};
-        double vPow1_sPow1_yawPow1{0.0};
-        double vPow1_cPow1_sPow1{0.0};
-
-        double vPow2_cPow2{0.0};
-        double vPow2_sPow2{0.0};
-        double vPow2_cPow1_sPow1{0.0};
-    };
-
-    struct ReducedStateMoments {
-        double yawPow1{0.0};
-
-        double xPow2{0.0};
-        double yPow2{0.0};
-        double yawPow2{0.0};
-        double vPow1_cPow1{0.0};
-
-        double vPow1_yawPow1_cPow1{0.0};
-        double xPow2_yawPow1{0.0};
-        double yPow2_yawPow1{0.0};
-
-        double xPow4{0.0};
-        double yPow4{0.0};
-        double xPow2_yPow2{0.0};
-        double vPow2_cPow2{0.0};
-        double xPow2_vPow1_cPow1{0.0};
-        double yPow2_vPow1_cPow1{0.0};
-    };
-
-    struct ObservationMoments {
-        double rPow1{0.0};
-        double vcPow1{0.0};
-        double yawPow1{0.0};
-
-        double rPow2{0.0};
-        double vcPow2{0.0};
-        double yawPow2{0.0};
-        double rPow1_vcPow1{0.0};
-        double rPow1_yawPow1{0.0};
-        double vcPow1_yawPow1{0.0};
-    };
-
-    struct SystemNoiseMoments {
-        double wvPow1{0.0};
-        double wyawPow1{0.0};
-        double cyawPow1{0.0};
-        double syawPow1{0.0};
-
-        double wvPow2{0.0};
-        double wyawPow2{0.0};
-        double cyawPow2{0.0};
-        double syawPow2{0.0};
-        double cyawPow1_syawPow1{0.0};
-    };
-
-    struct ObservationNoiseMoments {
-        double wrPow1{0.0};
-        double wvPow1{0.0};
-        double wyawPow1{0.0};
-
-        double wrPow2{0.0};
-        double wvPow2{0.0};
-        double wyawPow2{0.0};
-    };
-
-    struct Controls{
-        double a{0.0};
-        double u{0.0};
-        double cu{0.0};
-        double su{0.0};
-    };
-
     KinematicVehicleModel() = default;
 
-    Eigen::Vector4d propagate(const Eigen::Vector4d& x_curr,
-                              const Eigen::Vector2d& u_curr,
-                              const Eigen::Vector2d& system_noise,
-                              const double dt);
-    Eigen::Vector3d observe(const Eigen::Vector4d& x_curr, const Eigen::Vector3d& observation_noise);
+    // dynamics model
+    Eigen::VectorXd propagate(const Eigen::VectorXd& x_curr,
+                              const Eigen::VectorXd& u_curr,
+                              const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                              const double dt) override;
 
-    StateMoments propagateStateMoments(const StateMoments & prev_state_moments,
-                                       const SystemNoiseMoments& system_noise_moments,
-                                       const Controls& control_inputs,
-                                       const double dt);
+    Eigen::VectorXd propagate(const Eigen::VectorXd& x_curr,
+                              const Eigen::VectorXd& u_curr,
+                              const Eigen::VectorXd& system_noise,
+                              const double dt) override;
 
-    ObservationMoments getObservationMoments(const ReducedStateMoments & state_moments,
-                                             const ObservationNoiseMoments & observation_noise_moments);
+    // measurement model
+    Eigen::VectorXd measure(const Eigen::VectorXd& x_curr,
+                            const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) override;
+
+    Eigen::VectorXd measure(const Eigen::VectorXd& x_curr, const Eigen::VectorXd& observation_noise) override;
+
+    // get df/dx
+    Eigen::MatrixXd getStateMatrix(const Eigen::VectorXd& x_curr, const double dt) override;
+
+    Eigen::MatrixXd getProcessNoiseMatrix(const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) override;
+
+    // get dh/dx
+    Eigen::MatrixXd getMeasurementMatrix(const Eigen::VectorXd& x_curr) override;
+
+    Eigen::MatrixXd getMeasurementNoiseMatrix(const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) override;
+
+    // propagate dynamics moment
+    StateInfo propagateStateMoments(const StateInfo &state_info,
+                                    const Eigen::VectorXd &control_inputs,
+                                    const double dt,
+                                    const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map) override;
+
+    StateInfo getMeasurementMoments(const StateInfo &state_info,
+                                    const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map) override;
+
+    Eigen::MatrixXd getStateMeasurementMatrix(const StateInfo& state_info, const StateInfo& measurement_info,
+                                              const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map) override;
 };
 
 #endif //UNCERTAINTY_PROPAGATION_KINEMATIC_VEHICLE_MODEL_H

@@ -82,7 +82,7 @@ StateInfo KinematicVehicleUKF::predict(const StateInfo& state_info,
     return result;
 }
 
-StateInfo KinematicVehicleUKF::update(const KinematicVehicle::StateInfo &state_info,
+StateInfo KinematicVehicleUKF::update(const StateInfo &state_info,
                                       const Eigen::Vector3d &observed_values,
                                       const std::map<int, std::shared_ptr<BaseDistribution>>& system_noise_map,
                                       const std::map<int, std::shared_ptr<BaseDistribution>>& measurement_noise_map)
@@ -127,7 +127,7 @@ StateInfo KinematicVehicleUKF::update(const KinematicVehicle::StateInfo &state_i
     Eigen::MatrixXd observed_sigma_points = Eigen::MatrixXd::Zero(3, 2*augmented_size_+1);
     Eigen::Vector3d y_mean = Eigen::Vector3d::Zero();
     for(size_t i=0; i<2*augmented_size_+1; ++i) {
-        const Eigen::Vector3d y = model_.observe(sigma_points_.col(i).head(4), sigma_points_.col(i).segment(6, 3));
+        const Eigen::Vector3d y = model_.measure(sigma_points_.col(i).head(4), sigma_points_.col(i).segment(6, 3));
         observed_sigma_points.col(i) = y;
         if(i==2*augmented_size_) {
             y_mean += Sigma_WM0_ * y;

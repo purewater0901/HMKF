@@ -15,14 +15,14 @@ class KinematicVehicleEKF
 public:
     KinematicVehicleEKF() = default;
 
-    KinematicVehicle::StateInfo predict(const KinematicVehicle::StateInfo& state_info,
-                                        const Eigen::Vector2d& inputs,
-                                        const double dt,
-                                        const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map);
+    StateInfo predict(const StateInfo& state_info,
+                      const Eigen::Vector2d& inputs,
+                      const double dt,
+                      const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map);
 
-    KinematicVehicle::StateInfo update(const KinematicVehicle::StateInfo& state_info,
-                                       const Eigen::Vector3d& y,
-                                       const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map);
+    StateInfo update(const StateInfo& state_info,
+                     const Eigen::Vector3d& y,
+                     const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map);
 };
 
 #endif //UNCERTAINTY_PROPAGATION_KINEMATIC_VEHICLE_EKF_H

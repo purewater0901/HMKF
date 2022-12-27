@@ -86,7 +86,7 @@ int main()
         Eigen::Vector2d system_noise{wv_dist(generator), wyaw_dist(generator)};
         Eigen::Vector3d observation_noise{std::max(0.0, mr_dist(generator)), mvc_dist(generator), myaw_dist(generator)};
         x_true = vehicle_model.propagate(x_true, controls, system_noise, dt);
-        auto y_nkf = vehicle_model.observe(x_true, observation_noise);
+        auto y_nkf = vehicle_model.measure(x_true, observation_noise);
         auto y_ekf = y_nkf;
         auto y_ukf = y_nkf;
 
