@@ -88,7 +88,7 @@ int main()
         Eigen::Vector2d system_noise{wv_dist(generator), wyaw_dist(generator)};
         Eigen::Vector4d observation_noise{mx_dist(generator), my_dist(generator), mvc_dist(generator), myaw_dist(generator)};
         x_true = vehicle_model.propagate(x_true, controls, system_noise, dt);
-        auto y = vehicle_model.observe(x_true, observation_noise);
+        auto y = vehicle_model.measure(x_true, observation_noise);
 
         // Predict
         const auto nkf_predicted_info = mobile_robot_nkf.predict(nkf_state_info, controls, dt, system_noise_map);

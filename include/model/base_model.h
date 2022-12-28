@@ -42,9 +42,11 @@ public:
     virtual Eigen::MatrixXd getProcessNoiseMatrix(const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) = 0;
 
     // get dh/dx
-    virtual Eigen::MatrixXd getMeasurementMatrix(const Eigen::VectorXd& x_curr) = 0;
+    virtual Eigen::MatrixXd getMeasurementMatrix(const Eigen::VectorXd& x_curr,
+                                                 const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) = 0;
 
-    virtual Eigen::MatrixXd getMeasurementNoiseMatrix(const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) = 0;
+    virtual Eigen::MatrixXd getMeasurementNoiseMatrix(const Eigen::VectorXd& x_curr,
+                                                      const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) = 0;
 
     // propagate dynamics moment
     virtual StateInfo propagateStateMoments(const StateInfo &state_info,

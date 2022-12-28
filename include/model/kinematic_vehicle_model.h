@@ -78,9 +78,11 @@ public:
     Eigen::MatrixXd getProcessNoiseMatrix(const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) override;
 
     // get dh/dx
-    Eigen::MatrixXd getMeasurementMatrix(const Eigen::VectorXd& x_curr) override;
+    Eigen::MatrixXd getMeasurementMatrix(const Eigen::VectorXd& x_curr,
+                                         const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) override;
 
-    Eigen::MatrixXd getMeasurementNoiseMatrix(const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) override;
+    Eigen::MatrixXd getMeasurementNoiseMatrix(const Eigen::VectorXd& x_curr,
+                                              const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) override;
 
     // propagate dynamics moment
     StateInfo propagateStateMoments(const StateInfo &state_info,

@@ -105,7 +105,8 @@ Eigen::MatrixXd KinematicVehicleModel::getProcessNoiseMatrix(const std::map<int,
     return Q;
 }
 
-Eigen::MatrixXd KinematicVehicleModel::getMeasurementMatrix(const Eigen::VectorXd& x_curr)
+Eigen::MatrixXd KinematicVehicleModel::getMeasurementMatrix(const Eigen::VectorXd& x_curr,
+                                                            const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map)
 {
     // Covariance Update
     /*  == Nonlinear model ==
@@ -128,7 +129,8 @@ Eigen::MatrixXd KinematicVehicleModel::getMeasurementMatrix(const Eigen::VectorX
     return H;
 }
 
-Eigen::MatrixXd KinematicVehicleModel::getMeasurementNoiseMatrix(const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map)
+Eigen::MatrixXd KinematicVehicleModel::getMeasurementNoiseMatrix(const Eigen::VectorXd& x_curr,
+                                                                 const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map)
 {
     const auto wr_dist_ptr = noise_map.at(OBSERVATION_NOISE::IDX::WR);
     const auto wvc_dist_ptr = noise_map.at(OBSERVATION_NOISE::IDX::WVC);

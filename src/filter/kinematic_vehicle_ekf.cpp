@@ -9,8 +9,6 @@ StateInfo KinematicVehicleEKF::predict(const StateInfo &state_info,
                                        const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map)
 {
     KinematicVehicleModel vehicle_model_;
-    const auto wv_dist_ptr = noise_map.at(SYSTEM_NOISE::IDX::WV);
-    const auto wyaw_dist_ptr = noise_map.at(SYSTEM_NOISE::IDX::WYAW);
 
     // State mean prediction
     const auto A = vehicle_model_.getStateMatrix(state_info.mean, dt);
@@ -29,8 +27,8 @@ StateInfo KinematicVehicleEKF::update(const StateInfo& state_info,
     KinematicVehicleModel vehicle_model_;
     const auto predicted_y = vehicle_model_.measure(state_info.mean, noise_map);
 
-    Eigen::MatrixXd H = vehicle_model_.getMeasurementMatrix(state_info.mean);
-    Eigen::Matrix3d R = vehicle_model_.getMeasurementNoiseMatrix(noise_map);
+    Eigen::MatrixXd H = vehicle_model_.getMeasurementMatrix(state_info.mean, noise_map);
+    Eigen::Matrix3d R = vehicle_model_.getMeasurementNoiseMatrix(state_info.mean, noise_map);
 
     const Eigen::Matrix3d S = H*state_info.covariance*H.transpose() + R;
     const auto K = state_info.covariance * H.transpose() * S.inverse();

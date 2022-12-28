@@ -66,10 +66,10 @@ struct MobileRobotGaussianScenario
         const auto meas_vc_dist = std::make_shared<NormalDistribution>(mean_meas_noise_vc, cov_meas_noise_vc);
         const auto meas_yaw_dist = std::make_shared<NormalDistribution>(mean_meas_noise_yaw, cov_meas_noise_yaw);
         observation_noise_map_ = {
-                {OBSERVATION_NOISE::IDX::WX, meas_x_dist},
-                {OBSERVATION_NOISE::IDX::WY, meas_y_dist},
-                {OBSERVATION_NOISE::IDX::WVC, meas_vc_dist},
-                {OBSERVATION_NOISE::IDX::WYAW, meas_yaw_dist}};
+                {MEASUREMENT_NOISE::IDX::WX, meas_x_dist},
+                {MEASUREMENT_NOISE::IDX::WY, meas_y_dist},
+                {MEASUREMENT_NOISE::IDX::WVC, meas_vc_dist},
+                {MEASUREMENT_NOISE::IDX::WYAW, meas_yaw_dist}};
 
         // Random Variable Generator
         wv_dist_ = std::normal_distribution<double>(mean_wv*dt, std::sqrt(cov_wv)*dt);
@@ -152,10 +152,10 @@ struct MobileRobotNonGaussianScenario
         const double lower_meas_yaw = -M_PI/10.0;
         const double upper_meas_yaw = M_PI/10.0;
         observation_noise_map_ = {
-                {OBSERVATION_NOISE::IDX::WX, std::make_shared<UniformDistribution>(lower_meas_x, upper_meas_x)},
-                {OBSERVATION_NOISE::IDX::WY, std::make_shared<UniformDistribution>(lower_meas_y, upper_meas_y)},
-                {OBSERVATION_NOISE::IDX::WVC, std::make_shared<ExponentialDistribution>(lambda_vc)},
-                {OBSERVATION_NOISE::IDX::WYAW, std::make_shared<UniformDistribution>(lower_meas_yaw, upper_meas_yaw)}};
+                {MEASUREMENT_NOISE::IDX::WX, std::make_shared<UniformDistribution>(lower_meas_x, upper_meas_x)},
+                {MEASUREMENT_NOISE::IDX::WY, std::make_shared<UniformDistribution>(lower_meas_y, upper_meas_y)},
+                {MEASUREMENT_NOISE::IDX::WVC, std::make_shared<ExponentialDistribution>(lambda_vc)},
+                {MEASUREMENT_NOISE::IDX::WYAW, std::make_shared<UniformDistribution>(lower_meas_yaw, upper_meas_yaw)}};
 
         // Random Variable Generator
         wv_dist_ = std::uniform_real_distribution<double>(lower_wv*dt, upper_wv*dt);

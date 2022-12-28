@@ -6,18 +6,10 @@
 #include <vector>
 #include <Eigen/Eigen>
 
+#include "model/base_model.h"
+
 namespace MobileRobot
 {
-    struct StateInfo {
-        Eigen::Vector4d mean;
-        Eigen::Matrix4d covariance;
-    };
-
-    struct ObservedInfo {
-        Eigen::Vector3d mean;
-        Eigen::Matrix3d covariance;
-    };
-
     namespace STATE {
         enum IDX {
             X = 0,
@@ -49,7 +41,7 @@ namespace MobileRobot
         };
     }
 
-    namespace OBSERVATION_NOISE {
+    namespace MEASUREMENT_NOISE {
         enum IDX {
             WX = 0,
             WY = 1,
@@ -59,157 +51,49 @@ namespace MobileRobot
     }
 }
 
-class MobileRobotModel
+class MobileRobotModel : public BaseModel
 {
 public:
-    struct StateMoments {
-        double xPow1;
-        double yPow1;
-        double vPow1;
-        double yawPow1;
-        double cPow1;
-        double sPow1;
-
-        double xPow2;
-        double yPow2;
-        double vPow2;
-        double yawPow2;
-        double cPow2;
-        double sPow2;
-        double xPow1_yPow1;
-        double xPow1_yawPow1;
-        double yPow1_yawPow1;
-        double vPow1_xPow1;
-        double vPow1_yPow1;
-        double vPow1_yawPow1;
-        double vPow1_cPow1;
-        double vPow1_sPow1;
-        double cPow1_xPow1;
-        double sPow1_xPow1;
-        double cPow1_yPow1;
-        double sPow1_yPow1;
-        double cPow1_yawPow1;
-        double sPow1_yawPow1;
-        double cPow1_sPow1;
-
-        double vPow1_cPow2;
-        double vPow1_sPow2;
-        double vPow2_cPow1;
-        double vPow2_sPow1;
-        double vPow1_cPow1_xPow1;
-        double vPow1_cPow1_yPow1;
-        double vPow1_cPow1_yawPow1;
-        double vPow1_sPow1_xPow1;
-        double vPow1_sPow1_yPow1;
-        double vPow1_sPow1_yawPow1;
-        double vPow1_cPow1_sPow1;
-
-        double vPow2_cPow2;
-        double vPow2_sPow2;
-        double vPow2_cPow1_sPow1;
-    };
-
-    struct measurementInputStateMoments {
-        double xPow1;
-        double yPow1;
-        double vPow1;
-        double cyawPow1;
-        double syawPow1;
-
-        double xPow2;
-        double yPow2;
-        double vPow2;
-        double cyawPow2;
-        double syawPow2;
-        double xPow1_cyawPow1;
-        double xPow1_syawPow1;
-        double yPow1_cyawPow1;
-        double yPow1_syawPow1;
-        double vPow1_cyawPow1;
-        double vPow1_syawPow1;
-        double xPow1_yPow1;
-        double xPow1_vPow1;
-        double yPow1_vPow1;
-        double cyawPow1_syawPow1;
-
-        double vPow2_cyawPow1;
-        double vPow2_syawPow1;
-        double vPow1_cyawPow2;
-        double vPow1_syawPow2;
-        double xPow1_vPow1_cyawPow1;
-        double xPow1_vPow1_syawPow1;
-        double yPow1_vPow1_cyawPow1;
-        double yPow1_vPow1_syawPow1;
-        double vPow1_cyawPow1_syawPow1;
-
-        double vPow2_cyawPow2;
-        double vPow2_syawPow2;
-        double vPow2_cyawPow1_syawPow1;
-    };
-
-    struct ObservationMoments {
-        double xPow1;
-        double yPow1;
-        double vcPow1;
-
-        double xPow2;
-        double yPow2;
-        double vcPow2;
-        double xPow1_yPow1;
-        double xPow1_vcPow1;
-        double yPow1_vcPow1;
-    };
-
-    struct SystemNoiseMoments {
-        double wvPow1;
-        double wyawPow1;
-        double cyawPow1;
-        double syawPow1;
-
-        double wvPow2;
-        double wyawPow2;
-        double cyawPow2;
-        double syawPow2;
-        double cyawPow1_syawPow1;
-    };
-
-    struct ObservationNoiseMoments {
-        double wxPow1;
-        double wyPow1;
-        double wvPow1;
-        double cwyawPow1;
-        double swyawPow1;
-
-        double wxPow2;
-        double wyPow2;
-        double wvPow2;
-        double cwyawPow2;
-        double swyawPow2;
-        double cwyawPow1_swyawPow1;
-    };
-
-    struct Controls{
-        double a;
-        double u;
-        double cu;
-        double su;
-    };
-
     MobileRobotModel() = default;
 
-    Eigen::Vector4d propagate(const Eigen::Vector4d& x_curr,
-                              const Eigen::Vector2d& u_curr,
-                              const Eigen::Vector2d& system_noise,
-                              const double dt);
-    Eigen::Vector3d observe(const Eigen::Vector4d& x_curr, const Eigen::Vector4d& observation_noise);
+    Eigen::VectorXd propagate(const Eigen::VectorXd& x_curr,
+                              const Eigen::VectorXd& u_curr,
+                              const Eigen::VectorXd& system_noise,
+                              const double dt) override;
 
-    StateMoments propagateStateMoments(const StateMoments & prev_state_moments,
-                                       const SystemNoiseMoments& system_noise_moments,
-                                       const Controls& control_inputs,
-                                       const double dt);
+    Eigen::VectorXd propagate(const Eigen::VectorXd& x_curr,
+                              const Eigen::VectorXd& u_curr,
+                              const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                              const double dt) override;
 
-    ObservationMoments getObservationMoments(const measurementInputStateMoments & state_moments,
-                                             const ObservationNoiseMoments & observation_noise_moments);
+
+    Eigen::VectorXd measure(const Eigen::VectorXd& x_curr,
+                            const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) override;
+    Eigen::VectorXd measure(const Eigen::VectorXd& x_curr, const Eigen::VectorXd& measurement_noise) override;
+
+    // get df/dx
+    Eigen::MatrixXd getStateMatrix(const Eigen::VectorXd& x_curr, const double dt) override;
+
+    Eigen::MatrixXd getProcessNoiseMatrix(const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) override;
+
+    // get dh/dx
+    Eigen::MatrixXd getMeasurementMatrix(const Eigen::VectorXd& x_curr,
+                                         const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) override;
+
+    Eigen::MatrixXd getMeasurementNoiseMatrix(const Eigen::VectorXd& x_curr,
+                                              const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) override;
+
+    // propagate dynamics moment
+    StateInfo propagateStateMoments(const StateInfo &state_info,
+                                    const Eigen::VectorXd &control_inputs,
+                                    const double dt,
+                                    const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map) override;
+
+    StateInfo getMeasurementMoments(const StateInfo &state_info,
+                                    const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map) override;
+
+    Eigen::MatrixXd getStateMeasurementMatrix(const StateInfo& state_info, const StateInfo& measurement_info,
+                                              const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map) override;
 };
 
 #endif //UNCERTAINTY_PROPAGATION_MOBILE_ROBOT_MODEL_H

@@ -22,10 +22,10 @@ StateInfo MobileRobotUKF::predict(const StateInfo& state_info,
 {
     const auto dist_wv = system_noise_map.at(SYSTEM_NOISE::WV);
     const auto dist_wyaw = system_noise_map.at(SYSTEM_NOISE::WYAW);
-    const auto dist_mx = measurement_noise_map.at(OBSERVATION_NOISE::WX);
-    const auto dist_my = measurement_noise_map.at(OBSERVATION_NOISE::WY);
-    const auto dist_mvc = measurement_noise_map.at(OBSERVATION_NOISE::WVC);
-    const auto dist_myaw = measurement_noise_map.at(OBSERVATION_NOISE::WYAW);
+    const auto dist_mx = measurement_noise_map.at(MEASUREMENT_NOISE::WX);
+    const auto dist_my = measurement_noise_map.at(MEASUREMENT_NOISE::WY);
+    const auto dist_mvc = measurement_noise_map.at(MEASUREMENT_NOISE::WVC);
+    const auto dist_myaw = measurement_noise_map.at(MEASUREMENT_NOISE::WYAW);
 
     Eigen::VectorXd augmented_mean = Eigen::VectorXd::Zero(10);
     augmented_mean.head(4) = state_info.mean;
@@ -85,17 +85,17 @@ StateInfo MobileRobotUKF::predict(const StateInfo& state_info,
     return result;
 }
 
-StateInfo MobileRobotUKF::update(const MobileRobot::StateInfo &state_info,
+StateInfo MobileRobotUKF::update(const StateInfo &state_info,
                                  const Eigen::Vector3d &observed_values,
                                  const std::map<int, std::shared_ptr<BaseDistribution>>& system_noise_map,
                                  const std::map<int, std::shared_ptr<BaseDistribution>>& measurement_noise_map)
 {
     const auto dist_wv = system_noise_map.at(SYSTEM_NOISE::WV);
     const auto dist_wyaw = system_noise_map.at(SYSTEM_NOISE::WYAW);
-    const auto dist_mx = measurement_noise_map.at(OBSERVATION_NOISE::WX);
-    const auto dist_my = measurement_noise_map.at(OBSERVATION_NOISE::WY);
-    const auto dist_mvc = measurement_noise_map.at(OBSERVATION_NOISE::WVC);
-    const auto dist_myaw = measurement_noise_map.at(OBSERVATION_NOISE::WYAW);
+    const auto dist_mx = measurement_noise_map.at(MEASUREMENT_NOISE::WX);
+    const auto dist_my = measurement_noise_map.at(MEASUREMENT_NOISE::WY);
+    const auto dist_mvc = measurement_noise_map.at(MEASUREMENT_NOISE::WVC);
+    const auto dist_myaw = measurement_noise_map.at(MEASUREMENT_NOISE::WYAW);
 
     Eigen::VectorXd augmented_mean = Eigen::VectorXd::Zero(10);
     augmented_mean.head(4) = state_info.mean;
@@ -133,7 +133,7 @@ StateInfo MobileRobotUKF::update(const MobileRobot::StateInfo &state_info,
     Eigen::MatrixXd observed_sigma_points = Eigen::MatrixXd::Zero(3, 21);
     Eigen::Vector3d y_mean = Eigen::Vector3d::Zero();
     for(size_t i=0; i<21; ++i) {
-        const Eigen::Vector3d y = model_.observe(sigma_points_.col(i).head(4), sigma_points_.col(i).segment(6, 4));
+        const Eigen::Vector3d y = model_.measure(sigma_points_.col(i).head(4), sigma_points_.col(i).segment(6, 4));
         observed_sigma_points.col(i) = y;
         if(i==20) {
             y_mean += Sigma_WM0_ * y;
