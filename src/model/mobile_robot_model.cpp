@@ -25,7 +25,7 @@ Eigen::VectorXd MobileRobotModel::propagate(const Eigen::VectorXd& x_curr,
 {
     /*  == Nonlinear model ==
      *
-     * x_{k+1}   = x_k + v_k+wv * cos(yaw_k) * dt
+     * x_{k+1}   = x_k + v_k * cos(yaw_k) * dt
      * y_{k+1}   = y_k + v_k * sin(yaw_k) * dt
      * v_{k+1}   = v_k + a_k * dt + w_v
      * yaw_{k+1} = yaw_k + u_k * dt + w_yaw
