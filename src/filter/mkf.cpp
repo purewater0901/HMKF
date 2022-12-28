@@ -9,7 +9,7 @@ StateInfo MKF::predict(const StateInfo &state_info,
 }
 
 StateInfo MKF::update(const StateInfo &state_info,
-                      const Eigen::Vector3d &observed_values,
+                      const Eigen::VectorXd &observed_values,
                       const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map)
 {
     const auto measurement_info = vehicle_model_->getMeasurementMoments(state_info, noise_map);

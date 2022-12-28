@@ -21,7 +21,7 @@ public:
                       const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map);
 
     StateInfo update(const StateInfo & state_info,
-                     const Eigen::Vector3d & observed_values,
+                     const Eigen::VectorXd & observed_values,
                      const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map);
 
     std::shared_ptr<BaseModel> vehicle_model_;

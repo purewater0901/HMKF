@@ -76,7 +76,9 @@ Eigen::VectorXd MobileRobotModel::measure(const Eigen::VectorXd& x_curr, const E
     return y_next;
 }
 
-Eigen::MatrixXd MobileRobotModel::getStateMatrix(const Eigen::VectorXd& x_curr, const double dt)
+Eigen::MatrixXd MobileRobotModel::getStateMatrix(const Eigen::VectorXd& x_curr,
+                                                 const Eigen::VectorXd& u_curr,
+                                                 const double dt)
 {
     const double& v_k = x_curr(STATE::IDX::V);
     const double& yaw_k = x_curr(STATE::IDX::YAW);

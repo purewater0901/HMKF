@@ -19,10 +19,11 @@ public:
 
     StateInfo predict(const StateInfo& state_info,
                       const Eigen::Vector2d & control_inputs,
+                      const double dt,
                       const std::map<int, std::shared_ptr<BaseDistribution>>& system_noise_map,
                       const std::map<int, std::shared_ptr<BaseDistribution>>& measurement_noise_map);
 
-    StateInfo update(const NormalVehicle::StateInfo &state_info,
+    StateInfo update(const StateInfo &state_info,
                      const Eigen::Vector2d &observed_values,
                      const std::map<int, std::shared_ptr<BaseDistribution>>& system_noise_map,
                      const std::map<int, std::shared_ptr<BaseDistribution>>& measurement_noise_map);

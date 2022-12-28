@@ -37,7 +37,9 @@ public:
     virtual Eigen::VectorXd measure(const Eigen::VectorXd& x_curr, const Eigen::VectorXd& observation_noise) = 0;
 
     // get df/dx
-    virtual Eigen::MatrixXd getStateMatrix(const Eigen::VectorXd& x_curr, const double dt) = 0;
+    virtual Eigen::MatrixXd getStateMatrix(const Eigen::VectorXd& x_curr,
+                                           const Eigen::VectorXd& u_curr,
+                                           const double dt) = 0;
 
     virtual Eigen::MatrixXd getProcessNoiseMatrix(const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) = 0;
 

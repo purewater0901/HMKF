@@ -16,14 +16,15 @@ NormalVehicleUKF::NormalVehicleUKF() : augmented_size_(8),
 
 StateInfo NormalVehicleUKF::predict(const StateInfo& state_info,
                                     const Eigen::Vector2d & control_inputs,
+                                    const double dt,
                                     const std::map<int, std::shared_ptr<BaseDistribution>>& system_noise_map,
                                     const std::map<int, std::shared_ptr<BaseDistribution>>& measurement_noise_map)
 {
     const auto dist_wx = system_noise_map.at(SYSTEM_NOISE::WX);
     const auto dist_wy = system_noise_map.at(SYSTEM_NOISE::WY);
     const auto dist_wyaw = system_noise_map.at(SYSTEM_NOISE::WYAW);
-    const auto dist_mr = measurement_noise_map.at(OBSERVATION_NOISE::WR);
-    const auto dist_myaw = measurement_noise_map.at(OBSERVATION_NOISE::WYAW);
+    const auto dist_mr = measurement_noise_map.at(MEASUREMENT_NOISE::WR);
+    const auto dist_myaw = measurement_noise_map.at(MEASUREMENT_NOISE::WYAW);
 
     Eigen::VectorXd augmented_mean = Eigen::VectorXd::Zero(augmented_size_);
     augmented_mean.head(3) = state_info.mean;
@@ -47,19 +48,19 @@ StateInfo NormalVehicleUKF::predict(const StateInfo& state_info,
     Eigen::VectorXd processed_augmented_mean = Eigen::VectorXd::Zero(augmented_size_);
     for(size_t i=0; i<augmented_size_; ++i) {
         sigma_points_.col(i) = augmented_mean + augmented_cov_squared.col(i);
-        const Eigen::Vector3d processed_state = model_.propagate(sigma_points_.col(i).head(3), control_inputs, sigma_points_.col(i).segment(3, 3));
+        const Eigen::Vector3d processed_state = model_.propagate(sigma_points_.col(i).head(3), control_inputs, sigma_points_.col(i).segment(3, 3), dt);
         sigma_points_.col(i).head(3) = processed_state;
         processed_augmented_mean += Sigma_WMI_ * sigma_points_.col(i);
     }
     for(size_t i=augmented_size_; i<2*augmented_size_; ++i) {
         sigma_points_.col(i) = augmented_mean - augmented_cov_squared.col(i-augmented_size_);
-        const Eigen::Vector3d processed_state = model_.propagate(sigma_points_.col(i).head(3), control_inputs, sigma_points_.col(i).segment(3, 3));
+        const Eigen::Vector3d processed_state = model_.propagate(sigma_points_.col(i).head(3), control_inputs, sigma_points_.col(i).segment(3, 3), dt);
         sigma_points_.col(i).head(3) = processed_state;
         processed_augmented_mean += Sigma_WMI_ * sigma_points_.col(i);
     }
     {
         sigma_points_.col(2*augmented_size_) = augmented_mean;
-        const Eigen::Vector3d processed_state = model_.propagate(sigma_points_.col(2*augmented_size_).head(3), control_inputs, sigma_points_.col(2*augmented_size_).segment(3, 3));
+        const Eigen::Vector3d processed_state = model_.propagate(sigma_points_.col(2*augmented_size_).head(3), control_inputs, sigma_points_.col(2*augmented_size_).segment(3, 3), dt);
         sigma_points_.col(2*augmented_size_).head(3) = processed_state;
         processed_augmented_mean += Sigma_WM0_ * sigma_points_.col(2*augmented_size_);
     }
@@ -81,7 +82,7 @@ StateInfo NormalVehicleUKF::predict(const StateInfo& state_info,
     return result;
 }
 
-StateInfo NormalVehicleUKF::update(const NormalVehicle::StateInfo &state_info,
+StateInfo NormalVehicleUKF::update(const StateInfo &state_info,
                                    const Eigen::Vector2d &observed_values,
                                    const std::map<int, std::shared_ptr<BaseDistribution>>& system_noise_map,
                                    const std::map<int, std::shared_ptr<BaseDistribution>>& measurement_noise_map)
@@ -89,8 +90,8 @@ StateInfo NormalVehicleUKF::update(const NormalVehicle::StateInfo &state_info,
     const auto dist_wx = system_noise_map.at(SYSTEM_NOISE::WX);
     const auto dist_wy = system_noise_map.at(SYSTEM_NOISE::WY);
     const auto dist_wyaw = system_noise_map.at(SYSTEM_NOISE::WYAW);
-    const auto dist_mr = measurement_noise_map.at(OBSERVATION_NOISE::WR);
-    const auto dist_myaw = measurement_noise_map.at(OBSERVATION_NOISE::WYAW);
+    const auto dist_mr = measurement_noise_map.at(MEASUREMENT_NOISE::WR);
+    const auto dist_myaw = measurement_noise_map.at(MEASUREMENT_NOISE::WYAW);
 
     Eigen::VectorXd augmented_mean = Eigen::VectorXd::Zero(augmented_size_);
     augmented_mean.head(3) = state_info.mean;
@@ -126,7 +127,7 @@ StateInfo NormalVehicleUKF::update(const NormalVehicle::StateInfo &state_info,
     Eigen::MatrixXd observed_sigma_points = Eigen::MatrixXd::Zero(2, 2*augmented_size_+1);
     Eigen::Vector2d y_mean = Eigen::Vector2d::Zero();
     for(size_t i=0; i<2*augmented_size_+1; ++i) {
-        const Eigen::Vector2d y = model_.observe(sigma_points_.col(i).head(3), sigma_points_.col(i).segment(6, 2));
+        const Eigen::Vector2d y = model_.measure(sigma_points_.col(i).head(3), sigma_points_.col(i).segment(6, 2));
         observed_sigma_points.col(i) = y;
         if(i==2*augmented_size_) {
             y_mean += Sigma_WM0_ * y;

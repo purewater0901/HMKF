@@ -1,12 +1,12 @@
 #include "filter/ekf.h"
 
 StateInfo EKF::predict(const StateInfo &state_info,
-                       const Eigen::Vector2d &inputs,
+                       const Eigen::VectorXd &inputs,
                        const double dt,
                        const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map)
 {
     // State mean prediction
-    const auto A = vehicle_model_->getStateMatrix(state_info.mean, dt);
+    const auto A = vehicle_model_->getStateMatrix(state_info.mean, inputs, dt);
 
     const auto Q = vehicle_model_->getProcessNoiseMatrix(noise_map);
 
@@ -17,15 +17,15 @@ StateInfo EKF::predict(const StateInfo &state_info,
 }
 
 StateInfo EKF::update(const StateInfo& state_info,
-                      const Eigen::Vector3d& y,
+                      const Eigen::VectorXd& y,
                       const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map)
 {
     const auto predicted_y = vehicle_model_->measure(state_info.mean, noise_map);
 
     Eigen::MatrixXd H = vehicle_model_->getMeasurementMatrix(state_info.mean, noise_map);
-    Eigen::Matrix3d R = vehicle_model_->getMeasurementNoiseMatrix(state_info.mean, noise_map);
+    Eigen::MatrixXd R = vehicle_model_->getMeasurementNoiseMatrix(state_info.mean, noise_map);
 
-    const Eigen::Matrix3d S = H*state_info.covariance*H.transpose() + R;
+    const Eigen::MatrixXd S = H*state_info.covariance*H.transpose() + R;
     const auto K = state_info.covariance * H.transpose() * S.inverse();
 
     StateInfo updated_info;
