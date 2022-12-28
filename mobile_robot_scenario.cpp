@@ -7,8 +7,8 @@
 
 #include "matplotlibcpp.h"
 #include "model/mobile_robot_model.h"
-#include "filter/mobile_robot_nkf.h"
 #include "filter/mobile_robot_ukf.h"
+#include "filter/mkf.h"
 #include "filter/ekf.h"
 #include "utilities.h"
 #include "scenario/mobile_robot_scenario.h"
@@ -25,7 +25,7 @@ int main()
     std::shared_ptr<BaseModel> vehicle_model = std::make_shared<MobileRobotModel>();
 
     // Mobile Robot Nonlinear Kalman Filter
-    MobileRobotNKF mobile_robot_nkf;
+    MKF mobile_robot_nkf(vehicle_model);
 
     // Mobile Robot Extended Kalman Filter
     EKF mobile_robot_ekf(vehicle_model);

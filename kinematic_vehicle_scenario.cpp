@@ -8,9 +8,9 @@
 #include "matplotlibcpp.h"
 #include "distribution/normal_distribution.h"
 #include "model/kinematic_vehicle_model.h"
-#include "filter/kinematic_vehilce_nkf.h"
 #include "filter/kinematic_vehicle_ukf.h"
 #include "filter/ekf.h"
+#include "filter/mkf.h"
 #include "scenario/kinematic_vehicle_scenario.h"
 
 using namespace KinematicVehicle;
@@ -25,7 +25,7 @@ int main()
     std::shared_ptr<BaseModel> vehicle_model = std::make_shared<KinematicVehicleModel>();
 
     // Kinematic Vehicle Nonlinear Kalman Filter
-    KinematicVehicleNKF kinematic_vehicle_nkf;
+    MKF kinematic_vehicle_mkf(vehicle_model);
 
     // Normal Vehicle Unscented Kalman Filter
     KinematicVehicleUKF kinematic_vehicle_ukf;
@@ -93,7 +93,7 @@ int main()
         auto y_ukf = y_nkf;
 
         // Predict
-        const auto nkf_predicted_info = kinematic_vehicle_nkf.predict(nkf_state_info, controls, dt, system_noise_map);
+        const auto nkf_predicted_info = kinematic_vehicle_mkf.predict(nkf_state_info, controls, dt, system_noise_map);
         const auto ekf_predicted_info = kinematic_vehicle_ekf.predict(ekf_state_info, controls, dt, system_noise_map);
         const auto ukf_predicted_info = kinematic_vehicle_ukf.predict(ukf_state_info, controls, dt, system_noise_map, observation_noise_map);
 
@@ -105,7 +105,7 @@ int main()
         y_ukf(OBSERVATION::IDX::YAW) = ukf_yaw_error + ukf_predicted_info.mean(STATE::IDX::YAW);
 
         // Update
-        const auto nkf_updated_info = kinematic_vehicle_nkf.update(nkf_predicted_info, y_nkf, observation_noise_map);
+        const auto nkf_updated_info = kinematic_vehicle_mkf.update(nkf_predicted_info, y_nkf, observation_noise_map);
         const auto ekf_updated_info = kinematic_vehicle_ekf.update(ekf_predicted_info, y_ekf, observation_noise_map);
         const auto ukf_updated_info = kinematic_vehicle_ukf.update(ukf_predicted_info, y_ukf, system_noise_map, observation_noise_map);
         nkf_state_info = nkf_updated_info;
