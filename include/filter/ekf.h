@@ -1,5 +1,5 @@
-#ifndef UNCERTAINTY_PROPAGATION_KINEMATIC_VEHICLE_EKF_H
-#define UNCERTAINTY_PROPAGATION_KINEMATIC_VEHICLE_EKF_H
+#ifndef HMKF_EKF_H
+#define HMKF_EKF_H
 
 #include <iostream>
 #include <vector>
@@ -7,13 +7,13 @@
 #include <map>
 #include <Eigen/Eigen>
 
-#include "model/kinematic_vehicle_model.h"
+#include "model/base_model.h"
 #include "distribution/base_distribution.h"
 
-class KinematicVehicleEKF
+class EKF
 {
 public:
-    KinematicVehicleEKF() = default;
+    EKF(const std::shared_ptr<BaseModel>& vehicle_model) : vehicle_model_(vehicle_model) {}
 
     StateInfo predict(const StateInfo& state_info,
                       const Eigen::Vector2d& inputs,
@@ -23,6 +23,8 @@ public:
     StateInfo update(const StateInfo& state_info,
                      const Eigen::Vector3d& y,
                      const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map);
+
+    std::shared_ptr<BaseModel> vehicle_model_;
 };
 
-#endif //UNCERTAINTY_PROPAGATION_KINEMATIC_VEHICLE_EKF_H
+#endif //HMKF_EKF_H

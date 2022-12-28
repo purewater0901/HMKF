@@ -8,8 +8,8 @@
 #include "matplotlibcpp.h"
 #include "model/mobile_robot_model.h"
 #include "filter/mobile_robot_nkf.h"
-#include "filter/mobile_robot_ekf.h"
 #include "filter/mobile_robot_ukf.h"
+#include "filter/ekf.h"
 #include "utilities.h"
 #include "scenario/mobile_robot_scenario.h"
 
@@ -21,11 +21,14 @@ int main()
     const int& N = scenario.N;
     const double& dt = scenario.dt;
 
+    // Vehicle Model
+    std::shared_ptr<BaseModel> vehicle_model = std::make_shared<MobileRobotModel>();
+
     // Mobile Robot Nonlinear Kalman Filter
     MobileRobotNKF mobile_robot_nkf;
 
     // Mobile Robot Extended Kalman Filter
-    MobileRobotEKF mobile_robot_ekf;
+    EKF mobile_robot_ekf(vehicle_model);
 
     // Mobile Robot Unscented Kalman Filter
     MobileRobotUKF mobile_robot_ukf;
@@ -52,7 +55,6 @@ int main()
     auto mvc_dist = scenario.mvc_dist_;
     auto myaw_dist = scenario.myaw_dist_;
 
-    MobileRobotModel vehicle_model;
     std::vector<double> times(N);
     std::vector<double> nkf_xy_errors(N);
     std::vector<double> ekf_xy_errors(N);
@@ -87,8 +89,8 @@ int main()
         // Simulate
         Eigen::Vector2d system_noise{wv_dist(generator), wyaw_dist(generator)};
         Eigen::Vector4d observation_noise{mx_dist(generator), my_dist(generator), mvc_dist(generator), myaw_dist(generator)};
-        x_true = vehicle_model.propagate(x_true, controls, system_noise, dt);
-        auto y = vehicle_model.measure(x_true, observation_noise);
+        x_true = vehicle_model->propagate(x_true, controls, system_noise, dt);
+        auto y = vehicle_model->measure(x_true, observation_noise);
 
         // Predict
         const auto nkf_predicted_info = mobile_robot_nkf.predict(nkf_state_info, controls, dt, system_noise_map);

@@ -22,6 +22,7 @@ add_library(lib
             src/model/kinematic_vehicle_model.cpp
             src/model/mobile_robot_model.cpp
             src/utilities.cpp
+            src/filter/ekf.cpp
             src/filter/simple_vehicle_nkf.cpp
             src/filter/simple_vehicle_ukf.cpp
             src/filter/simple_vehicle_ekf.cpp
@@ -30,9 +31,7 @@ add_library(lib
             src/filter/normal_vehicle_ekf.cpp
             src/filter/kinematic_vehicle_nkf.cpp
             src/filter/kinematic_vehicle_ukf.cpp
-            src/filter/kinematic_vehicle_ekf.cpp
             src/filter/mobile_robot_nkf.cpp
-            src/filter/mobile_robot_ekf.cpp
             src/filter/mobile_robot_ukf.cpp
             src/filter/paper_example_2d_ukf.cpp
             src/filter/paper_example_3d_ukf.cpp

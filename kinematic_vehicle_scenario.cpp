@@ -10,7 +10,7 @@
 #include "model/kinematic_vehicle_model.h"
 #include "filter/kinematic_vehilce_nkf.h"
 #include "filter/kinematic_vehicle_ukf.h"
-#include "filter/kinematic_vehicle_ekf.h"
+#include "filter/ekf.h"
 #include "scenario/kinematic_vehicle_scenario.h"
 
 using namespace KinematicVehicle;
@@ -21,6 +21,9 @@ int main()
     const size_t N = scenario.N;
     const double dt = scenario.dt;
 
+    // Vehicle Model
+    std::shared_ptr<BaseModel> vehicle_model = std::make_shared<KinematicVehicleModel>();
+
     // Kinematic Vehicle Nonlinear Kalman Filter
     KinematicVehicleNKF kinematic_vehicle_nkf;
 
@@ -28,7 +31,7 @@ int main()
     KinematicVehicleUKF kinematic_vehicle_ukf;
 
     // Normal Vehicle Extended Kalman Filter
-    KinematicVehicleEKF kinematic_vehicle_ekf;
+    EKF kinematic_vehicle_ekf(vehicle_model);
 
     StateInfo nkf_state_info;
     nkf_state_info.mean = scenario.ini_mean_;
@@ -51,7 +54,6 @@ int main()
     auto& mvc_dist = scenario.mvc_dist_;
     auto& myaw_dist = scenario.myaw_dist_;
 
-    KinematicVehicleModel vehicle_model;
     std::vector<double> times(N);
     std::vector<double> nkf_xy_errors(N);
     std::vector<double> ekf_xy_errors(N);
@@ -85,8 +87,8 @@ int main()
         // Simulate
         Eigen::Vector2d system_noise{wv_dist(generator), wyaw_dist(generator)};
         Eigen::Vector3d observation_noise{std::max(0.0, mr_dist(generator)), mvc_dist(generator), myaw_dist(generator)};
-        x_true = vehicle_model.propagate(x_true, controls, system_noise, dt);
-        auto y_nkf = vehicle_model.measure(x_true, observation_noise);
+        x_true = vehicle_model->propagate(x_true, controls, system_noise, dt);
+        auto y_nkf = vehicle_model->measure(x_true, observation_noise);
         auto y_ekf = y_nkf;
         auto y_ukf = y_nkf;
 
