@@ -22,28 +22,8 @@ public:
 
     double calc_mean(const int dim);
     double calc_covariance(const int dim);
-    double calc_moment(const int dim ,const int moment);
-    double calc_xy_moment();
-    double calc_x_cos_y_moment();
-    double calc_x_sin_y_moment();
-    double calc_third_moment(const int moment1, const int moment2);
-    double calc_xxy_moment();
-    double calc_xyy_moment();
-    double calc_xx_sin_y_moment();
-    double calc_xx_cos_y_moment();
-    double calc_x_cos_y_cos_y_moment();
-    double calc_x_cos_y_sin_y_moment();
-    double calc_x_sin_y_sin_y_moment();
-    double calc_x_y_sin_y_moment();
-    double calc_x_y_cos_y_moment();
-    double calc_xxyy_moment();
-    double calc_xx_cos_y_cos_y_moment();
-    double calc_xx_sin_y_sin_y_moment();
-    double calc_xx_cos_y_sin_y_moment();
-    double calc_xxx_cos_y_moment();
-    double calc_xxx_sin_y_moment();
-    double calc_x_cos_y_moment(const int x_moment, const int y_moment);
-    double calc_x_sin_y_moment(const int x_moment, const int y_moment);
+    double calc_moment(const int dim, const int moment);
+    double calc_xy_cos_y_sin_y_moment(const int x_moment, const int y_moment, const int cos_moment, const int sin_moment);
 
     Eigen::Vector2d mean_;
     Eigen::Matrix2d covariance_;

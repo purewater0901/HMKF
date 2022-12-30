@@ -311,7 +311,7 @@ double ThreeDimensionalNormalDistribution::calc_cross_third_moment(const int dim
 
     TwoDimensionalNormalDistribution dist(mean, covariance);
 
-   return dist.calc_third_moment(moment1, moment2);
+    return dist.calc_xy_cos_y_sin_y_moment(moment1, moment2, 0, 0);
 }
 
 double ThreeDimensionalNormalDistribution::calc_xx_sin_z_moment(const int dim_x, const int dim_z)
@@ -637,7 +637,7 @@ double ThreeDimensionalNormalDistribution::calc_xy_cos_y_moment(const int dim_x,
 
     auto dist = create2DNormalDistribution(dim_x, dim_y);
 
-    return dist.calc_x_y_cos_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(1, 1, 1, 0);
 }
 
 double ThreeDimensionalNormalDistribution::calc_xy_sin_y_moment(const int dim_x, const int dim_y)
@@ -652,7 +652,7 @@ double ThreeDimensionalNormalDistribution::calc_xy_sin_y_moment(const int dim_x,
 
     auto dist = create2DNormalDistribution(dim_x, dim_y);
 
-    return dist.calc_x_y_sin_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(1, 1, 0, 1);
 }
 
 double ThreeDimensionalNormalDistribution::calc_x_cos_z_cos_z_moment(const int dim_x, const int dim_z)
@@ -667,7 +667,7 @@ double ThreeDimensionalNormalDistribution::calc_x_cos_z_cos_z_moment(const int d
 
     auto dist = create2DNormalDistribution(dim_x, dim_z);
 
-    return dist.calc_x_cos_y_cos_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(1, 0, 2, 0);
 }
 
 double ThreeDimensionalNormalDistribution::calc_x_sin_z_sin_z_moment(const int dim_x, const int dim_z)
@@ -682,7 +682,7 @@ double ThreeDimensionalNormalDistribution::calc_x_sin_z_sin_z_moment(const int d
 
     auto dist = create2DNormalDistribution(dim_x, dim_z);
 
-    return dist.calc_x_sin_y_sin_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(1, 0, 0, 2);
 }
 
 double ThreeDimensionalNormalDistribution::calc_x_cos_z_sin_z_moment(const int dim_x, const int dim_z)
@@ -697,7 +697,7 @@ double ThreeDimensionalNormalDistribution::calc_x_cos_z_sin_z_moment(const int d
 
     auto dist = create2DNormalDistribution(dim_x, dim_z);
 
-    return dist.calc_x_cos_y_sin_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(1, 0, 1, 1);
 }
 
 double ThreeDimensionalNormalDistribution::calc_xxyy_moment(const int dim_x, const int dim_y)
@@ -776,7 +776,7 @@ double ThreeDimensionalNormalDistribution::calc_xx_cos_z_cos_z_moment(const int 
 
     auto dist = create2DNormalDistribution(dim_x, dim_z);
 
-    return dist.calc_xx_cos_y_cos_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(2, 0, 2, 0);
 }
 
 double ThreeDimensionalNormalDistribution::calc_xx_sin_z_sin_z_moment(const int dim_x, const int dim_z)
@@ -791,7 +791,7 @@ double ThreeDimensionalNormalDistribution::calc_xx_sin_z_sin_z_moment(const int 
 
     auto dist = create2DNormalDistribution(dim_x, dim_z);
 
-    return dist.calc_xx_sin_y_sin_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(2, 0, 0, 2);
 }
 
 double ThreeDimensionalNormalDistribution::calc_xx_cos_z_sin_z_moment(const int dim_x, const int dim_z)
@@ -806,7 +806,7 @@ double ThreeDimensionalNormalDistribution::calc_xx_cos_z_sin_z_moment(const int 
 
     auto dist = create2DNormalDistribution(dim_x, dim_z);
 
-    return dist.calc_xx_cos_y_sin_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(2, 0, 1, 1);
 }
 
 double ThreeDimensionalNormalDistribution::calc_xxy_cos_z_moment()

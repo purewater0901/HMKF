@@ -127,7 +127,7 @@ double FourDimensionalNormalDistribution::calc_x_cos_x_moment(const int dim, con
 double FourDimensionalNormalDistribution::calc_cross_second_moment(const int dim1, const int dim2)
 {
     auto dist = create2DNormalDistribution(dim1, dim2);
-    return dist.calc_xy_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(1, 1, 0, 0);
 }
 
 double FourDimensionalNormalDistribution::calc_x_sin_z_moment(const int dim_x, const int dim_z)
@@ -137,7 +137,7 @@ double FourDimensionalNormalDistribution::calc_x_sin_z_moment(const int dim_x, c
     }
 
     auto dist = create2DNormalDistribution(dim_x, dim_z);
-    return dist.calc_x_sin_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(1, 0, 0, 1);
 }
 
 double FourDimensionalNormalDistribution::calc_x_cos_z_moment(const int dim_x, const int dim_z)
@@ -147,7 +147,7 @@ double FourDimensionalNormalDistribution::calc_x_cos_z_moment(const int dim_x, c
     }
 
     auto dist = create2DNormalDistribution(dim_x, dim_z);
-    return dist.calc_x_cos_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(1, 0, 1, 0);
 }
 
 double FourDimensionalNormalDistribution::calc_x_cos_y_cos_y_moment(const int dim_x, const int dim_y)
@@ -157,7 +157,7 @@ double FourDimensionalNormalDistribution::calc_x_cos_y_cos_y_moment(const int di
     }
 
     auto dist = create2DNormalDistribution(dim_x, dim_y);
-    return dist.calc_x_cos_y_cos_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(1, 0, 2, 0);
 }
 
 double FourDimensionalNormalDistribution::calc_x_sin_y_sin_y_moment(const int dim_x, const int dim_y)
@@ -167,7 +167,7 @@ double FourDimensionalNormalDistribution::calc_x_sin_y_sin_y_moment(const int di
     }
 
     auto dist = create2DNormalDistribution(dim_x, dim_y);
-    return dist.calc_x_sin_y_sin_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(1, 0, 0, 2);
 }
 
 double FourDimensionalNormalDistribution::calc_x_cos_y_sin_y_moment(const int dim_x, const int dim_y)
@@ -177,7 +177,7 @@ double FourDimensionalNormalDistribution::calc_x_cos_y_sin_y_moment(const int di
     }
 
     auto dist = create2DNormalDistribution(dim_x, dim_y);
-    return dist.calc_x_cos_y_sin_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(1, 0, 1, 1);
 }
 
 double FourDimensionalNormalDistribution::calc_xy_sin_y_moment(const int dim_x, const int dim_y)
@@ -187,7 +187,7 @@ double FourDimensionalNormalDistribution::calc_xy_sin_y_moment(const int dim_x, 
     }
 
     auto dist = create2DNormalDistribution(dim_x, dim_y);
-    return dist.calc_x_y_sin_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(1, 1, 0, 1);
 }
 
 double FourDimensionalNormalDistribution::calc_xy_cos_y_moment(const int dim_x, const int dim_y)
@@ -197,7 +197,7 @@ double FourDimensionalNormalDistribution::calc_xy_cos_y_moment(const int dim_x, 
     }
 
     auto dist = create2DNormalDistribution(dim_x, dim_y);
-    return dist.calc_x_y_cos_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(1, 1, 1, 0);
 }
 
 double FourDimensionalNormalDistribution::calc_cross_third_moment(const int dim1, const int dim2, const int moment1, const int moment2)
@@ -212,7 +212,7 @@ double FourDimensionalNormalDistribution::calc_cross_third_moment(const int dim1
 
     auto dist = create2DNormalDistribution(dim1, dim2);
 
-    return dist.calc_third_moment(moment1, moment2);
+    return dist.calc_xy_cos_y_sin_y_moment(moment1, moment2, 0, 0);
 }
 
 double FourDimensionalNormalDistribution::calc_xx_sin_z_moment(const int dim_x, const int dim_z)
@@ -222,7 +222,7 @@ double FourDimensionalNormalDistribution::calc_xx_sin_z_moment(const int dim_x, 
     }
 
     auto dist = create2DNormalDistribution(dim_x, dim_z);
-    return dist.calc_xx_sin_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(2, 0, 0, 1);
 }
 
 double FourDimensionalNormalDistribution::calc_xx_cos_z_moment(const int dim_x, const int dim_z)
@@ -232,7 +232,7 @@ double FourDimensionalNormalDistribution::calc_xx_cos_z_moment(const int dim_x, 
     }
 
     auto dist = create2DNormalDistribution(dim_x, dim_z);
-    return dist.calc_xx_cos_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(2, 0, 1, 0);
 }
 
 double FourDimensionalNormalDistribution::calc_xy_cos_z_moment(const int dim_x, const int dim_y, const int dim_z)
@@ -262,7 +262,7 @@ double FourDimensionalNormalDistribution::calc_xxyy_moment(const int dim_x, cons
     }
 
     auto dist = create2DNormalDistribution(dim_x, dim_y);
-    return dist.calc_xxyy_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(2, 2, 0, 0);
 }
 
 double FourDimensionalNormalDistribution::calc_xx_cos_y_cos_y_moment(const int dim_x, const int dim_y)
@@ -272,7 +272,7 @@ double FourDimensionalNormalDistribution::calc_xx_cos_y_cos_y_moment(const int d
     }
 
     auto dist = create2DNormalDistribution(dim_x, dim_y);
-    return dist.calc_xx_cos_y_cos_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(2, 0, 2, 0);
 }
 
 double FourDimensionalNormalDistribution::calc_xx_sin_y_sin_y_moment(const int dim_x, const int dim_y)
@@ -282,7 +282,7 @@ double FourDimensionalNormalDistribution::calc_xx_sin_y_sin_y_moment(const int d
     }
 
     auto dist = create2DNormalDistribution(dim_x, dim_y);
-    return dist.calc_xx_sin_y_sin_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(2, 0, 0, 2);
 }
 
 double FourDimensionalNormalDistribution::calc_xx_cos_y_sin_y_moment(const int dim_x, const int dim_y)
@@ -292,7 +292,7 @@ double FourDimensionalNormalDistribution::calc_xx_cos_y_sin_y_moment(const int d
     }
 
     auto dist = create2DNormalDistribution(dim_x, dim_y);
-    return dist.calc_xx_cos_y_sin_y_moment();
+    return dist.calc_xy_cos_y_sin_y_moment(2, 0, 1, 1);
 }
 
 double FourDimensionalNormalDistribution::calc_xxy_cos_z_moment(const int dim_x, const int dim_y, const int dim_z)

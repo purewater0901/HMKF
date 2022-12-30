@@ -474,7 +474,7 @@ TEST(ThreeDimensionalNormalDistribution, FOURTH_ORDER)
         covariance << 0.00179042,  -0.00146877,
                      -0.00146877, 0.00201589;
         TwoDimensionalNormalDistribution dist(mean, covariance);
-        const auto exact_moment = dist.calc_xxyy_moment();
+        const auto exact_moment = dist.calc_xy_cos_y_sin_y_moment(2, 2, 0, 0);
         EXPECT_NEAR(exact_moment, 4.8555, epsilon);
     }
 }
