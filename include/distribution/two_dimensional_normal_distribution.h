@@ -42,6 +42,8 @@ public:
     double calc_xx_cos_y_sin_y_moment();
     double calc_xxx_cos_y_moment();
     double calc_xxx_sin_y_moment();
+    double calc_x_cos_y_moment(const int x_moment, const int y_moment);
+    double calc_x_sin_y_moment(const int x_moment, const int y_moment);
 
     Eigen::Vector2d mean_;
     Eigen::Matrix2d covariance_;

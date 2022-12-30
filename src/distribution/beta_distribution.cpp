@@ -1,4 +1,5 @@
 #include "distribution/beta_distribution.h"
+#include <cmath>
 
 constexpr double TOLERANCE = 1.0e-10;
 std::complex<double> hypergeom(const double a, const double b, const double t)
@@ -11,7 +12,7 @@ std::complex<double> hypergeom(const double a, const double b, const double t)
     auto term = alpha * (i*t) / beta;
     auto value = 1.0 + term;
 
-    while ( std::fabs( term ) > TOLERANCE )
+    while ( std::abs( term ) > TOLERANCE )
     {
         alpha += 1.0;
         beta += 1.0;

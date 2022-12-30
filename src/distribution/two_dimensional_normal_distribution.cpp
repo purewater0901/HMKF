@@ -908,3 +908,86 @@ double TwoDimensionalNormalDistribution::calc_xxx_sin_y_moment()
           + std::pow(t12/t22, 3) * l2Pow3_cPow1 * sinl1
           + std::pow(t12/t22, 3) * l2Pow3_sPow1 * cosl1;
 }
+
+double TwoDimensionalNormalDistribution::calc_x_cos_y_moment(const int x_moment, const int y_moment)
+{
+    if(!initialization_) {
+        throw std::runtime_error("Need To Initialize two dimensional normal distribution");
+    }
+
+    if(independent_) {
+        NormalDistribution normal_x(mean_(0), covariance_(0, 0));
+        NormalDistribution normal_y(mean_(1), covariance_(1, 1));
+
+        return normal_x.calc_moment(x_moment) * normal_y.calc_cos_moment(y_moment);
+    }
+
+    const auto y_mean = T_.transpose()*mean_;
+    const double t11 = T_(0, 0);
+    const double t12 = T_(0, 1);
+    const double t21 = T_(1, 0);
+    const double t22 = T_(1, 1);
+
+    const double l1_mean = t21*y_mean(0);
+    const double l1_cov = t21*t21/eigen_values_(0);
+    NormalDistribution l1(l1_mean, l1_cov);
+
+    const double l2_mean = t22*y_mean(1);
+    const double l2_cov = t22*t22/eigen_values_(1);
+    NormalDistribution l2(l2_mean, l2_cov);
+
+    double result = 0.0;
+    for(int k=0; k<=x_moment; ++k) {
+        const double coeff1 = std::pow(t11/t21, k) * nCr(x_moment, k);
+        const double coeff2 = std::pow(t12/t22, x_moment-k);
+        for(int l=0; l<=y_moment; ++l) {
+            const double l1_moment = l1.calc_x_cos_sin_moment(k, l, y_moment-l);
+            const double l2_moment = l2.calc_x_cos_sin_moment(x_moment-k, l, y_moment-l);
+            result += std::pow(-1, y_moment-l) * nCr(y_moment, l) * coeff1 * l1_moment * coeff2 * l2_moment;
+        }
+    }
+
+    return result;
+
+}
+
+double TwoDimensionalNormalDistribution::calc_x_sin_y_moment(const int x_moment, const int y_moment)
+{
+    if(!initialization_) {
+        throw std::runtime_error("Need To Initialize two dimensional normal distribution");
+    }
+
+    if(independent_) {
+        NormalDistribution normal_x(mean_(0), covariance_(0, 0));
+        NormalDistribution normal_y(mean_(1), covariance_(1, 1));
+
+        return normal_x.calc_moment(x_moment) * normal_y.calc_sin_moment(y_moment);
+    }
+
+    const auto y_mean = T_.transpose()*mean_;
+    const double t11 = T_(0, 0);
+    const double t12 = T_(0, 1);
+    const double t21 = T_(1, 0);
+    const double t22 = T_(1, 1);
+
+    const double l1_mean = t21*y_mean(0);
+    const double l1_cov = t21*t21/eigen_values_(0);
+    NormalDistribution l1(l1_mean, l1_cov);
+
+    const double l2_mean = t22*y_mean(1);
+    const double l2_cov = t22*t22/eigen_values_(1);
+    NormalDistribution l2(l2_mean, l2_cov);
+
+    double result = 0.0;
+    for(int k=0; k<=x_moment; ++k) {
+        const double coeff1 = std::pow(t11/t21, k) * nCr(x_moment, k);
+        const double coeff2 = std::pow(t12/t22, x_moment-k);
+        for(int l=0; l<=y_moment; ++l) {
+            const double l1_moment = l1.calc_x_cos_sin_moment(k, y_moment-l, l);
+            const double l2_moment = l2.calc_x_cos_sin_moment(x_moment-k, l, y_moment-l);
+            result += nCr(y_moment, l) * coeff1 * l1_moment * coeff2 * l2_moment;
+        }
+    }
+
+    return result;
+}
