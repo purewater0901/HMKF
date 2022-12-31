@@ -23,13 +23,14 @@ add_library(lib
             src/model/mobile_robot_model.cpp
             src/utilities.cpp
             src/filter/ekf.cpp
-        src/filter/mkf.cpp
+            src/filter/mkf.cpp
+            src/filter/example_hmkf.cpp
             src/filter/simple_vehicle_nkf.cpp
             src/filter/simple_vehicle_ukf.cpp
             src/filter/simple_vehicle_ekf.cpp
-        src/filter/normal_vehicle_ukf.cpp
-        src/filter/kinematic_vehicle_ukf.cpp
-        src/filter/mobile_robot_ukf.cpp
+            src/filter/normal_vehicle_ukf.cpp
+            src/filter/kinematic_vehicle_ukf.cpp
+            src/filter/mobile_robot_ukf.cpp
             src/filter/paper_example_2d_ukf.cpp
             src/filter/paper_example_3d_ukf.cpp
             src/distribution/base_distribution.cpp
@@ -110,3 +111,7 @@ gtest_add_tests(TARGET test_mobile_robot_model)
 add_executable(test_simple_vehicle_model test/model/test_simple_vehicle_model.cpp)
 target_link_libraries(test_simple_vehicle_model GTest::GTest GTest::Main lib)
 gtest_add_tests(TARGET test_simple_vehicle_model)
+
+add_executable(test_example_hmkf test/filter/test_example_hmkf.cpp)
+target_link_libraries(test_example_hmkf GTest::GTest GTest::Main lib)
+gtest_add_tests(TARGET test_example_hmkf)
