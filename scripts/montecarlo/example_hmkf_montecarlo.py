@@ -1,7 +1,7 @@
 import math
 import numpy as np
 
-sample_num = 10000 * 10000
+sample_num = 10000 * 1000
 dt = 0.1
 
 # initial state
@@ -70,6 +70,8 @@ sum_myaw = 0.0
 sum_mr_square = 0.0
 sum_myaw_square = 0.0
 sum_mr_myaw = 0.0
+measurement_r_samples = []
+measurement_yaw_samples = []
 for (x, yaw, mr, myaw) in zip(next_x_samples, next_yaw_samples, mr_samples, mtheta_samples):
     measurement_r = x*x + mr
     measurement_yaw = yaw + myaw
@@ -78,9 +80,30 @@ for (x, yaw, mr, myaw) in zip(next_x_samples, next_yaw_samples, mr_samples, mthe
     sum_mr_square += measurement_r * measurement_r
     sum_myaw_square += measurement_yaw * measurement_yaw
     sum_mr_myaw += measurement_r * measurement_yaw
+    measurement_r_samples.append(measurement_r)
+    measurement_yaw_samples.append(measurement_yaw)
 
 print('E[R]: ', sum_mr/sample_num)
 print('E[YAW]: ', sum_myaw/sample_num)
 print('E[R^2]: ', sum_mr_square/sample_num)
 print('E[YAW^2]: ', sum_myaw_square/sample_num)
 print('E[R*YAW]: ', sum_mr_myaw/sample_num)
+
+sum_x1_mr1 = 0.0
+sum_x1_myaw1 = 0.0
+sum_yaw1_mr1 = 0.0
+sum_yaw1_myaw1 = 0.0
+for (x, yaw, mr, myaw) in zip(next_x_samples, next_yaw_samples, measurement_r_samples, measurement_yaw_samples):
+    sum_x1_mr1 += x * mr
+    sum_x1_myaw1 += x * myaw
+    sum_yaw1_mr1 += yaw * mr
+    sum_yaw1_myaw1 += yaw * myaw
+
+mean_mr = sum_mr/sample_num
+mean_myaw = sum_myaw/sample_num
+mean_x = sum_x / sample_num
+mean_yaw = sum_yaw / sample_num
+print('V[XR]: ', sum_x1_mr1/sample_num - mean_mr * mean_x)
+print('V[X*YAW]: ', sum_x1_myaw1/sample_num - mean_x * mean_myaw)
+print('V[YAW*R]: ', sum_yaw1_mr1/sample_num - mean_yaw * mean_mr)
+print('E[YAW^2]: ', sum_yaw1_myaw1/sample_num - mean_yaw * mean_myaw)
