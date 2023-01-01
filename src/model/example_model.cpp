@@ -87,7 +87,13 @@ Eigen::MatrixXd ExampleVehicleModel::getStateMatrix(const Eigen::VectorXd& x_cur
 
 Eigen::MatrixXd ExampleVehicleModel::getProcessNoiseMatrix(const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map)
 {
-    return Eigen::MatrixXd::Identity(2, 2);
+    const auto wx_dist_ptr = noise_map.at(SYSTEM_NOISE::IDX::WX);
+    const auto wyaw_dist_ptr = noise_map.at(SYSTEM_NOISE::IDX::WYAW);
+
+    Eigen::MatrixXd Q = Eigen::MatrixXd::Zero(2, 2);
+    Q(SYSTEM_NOISE::IDX::WX, SYSTEM_NOISE::IDX::WX) = wx_dist_ptr->calc_variance();
+    Q(SYSTEM_NOISE::IDX::WYAW, SYSTEM_NOISE::IDX::WYAW) = wyaw_dist_ptr->calc_variance();
+    return Q;
 }
 
 Eigen::MatrixXd ExampleVehicleModel::getMeasurementMatrix(const Eigen::VectorXd& x_curr,
@@ -113,9 +119,12 @@ Eigen::MatrixXd ExampleVehicleModel::getMeasurementMatrix(const Eigen::VectorXd&
 Eigen::MatrixXd ExampleVehicleModel::getMeasurementNoiseMatrix(const Eigen::VectorXd& x_curr,
                                                                  const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map)
 {
+    const auto mr_dist_ptr = noise_map.at(MEASUREMENT_NOISE::IDX::WR);
+    const auto myaw_dist_ptr = noise_map.at(MEASUREMENT_NOISE::IDX::WYAW);
+
     Eigen::MatrixXd R = Eigen::MatrixXd::Zero(2, 2);
-    R(MEASUREMENT_NOISE::IDX::WR, MEASUREMENT_NOISE::IDX::WR) = 1.0;
-    R(MEASUREMENT_NOISE::IDX::WYAW, MEASUREMENT_NOISE::IDX::WYAW) = 1.0;
+    R(MEASUREMENT_NOISE::IDX::WR, MEASUREMENT_NOISE::IDX::WR) = mr_dist_ptr->calc_variance();
+    R(MEASUREMENT_NOISE::IDX::WYAW, MEASUREMENT_NOISE::IDX::WYAW) = myaw_dist_ptr->calc_variance();
 
     return R;
 }
