@@ -8,28 +8,13 @@
 #include <gtest/gtest.h>
 
 #include "filter/example_hmkf.h"
+#include "filter/mkf.h"
+#include "filter/ekf.h"
 #include "distribution/uniform_distribution.h"
 #include "distribution/exponential_distribution.h"
+#include "model/example_model.h"
 
 using namespace Example;
-
-Eigen::VectorXd propagate(const Eigen::VectorXd& x_curr, const Eigen::VectorXd& control, const Eigen::VectorXd& noise)
-{
-    Eigen::VectorXd x_next = Eigen::VectorXd::Zero(2);
-    x_next(0) = x_curr(0) + control(0) * std::cos(x_curr(1)) + noise(0);
-    x_next(1) = x_curr(1) + control(1) + noise(1);
-
-    return x_next;
-}
-
-Eigen::VectorXd measure(const Eigen::VectorXd& x_curr, const Eigen::VectorXd& noise)
-{
-    Eigen::VectorXd y = Eigen::VectorXd::Zero(2);
-    y(0) = x_curr(0) * x_curr(0) + noise(0);
-    y(1) = x_curr(1) + noise(1);
-
-    return y;
-}
 
 TEST(ExampleHMKF, Predict)
 {
@@ -91,10 +76,14 @@ TEST(ExampleHMKF, Predict)
 
 TEST(ExampleHMKF, Simulation)
 {
+    std::shared_ptr<BaseModel> example_model = std::make_shared<ExampleVehicleModel>();
+
     ExampleHMKF hmkf;
+    EKF ekf(example_model);
+    MKF mkf(example_model);
 
     const double dt = 0.1;
-    size_t N = 500;
+    size_t N = 3000;
 
     // Initial State
     StateInfo ini_state;
@@ -108,7 +97,7 @@ TEST(ExampleHMKF, Simulation)
     Eigen::VectorXd x_true = ini_state.mean;
 
     // Input
-    Eigen::Vector2d control_inputs = Eigen::Vector2d::Zero();
+    Eigen::VectorXd control_inputs = Eigen::VectorXd::Zero(2);
     control_inputs(0) = 1.0 * dt;
     control_inputs(1) = 0.1 * dt;
 
@@ -121,7 +110,7 @@ TEST(ExampleHMKF, Simulation)
             {SYSTEM_NOISE::IDX::WYAW, std::make_shared<UniformDistribution>(lower_wtheta, upper_wtheta)}};
 
     // measurement noise
-    const double mr_lambda = 0.5;
+    const double mr_lambda = 0.2;
     const double upper_mtheta = (M_PI/8.0);
     const double lower_mtheta = -(M_PI/8.0);
     std::map<int, std::shared_ptr<BaseDistribution>> measurement_noise_map{
@@ -135,27 +124,78 @@ TEST(ExampleHMKF, Simulation)
     std::exponential_distribution<double> mr_dist(mr_lambda);
     std::uniform_real_distribution<double> myaw_dist(lower_mtheta, upper_mtheta);
 
-    StateInfo state_info = ini_state;
+    std::vector<double> hmkf_x_diff_vec;
+    std::vector<double> hmkf_yaw_diff_vec;
+    std::vector<double> mkf_x_diff_vec;
+    std::vector<double> mkf_yaw_diff_vec;
+    std::vector<double> ekf_x_diff_vec;
+    std::vector<double> ekf_yaw_diff_vec;
+    StateInfo hmkf_state_info = ini_state;
+    StateInfo mkf_state_info = ini_state;
+    StateInfo ekf_state_info = ini_state;
     for(size_t i=0; i<N; ++i) {
         // System propagation
-        const Eigen::Vector2d system_noise = {wx_dist(generator), wyaw_dist(generator)};
-        x_true = propagate(x_true, control_inputs, system_noise);
+        Eigen::VectorXd system_noise = Eigen::VectorXd::Zero(2);
+        system_noise(0) = wx_dist(generator);
+        system_noise(1) = wyaw_dist(generator);
+        x_true = example_model->propagate(x_true, control_inputs, system_noise, dt);
 
         // Measurement
         const Eigen::Vector2d measurement_noise = {mr_dist(generator), myaw_dist(generator)};
-        const Eigen::VectorXd y = measure(x_true, measurement_noise);
+        const Eigen::VectorXd y = example_model->measure(x_true, measurement_noise);
 
         // Prediction
-        const auto predicted_moments = hmkf.predict(state_info, control_inputs, dt, system_noise_map);
+        const auto hmkf_predicted = hmkf.predict(hmkf_state_info, control_inputs, dt, system_noise_map);
+        const auto ekf_predicted = ekf.predict(ekf_state_info, control_inputs, dt, system_noise_map);
+        const auto mkf_predicted = mkf.predict(mkf_state_info, control_inputs, dt, system_noise_map);
 
         // Update
-        state_info = hmkf.update(predicted_moments, y, measurement_noise_map);
+        hmkf_state_info = hmkf.update(hmkf_predicted, y, measurement_noise_map);
+        mkf_state_info = mkf.update(mkf_predicted, y, measurement_noise_map);
+        ekf_state_info = ekf.update(ekf_predicted, y, measurement_noise_map);
 
         // Evaluation
-        const double x_diff = std::fabs(state_info.mean(0) - x_true(0));
-        const double yaw_diff = std::fabs(state_info.mean(1) - x_true(1));
-        std::cout << "x_diff: " << x_diff << " [m]" << std::endl;
-        std::cout << "yaw_diff: " << yaw_diff << " [rad]" << std::endl;
-        std::cout << "-------------" << std::endl;
+        // HMKF
+        {
+            const double x_diff = std::fabs(hmkf_state_info.mean(0) - x_true(0));
+            const double yaw_diff = std::fabs(hmkf_state_info.mean(1) - x_true(1));
+            hmkf_x_diff_vec.push_back(x_diff);
+            hmkf_yaw_diff_vec.push_back(yaw_diff);
+            std::cout << "hmkf_x_diff: " << x_diff << " [m]" << std::endl;
+            std::cout << "hmkf_yaw_diff: " << yaw_diff << " [rad]" << std::endl;
+            std::cout << "-------------" << std::endl;
+        }
+        {
+            const double x_diff = std::fabs(mkf_state_info.mean(0) - x_true(0));
+            const double yaw_diff = std::fabs(mkf_state_info.mean(1) - x_true(1));
+            mkf_x_diff_vec.push_back(x_diff);
+            mkf_yaw_diff_vec.push_back(yaw_diff);
+            std::cout << "mkf_x_diff: " << x_diff << " [m]" << std::endl;
+            std::cout << "mkf_yaw_diff: " << yaw_diff << " [rad]" << std::endl;
+            std::cout << "-------------" << std::endl;
+        }
+        {
+            const double x_diff = std::fabs(ekf_state_info.mean(0) - x_true(0));
+            const double yaw_diff = std::fabs(ekf_state_info.mean(1) - x_true(1));
+            ekf_x_diff_vec.push_back(x_diff);
+            ekf_yaw_diff_vec.push_back(yaw_diff);
+            std::cout << "ekf_x_diff: " << x_diff << " [m]" << std::endl;
+            std::cout << "ekf_yaw_diff: " << yaw_diff << " [rad]" << std::endl;
+            std::cout << "-------------" << std::endl;
+        }
     }
+
+    const double sum_hmkf_x_diff = std::accumulate(hmkf_x_diff_vec.begin(), hmkf_x_diff_vec.end(), 0.0);
+    const double sum_hmkf_yaw_diff = std::accumulate(hmkf_yaw_diff_vec.begin(), hmkf_yaw_diff_vec.end(), 0.0);
+    const double sum_mkf_x_diff = std::accumulate(mkf_x_diff_vec.begin(), mkf_x_diff_vec.end(), 0.0);
+    const double sum_mkf_yaw_diff = std::accumulate(mkf_yaw_diff_vec.begin(), mkf_yaw_diff_vec.end(), 0.0);
+    const double sum_ekf_x_diff = std::accumulate(ekf_x_diff_vec.begin(), ekf_x_diff_vec.end(), 0.0);
+    const double sum_ekf_yaw_diff = std::accumulate(ekf_yaw_diff_vec.begin(), ekf_yaw_diff_vec.end(), 0.0);
+
+    std::cout << "HMKF mean x_diff: " << sum_hmkf_x_diff / hmkf_x_diff_vec.size() << std::endl;
+    std::cout << "HMKF mean yaw_diff: " << sum_hmkf_yaw_diff / hmkf_yaw_diff_vec.size() << std::endl;
+    std::cout << "MKF mean x_diff: " << sum_mkf_x_diff / mkf_x_diff_vec.size() << std::endl;
+    std::cout << "MKF mean yaw_diff: " << sum_mkf_yaw_diff / mkf_yaw_diff_vec.size() << std::endl;
+    std::cout << "EKF mean x_diff: " << sum_ekf_x_diff / ekf_x_diff_vec.size() << std::endl;
+    std::cout << "EKF mean yaw_diff: " << sum_ekf_yaw_diff / ekf_yaw_diff_vec.size() << std::endl;
 }

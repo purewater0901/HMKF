@@ -3,7 +3,7 @@
 
 using namespace Example;
 
-Example::PredictedMoments ExampleHMKF::predict(const Example::StateInfo &state,
+Example::PredictedMoments ExampleHMKF::predict(const StateInfo &state,
                                                const Eigen::Vector2d &control_inputs,
                                                const double dt,
                                                const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map)
