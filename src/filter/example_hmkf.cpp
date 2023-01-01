@@ -165,7 +165,7 @@ Example::MeasurementMoments ExampleHMKF::getMeasurementMoments(const Example::Pr
     meas_moments.yawPow1 = yawPow1 + wyawPow1;
     meas_moments.rPow2 = xPow4 + 2.0*xPow2*wrPow1 + wrPow2;
     meas_moments.yawPow2 = yawPow2 + +2.0*yawPow1*wyawPow1+ wyawPow2;
-    meas_moments.rPow1_yawPow1 = xPow2_yawPow1 + xPow2*wyawPow1 + wrPow1*wyawPow1 + wrPow1*wyawPow1;
+    meas_moments.rPow1_yawPow1 = xPow2_yawPow1 + xPow2*wyawPow1 + wrPow1*yawPow1 + wrPow1*wyawPow1;
 
     return meas_moments;
 }

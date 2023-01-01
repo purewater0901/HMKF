@@ -47,6 +47,7 @@ TEST(ExampleHMKF, Predict)
     std::cout << predicted_moments.yawPow1 << std::endl;
     std::cout << "E[X^2]: " << predicted_moments.xPow2 << std::endl;
     std::cout << predicted_moments.yawPow2 << std::endl;
+    std::cout << "E[X^2Yaw]: " << predicted_moments.xPow2_yawPow1 << std::endl;
 
     // Update
     // measurement noise
@@ -61,9 +62,11 @@ TEST(ExampleHMKF, Predict)
     measured_values(MEASUREMENT::IDX::YAW) = predicted_moments.yawPow1;
 
     const auto measurement_moments = hmkf.getMeasurementMoments(predicted_moments, measurement_noise_map);
+    const auto state_measurement_matrix = hmkf.getStateMeasurementMatrix(predicted_moments, measurement_moments, measurement_noise_map);
     std::cout << "E[R]: " << measurement_moments.rPow1 << std::endl;
     std::cout << "E[R^2]: " << measurement_moments.rPow2 << std::endl;
     std::cout << "E[YAW]: " << measurement_moments.yawPow1 << std::endl;
     std::cout << "E[YAW^2]: " << measurement_moments.yawPow2 << std::endl;
     std::cout << "E[R*YAW]: " << measurement_moments.rPow1_yawPow1 << std::endl;
+    std::cout << state_measurement_matrix << std::endl;
 }
