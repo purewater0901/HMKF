@@ -83,6 +83,97 @@ StateInfo ExampleHMKF::update(const PredictedMoments & predicted_moments,
                               const Eigen::VectorXd & observed_values,
                               const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map)
 {
+    // predicted moments
+    const double& xPow1 = predicted_moments.xPow1;
+    const double& yawPow1 = predicted_moments.yawPow1;
+    const double& xPow2 = predicted_moments.xPow2;
+    const double& yawPow2 = predicted_moments.yawPow2;
+    const double& xPow1_yawPow1 = predicted_moments.xPow1_yawPow1;
+    const double& xPow3 = predicted_moments.xPow3;
+    const double& xPow2_yawPow1 = predicted_moments.xPow2_yawPow1;
+    const double& xPow4 = predicted_moments.xPow4;
+
+    // Predicted mean and covariance
+    Eigen::Vector2d predicted_mean = Eigen::Vector2d::Zero();
+    Eigen::Matrix2d predicted_cov = Eigen::Matrix2d::Zero();
+    predicted_mean(STATE::IDX::X) = xPow1;
+    predicted_mean(STATE::IDX::YAW) = yawPow1;
+    predicted_cov(STATE::IDX::X, STATE::IDX::X) = xPow2 - xPow1*xPow1;
+    predicted_cov(STATE::IDX::YAW, STATE::IDX::YAW) = yawPow2 - yawPow1*yawPow1;
+    predicted_cov(STATE::IDX::X, STATE::IDX::YAW) = xPow1_yawPow1 - xPow1*yawPow1;
+    predicted_cov(STATE::IDX::YAW, STATE::IDX::X) = predicted_cov(STATE::IDX::X, STATE::IDX::YAW);
+
+    // Measurement mean and covariance
+    Eigen::Vector2d measurement_mean = Eigen::Vector2d::Zero();
+    Eigen::Matrix2d measurement_cov = Eigen::Matrix2d::Zero();
+
+    const auto meas_moments = getMeasurementMoments(predicted_moments, noise_map);
+
+    measurement_mean(MEASUREMENT::IDX::R) = meas_moments.rPow1;
+    measurement_mean(MEASUREMENT::IDX::YAW) = meas_moments.yawPow1;
+    measurement_cov(MEASUREMENT::IDX::R, MEASUREMENT::IDX::R) = meas_moments.rPow2 - meas_moments.rPow1*meas_moments.rPow1;
+    measurement_cov(MEASUREMENT::IDX::YAW, MEASUREMENT::IDX::YAW) = meas_moments.yawPow2 - meas_moments.yawPow1*meas_moments.yawPow1;
+    measurement_cov(MEASUREMENT::IDX::R, MEASUREMENT::IDX::YAW) = meas_moments.rPow1_yawPow1 - meas_moments.rPow1*meas_moments.yawPow1;
+    measurement_cov(MEASUREMENT::IDX::YAW, MEASUREMENT::IDX::R) = measurement_cov(MEASUREMENT::IDX::R, MEASUREMENT::IDX::YAW);
+
+    const auto state_observation_cov = getStateMeasurementMatrix(predicted_moments, meas_moments, noise_map);
+
+    // Kalman Gain
+    const auto K = state_observation_cov * measurement_cov.inverse();
+
+    StateInfo updated_info;
+    updated_info.mean = predicted_mean + K * (observed_values - measurement_mean);
+    updated_info.covariance = predicted_cov - K * measurement_cov * K.transpose();
+
+    return updated_info;
+}
+
+Example::MeasurementMoments ExampleHMKF::getMeasurementMoments(const Example::PredictedMoments & predicted_moments,
+                                                               const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map)
+{
+    const auto wr_dist_ptr = noise_map.at(MEASUREMENT_NOISE::IDX::WR);
+    const auto wyaw_dist_ptr = noise_map.at(MEASUREMENT_NOISE::IDX::WYAW);
+
+    // Measurement noise
+    const double wrPow1 = wr_dist_ptr->calc_moment(1);
+    const double wyawPow1 = wyaw_dist_ptr->calc_moment(1);
+    const double wrPow2 = wr_dist_ptr->calc_moment(2);
+    const double wyawPow2 = wyaw_dist_ptr->calc_moment(2);
+
+    // predicted moments
+    const double& xPow1 = predicted_moments.xPow1;
+    const double& yawPow1 = predicted_moments.yawPow1;
+    const double& xPow2 = predicted_moments.xPow2;
+    const double& yawPow2 = predicted_moments.yawPow2;
+    const double& xPow1_yawPow1 = predicted_moments.xPow1_yawPow1;
+    const double& xPow3 = predicted_moments.xPow3;
+    const double& xPow2_yawPow1 = predicted_moments.xPow2_yawPow1;
+    const double& xPow4 = predicted_moments.xPow4;
+
+    // Predicted mean and covariance
+    Eigen::Vector2d predicted_mean = Eigen::Vector2d::Zero();
+    Eigen::Matrix2d predicted_cov = Eigen::Matrix2d::Zero();
+    predicted_mean(STATE::IDX::X) = xPow1;
+    predicted_mean(STATE::IDX::YAW) = yawPow1;
+    predicted_cov(STATE::IDX::X, STATE::IDX::X) = xPow2 - xPow1*xPow1;
+    predicted_cov(STATE::IDX::YAW, STATE::IDX::YAW) = yawPow2 - yawPow1*yawPow1;
+    predicted_cov(STATE::IDX::X, STATE::IDX::YAW) = xPow1_yawPow1 - xPow1*yawPow1;
+    predicted_cov(STATE::IDX::YAW, STATE::IDX::X) = predicted_cov(STATE::IDX::X, STATE::IDX::YAW);
+
+    MeasurementMoments meas_moments;
+    meas_moments.rPow1 = xPow2 + wrPow1;
+    meas_moments.yawPow1 = yawPow1 + wyawPow1;
+    meas_moments.rPow2 = xPow4 + 2.0*xPow2*wrPow1 + wrPow2;
+    meas_moments.yawPow2 = yawPow2 + +2.0*yawPow1*wyawPow1+ wyawPow2;
+    meas_moments.rPow1_yawPow1 = xPow2_yawPow1 + xPow2*wyawPow1 + wrPow1*wyawPow1 + wrPow1*wyawPow1;
+
+    return meas_moments;
+}
+
+Eigen::MatrixXd ExampleHMKF::getStateMeasurementMatrix(const Example::PredictedMoments& predicted_moments,
+                                                       const Example::MeasurementMoments & measurement_moments,
+                                                       const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map)
+{
     const auto wr_dist_ptr = noise_map.at(MEASUREMENT_NOISE::IDX::WR);
     const auto wyaw_dist_ptr = noise_map.at(MEASUREMENT_NOISE::IDX::WYAW);
 
@@ -99,48 +190,18 @@ StateInfo ExampleHMKF::update(const PredictedMoments & predicted_moments,
     // Measurement noise
     const double wrPow1 = wr_dist_ptr->calc_moment(1);
     const double wyawPow1 = wyaw_dist_ptr->calc_moment(1);
-    const double wrPow2 = wr_dist_ptr->calc_moment(2);
-    const double wyawPow2 = wyaw_dist_ptr->calc_moment(2);
 
-    // Predicted mean and covariance
-    Eigen::Vector2d predicted_mean = Eigen::Vector2d::Zero();
-    Eigen::Matrix2d predicted_cov = Eigen::Matrix2d::Zero();
-    predicted_mean(STATE::IDX::X) = xPow1;
-    predicted_mean(STATE::IDX::YAW) = yawPow1;
-    predicted_cov(STATE::IDX::X, STATE::IDX::X) = xPow2 - xPow1*xPow1;
-    predicted_cov(STATE::IDX::YAW, STATE::IDX::YAW) = yawPow2 - yawPow1*yawPow1;
-    predicted_cov(STATE::IDX::X, STATE::IDX::YAW) = xPow1_yawPow1 - xPow1*yawPow1;
-    predicted_cov(STATE::IDX::YAW, STATE::IDX::X) = predicted_cov(STATE::IDX::X, STATE::IDX::YAW);
+    // measurement moments
+    const double& mrPow1 = measurement_moments.rPow1;
+    const double& myawPow1 = measurement_moments.yawPow1;
+    const double& mrPow2 = measurement_moments.rPow2;
+    const double& myawPow2 = measurement_moments.yawPow2;
 
-    // Measurement mean and covariance
-    Eigen::Vector2d measurement_mean = Eigen::Vector2d::Zero();
-    Eigen::Matrix2d measurement_cov = Eigen::Matrix2d::Zero();
-
-    const double mrPow1 = xPow2 + wrPow1;
-    const double myawPow1 = yawPow1 + wyawPow1;
-    const double mrPow2 = xPow4 + 2.0*xPow2*wrPow1 + wrPow2;
-    const double myawPow2 = yawPow2 + +2.0*yawPow1*wyawPow1+ wyawPow2;
-    const double mrPow1_yawPow1 = xPow2_yawPow1 + xPow2*wyawPow1 + wrPow1*wyawPow1 + wrPow1*wyawPow1;
-
-    measurement_mean(MEASUREMENT::IDX::R) = mrPow1;
-    measurement_mean(MEASUREMENT::IDX::YAW) = myawPow1;
-    measurement_cov(MEASUREMENT::IDX::R, MEASUREMENT::IDX::R) = mrPow2 - mrPow1*mrPow1;
-    measurement_cov(MEASUREMENT::IDX::YAW, MEASUREMENT::IDX::YAW) = myawPow2 - myawPow1*myawPow1;
-    measurement_cov(MEASUREMENT::IDX::R, MEASUREMENT::IDX::YAW) = mrPow1_yawPow1 - mrPow1*myawPow1;
-    measurement_cov(MEASUREMENT::IDX::YAW, MEASUREMENT::IDX::R) = measurement_cov(MEASUREMENT::IDX::R, MEASUREMENT::IDX::YAW);
-
-    Eigen::Matrix2d state_observation_cov = Eigen::Matrix2d::Zero(); // sigma = E[XY^T] - E[X]E[Y]^T
+    Eigen::MatrixXd state_observation_cov = Eigen::MatrixXd::Zero(2, 2); // sigma = E[XY^T] - E[X]E[Y]^T
     state_observation_cov(STATE::IDX::X, MEASUREMENT::IDX::R) = xPow3 + xPow1*wrPow1 - xPow1*mrPow1;
     state_observation_cov(STATE::IDX::X, MEASUREMENT::IDX::YAW) = xPow1_yawPow1 + xPow1*wyawPow1 - xPow1*myawPow1;
     state_observation_cov(STATE::IDX::YAW, MEASUREMENT::IDX::R) = xPow2_yawPow1 + yawPow1*wrPow1 - yawPow1*mrPow1;
     state_observation_cov(STATE::IDX::YAW, MEASUREMENT::IDX::YAW) = yawPow2 + yawPow1*wyawPow1 - yawPow1*myawPow1;
 
-    // Kalman Gain
-    const auto K = state_observation_cov * measurement_cov.inverse();
-
-    StateInfo updated_info;
-    updated_info.mean = predicted_mean + K * (observed_values - measurement_mean);
-    updated_info.covariance = predicted_cov - K * measurement_cov * K.transpose();
-
-    return updated_info;
+    return state_observation_cov;
 }

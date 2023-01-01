@@ -45,4 +45,25 @@ TEST(ExampleHMKF, Predict)
 
     std::cout << predicted_moments.xPow1 << std::endl;
     std::cout << predicted_moments.yawPow1 << std::endl;
+    std::cout << "E[X^2]: " << predicted_moments.xPow2 << std::endl;
+    std::cout << predicted_moments.yawPow2 << std::endl;
+
+    // Update
+    // measurement noise
+    const double mr_lambda = 0.5;
+    const double upper_mtheta = (M_PI/20.0);
+    const double lower_mtheta = -(M_PI/20.0);
+    std::map<int, std::shared_ptr<BaseDistribution>> measurement_noise_map{
+            {MEASUREMENT_NOISE::IDX::WR, std::make_shared<ExponentialDistribution>(mr_lambda)},
+            {MEASUREMENT_NOISE::IDX::WYAW, std::make_shared<UniformDistribution>(lower_mtheta, upper_mtheta)}};
+    Eigen::VectorXd measured_values = Eigen::Vector2d::Zero();
+    measured_values(MEASUREMENT::IDX::R) = predicted_moments.xPow1*predicted_moments.xPow1;
+    measured_values(MEASUREMENT::IDX::YAW) = predicted_moments.yawPow1;
+
+    const auto measurement_moments = hmkf.getMeasurementMoments(predicted_moments, measurement_noise_map);
+    std::cout << "E[R]: " << measurement_moments.rPow1 << std::endl;
+    std::cout << "E[R^2]: " << measurement_moments.rPow2 << std::endl;
+    std::cout << "E[YAW]: " << measurement_moments.yawPow1 << std::endl;
+    std::cout << "E[YAW^2]: " << measurement_moments.yawPow2 << std::endl;
+    std::cout << "E[R*YAW]: " << measurement_moments.rPow1_yawPow1 << std::endl;
 }
