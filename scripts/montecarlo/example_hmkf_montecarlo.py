@@ -1,7 +1,7 @@
 import math
 import numpy as np
 
-sample_num = 10000 * 1000
+sample_num = 10000 * 10000
 dt = 0.1
 
 # initial state
