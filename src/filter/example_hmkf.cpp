@@ -150,16 +150,6 @@ Example::MeasurementMoments ExampleHMKF::getMeasurementMoments(const Example::Pr
     const double& xPow2_yawPow1 = predicted_moments.xPow2_yawPow1;
     const double& xPow4 = predicted_moments.xPow4;
 
-    // Predicted mean and covariance
-    Eigen::Vector2d predicted_mean = Eigen::Vector2d::Zero();
-    Eigen::Matrix2d predicted_cov = Eigen::Matrix2d::Zero();
-    predicted_mean(STATE::IDX::X) = xPow1;
-    predicted_mean(STATE::IDX::YAW) = yawPow1;
-    predicted_cov(STATE::IDX::X, STATE::IDX::X) = xPow2 - xPow1*xPow1;
-    predicted_cov(STATE::IDX::YAW, STATE::IDX::YAW) = yawPow2 - yawPow1*yawPow1;
-    predicted_cov(STATE::IDX::X, STATE::IDX::YAW) = xPow1_yawPow1 - xPow1*yawPow1;
-    predicted_cov(STATE::IDX::YAW, STATE::IDX::X) = predicted_cov(STATE::IDX::X, STATE::IDX::YAW);
-
     MeasurementMoments meas_moments;
     meas_moments.rPow1 = xPow2 + wrPow1;
     meas_moments.yawPow1 = yawPow1 + wyawPow1;

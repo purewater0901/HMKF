@@ -6,12 +6,18 @@
 #include <memory>
 #include <cmath>
 #include <gtest/gtest.h>
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
+#include <boost/random/beta_distribution.hpp>
+#include <boost/random/mersenne_twister.hpp>
 
 #include "filter/example_hmkf.h"
 #include "filter/mkf.h"
 #include "filter/ekf.h"
 #include "distribution/uniform_distribution.h"
 #include "distribution/exponential_distribution.h"
+#include "distribution/beta_distribution.h"
+#include "distribution/normal_distribution.h"
 #include "model/example_model.h"
 
 using namespace Example;
@@ -92,7 +98,9 @@ TEST(ExampleHMKF, Simulation)
     ini_state.mean(1) = M_PI/2.0;
     ini_state.covariance = Eigen::MatrixXd::Zero(2, 2);
     ini_state.covariance(0, 0) = 1.0*1.0; // V[x]
-    ini_state.covariance(1, 1) = (M_PI/30)*(M_PI/30); // V[yaw]
+    ini_state.covariance(1, 1) = (M_PI/10)*(M_PI/10); // V[yaw]
+    ini_state.covariance(0, 1) = 0.1*0.1; // V[x*yaw]
+    ini_state.covariance(1, 0) = ini_state.covariance(0, 1); // V[x*yaw]
 
     Eigen::VectorXd x_true = ini_state.mean;
 
@@ -103,26 +111,28 @@ TEST(ExampleHMKF, Simulation)
 
     // System Noise
     const double wx_lambda = 0.1;
-    const double upper_wtheta = (M_PI/10.0);
-    const double lower_wtheta = -(M_PI/10.0);
+    const double wyaw_alpha = 5.0;
+    const double wyaw_beta = 1.0;
     std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map{
             {SYSTEM_NOISE::IDX::WX, std::make_shared<ExponentialDistribution>(wx_lambda)},
-            {SYSTEM_NOISE::IDX::WYAW, std::make_shared<UniformDistribution>(lower_wtheta, upper_wtheta)}};
+            {SYSTEM_NOISE::IDX::WYAW, std::make_shared<BetaDistribution>(wyaw_alpha, wyaw_beta)}};
 
     // measurement noise
-    const double mr_lambda = 0.2;
-    const double upper_mtheta = (M_PI/8.0);
-    const double lower_mtheta = -(M_PI/8.0);
+    const double upper_mr_lambda = 300;
+    const double lower_mr_lambda = 0.0;
+    const double mean_mtheta = M_PI / 8.0;
+    const double cov_mtheta =  std::pow(M_PI/6.0, 2);
     std::map<int, std::shared_ptr<BaseDistribution>> measurement_noise_map{
-            {MEASUREMENT_NOISE::IDX::WR, std::make_shared<ExponentialDistribution>(mr_lambda)},
-            {MEASUREMENT_NOISE::IDX::WYAW, std::make_shared<UniformDistribution>(lower_mtheta, upper_mtheta)}};
+            {MEASUREMENT_NOISE::IDX::WR, std::make_shared<UniformDistribution>(lower_mr_lambda, upper_mr_lambda)},
+            {MEASUREMENT_NOISE::IDX::WYAW, std::make_shared<NormalDistribution>(mean_mtheta, cov_mtheta)}};
 
     // Random Variable Generator
     std::default_random_engine generator;
     std::exponential_distribution<double> wx_dist(wx_lambda);
-    std::uniform_real_distribution<double> wyaw_dist(lower_wtheta, upper_wtheta);
-    std::exponential_distribution<double> mr_dist(mr_lambda);
-    std::uniform_real_distribution<double> myaw_dist(lower_mtheta, upper_mtheta);
+    boost::random::mt19937 engine(1234567890);
+    boost::function<double()> wyaw_dist = boost::bind(boost::random::beta_distribution<>(wyaw_alpha, wyaw_beta), engine);
+    std::uniform_real_distribution<double> mr_dist(lower_mr_lambda, upper_mr_lambda);
+    std::normal_distribution<double> myaw_dist(mean_mtheta, std::sqrt(cov_mtheta));
 
     std::vector<double> hmkf_x_diff_vec;
     std::vector<double> hmkf_yaw_diff_vec;
@@ -137,7 +147,7 @@ TEST(ExampleHMKF, Simulation)
         // System propagation
         Eigen::VectorXd system_noise = Eigen::VectorXd::Zero(2);
         system_noise(0) = wx_dist(generator);
-        system_noise(1) = wyaw_dist(generator);
+        system_noise(1) = wyaw_dist();
         x_true = example_model->propagate(x_true, control_inputs, system_noise, dt);
 
         // Measurement

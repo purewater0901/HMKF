@@ -230,7 +230,8 @@ StateInfo ExampleVehicleModel::getMeasurementMoments(const StateInfo &state_info
     measurement_state.covariance(MEASUREMENT::IDX::R, MEASUREMENT::IDX::YAW) =
             measurement_rPow1_yawPow1 - measurement_rPow1 * measurement_yawPow1;
 
-    measurement_state.covariance(MEASUREMENT::IDX::YAW, MEASUREMENT::IDX::R) = measurement_state.covariance(MEASUREMENT::IDX::R, MEASUREMENT::IDX::YAW);
+    measurement_state.covariance(MEASUREMENT::IDX::YAW, MEASUREMENT::IDX::R) =
+            measurement_state.covariance(MEASUREMENT::IDX::R, MEASUREMENT::IDX::YAW);
 
     return measurement_state;
 }
