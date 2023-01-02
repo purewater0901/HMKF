@@ -120,7 +120,7 @@ SimpleVehicleModel::StateMoments SimpleVehicleModel::propagateStateMoments(const
     return state_moments;
 }
 
-SimpleVehicleModel::ObservationMoments SimpleVehicleModel::getObservationMoments(const ReducedStateMoments & state_moments,
+SimpleVehicleModel::ObservationMoments SimpleVehicleModel::getObservationMoments(const HighOrderMoments & state_moments,
                                                                                  const ObservationNoiseMoments & observation_noise_moments,
                                                                                  const Eigen::Vector2d& landmark)
 {

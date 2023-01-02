@@ -74,24 +74,45 @@ public:
         double sPow1_yawPow1{0.0};
     };
 
-    struct ReducedStateMoments {
+    struct HighOrderMoments{
+        double xPow1{0.0};
+        double yPow1{0.0};
+        double yawPow1{0.0};
         double cPow1{0.0};
         double sPow1{0.0};
 
+        double xPow2{0.0};
+        double yPow2{0.0};
+        double yawPow2{0.0};
         double cPow2{0.0};
         double sPow2{0.0};
+        double xPow1_yPow1{0.0};
+        double xPow1_yawPow1{0.0};
+        double yPow1_yawPow1{0.0};
         double xPow1_cPow1{0.0};
         double yPow1_cPow1{0.0};
         double xPow1_sPow1{0.0};
         double yPow1_sPow1{0.0};
         double cPow1_sPow1{0.0};
+        double yawPow1_cPow1{0.0};
+        double yawPow1_sPow1{0.0};
 
         double xPow1_cPow2{0.0};
         double yPow1_cPow2{0.0};
         double xPow1_sPow2{0.0};
         double yPow1_sPow2{0.0};
+        double xPow2_cPow1{0.0};
+        double xPow2_sPow1{0.0};
+        double yPow2_cPow1{0.0};
+        double yPow2_sPow1{0.0};
+        double xPow1_yPow1_cPow1{0.0};
+        double xPow1_yPow1_sPow1{0.0};
         double xPow1_cPow1_sPow1{0.0};
         double yPow1_cPow1_sPow1{0.0};
+        double xPow1_yawPow1_cPow1{0.0};
+        double xPow1_yawPow1_sPow1{0.0};
+        double yPow1_yawPow1_cPow1{0.0};
+        double yPow1_yawPow1_sPow1{0.0};
 
         double xPow2_cPow2{0.0};
         double yPow2_cPow2{0.0};
@@ -153,7 +174,7 @@ public:
                                        const SystemNoiseMoments& system_noise_moments,
                                        const Controls& control_inputs);
 
-    ObservationMoments getObservationMoments(const ReducedStateMoments & state_moments,
+    ObservationMoments getObservationMoments(const HighOrderMoments& state_moments,
                                              const ObservationNoiseMoments & observation_noise_moments,
                                              const Eigen::Vector2d& landmark);
 };

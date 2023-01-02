@@ -93,34 +93,34 @@ StateInfo SimpleVehicleNKF::update(const StateInfo & state_info,
     const auto predicted_cov = state_info.covariance;
 
     ThreeDimensionalNormalDistribution dist(predicted_mean, predicted_cov);
-    SimpleVehicleModel::ReducedStateMoments reduced_moments;
-    reduced_moments.cPow1= dist.calc_cos_moment(STATE::IDX::YAW, 1);
-    reduced_moments.sPow1= dist.calc_sin_moment(STATE::IDX::YAW, 1);
+    SimpleVehicleModel::HighOrderMoments high_order_moments;
+    high_order_moments.cPow1= dist.calc_cos_moment(STATE::IDX::YAW, 1);
+    high_order_moments.sPow1= dist.calc_sin_moment(STATE::IDX::YAW, 1);
 
-    reduced_moments.cPow2= dist.calc_cos_moment(STATE::IDX::YAW, 2);
-    reduced_moments.sPow2= dist.calc_sin_moment(STATE::IDX::YAW, 2);
-    reduced_moments.xPow1_cPow1 = dist.calc_x_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    reduced_moments.yPow1_cPow1 = dist.calc_x_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    reduced_moments.xPow1_sPow1 = dist.calc_x_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    reduced_moments.yPow1_sPow1 = dist.calc_x_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    reduced_moments.cPow1_sPow1 = dist.calc_cos_sin_moment(STATE::IDX::YAW, 1, 1);
+    high_order_moments.cPow2= dist.calc_cos_moment(STATE::IDX::YAW, 2);
+    high_order_moments.sPow2= dist.calc_sin_moment(STATE::IDX::YAW, 2);
+    high_order_moments.xPow1_cPow1 = dist.calc_x_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    high_order_moments.yPow1_cPow1 = dist.calc_x_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    high_order_moments.xPow1_sPow1 = dist.calc_x_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    high_order_moments.yPow1_sPow1 = dist.calc_x_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    high_order_moments.cPow1_sPow1 = dist.calc_cos_sin_moment(STATE::IDX::YAW, 1, 1);
 
-    reduced_moments.xPow1_cPow2 = dist.calc_x_cos_z_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    reduced_moments.yPow1_cPow2 = dist.calc_x_cos_z_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    reduced_moments.xPow1_sPow2 = dist.calc_x_sin_z_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    reduced_moments.yPow1_sPow2 = dist.calc_x_sin_z_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    reduced_moments.xPow1_cPow1_sPow1 = dist.calc_x_cos_z_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    reduced_moments.yPow1_cPow1_sPow1 = dist.calc_x_cos_z_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    high_order_moments.xPow1_cPow2 = dist.calc_x_cos_z_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    high_order_moments.yPow1_cPow2 = dist.calc_x_cos_z_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    high_order_moments.xPow1_sPow2 = dist.calc_x_sin_z_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    high_order_moments.yPow1_sPow2 = dist.calc_x_sin_z_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    high_order_moments.xPow1_cPow1_sPow1 = dist.calc_x_cos_z_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    high_order_moments.yPow1_cPow1_sPow1 = dist.calc_x_cos_z_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
 
-    reduced_moments.xPow2_cPow2 = dist.calc_xx_cos_z_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    reduced_moments.yPow2_cPow2 = dist.calc_xx_cos_z_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    reduced_moments.xPow2_sPow2 = dist.calc_xx_sin_z_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    reduced_moments.yPow2_sPow2 = dist.calc_xx_sin_z_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    reduced_moments.xPow2_cPow1_sPow1 = dist.calc_xx_cos_z_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    reduced_moments.yPow2_cPow1_sPow1 = dist.calc_xx_cos_z_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    reduced_moments.xPow1_yPow1_cPow2 = dist.calc_xy_cos_z_cos_z_moment();
-    reduced_moments.xPow1_yPow1_sPow2 = dist.calc_xy_sin_z_sin_z_moment();
-    reduced_moments.xPow1_yPow1_cPow1_sPow1 = dist.calc_xy_cos_z_sin_z_moment();
+    high_order_moments.xPow2_cPow2 = dist.calc_xx_cos_z_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    high_order_moments.yPow2_cPow2 = dist.calc_xx_cos_z_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    high_order_moments.xPow2_sPow2 = dist.calc_xx_sin_z_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    high_order_moments.yPow2_sPow2 = dist.calc_xx_sin_z_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    high_order_moments.xPow2_cPow1_sPow1 = dist.calc_xx_cos_z_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    high_order_moments.yPow2_cPow1_sPow1 = dist.calc_xx_cos_z_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    high_order_moments.xPow1_yPow1_cPow2 = dist.calc_xy_cos_z_cos_z_moment();
+    high_order_moments.xPow1_yPow1_sPow2 = dist.calc_xy_sin_z_sin_z_moment();
+    high_order_moments.xPow1_yPow1_cPow1_sPow1 = dist.calc_xy_cos_z_sin_z_moment();
 
 
     // Step2. Create Observation Noise
@@ -136,7 +136,7 @@ StateInfo SimpleVehicleNKF::update(const StateInfo & state_info,
     observation_noise.cwaPow1_swaPow1 = wa_dist_ptr->calc_cos_sin_moment(1, 1);
 
     // Step3. Get Observation Moments
-    const auto observation_moments = vehicle_model_.getObservationMoments(reduced_moments, observation_noise, landmark);
+    const auto observation_moments = vehicle_model_.getObservationMoments(high_order_moments, observation_noise, landmark);
 
     StateInfo observed_info;
     observed_info.mean = Eigen::VectorXd::Zero(2);

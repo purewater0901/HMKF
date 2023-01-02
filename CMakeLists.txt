@@ -29,6 +29,7 @@ add_library(lib
             src/filter/simple_vehicle_nkf.cpp
             src/filter/simple_vehicle_ukf.cpp
             src/filter/simple_vehicle_ekf.cpp
+            src/filter/simple_vehicle_hmkf.cpp
             src/filter/normal_vehicle_ukf.cpp
             src/filter/kinematic_vehicle_ukf.cpp
             src/filter/mobile_robot_ukf.cpp
