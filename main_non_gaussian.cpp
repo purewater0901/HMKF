@@ -193,7 +193,10 @@ int main() {
     const auto measurement_noise_map = scenario.observation_noise_map_;
 
     StateInfo nkf_state_info;
-    nkf_state_info.mean = {ground_truth_x.front(), ground_truth_y.front(), ground_truth_yaw.front()};
+    nkf_state_info.mean = Eigen::VectorXd::Zero(3);
+    nkf_state_info.mean(0) = ground_truth_x.front();
+    nkf_state_info.mean(1) = ground_truth_y.front();
+    nkf_state_info.mean(2) = ground_truth_yaw.front();
     nkf_state_info.covariance = scenario.ini_cov_;
     auto ekf_state_info = nkf_state_info;
     auto ukf_state_info = nkf_state_info;

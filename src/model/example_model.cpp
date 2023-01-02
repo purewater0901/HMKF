@@ -262,6 +262,7 @@ Eigen::MatrixXd ExampleVehicleModel::getStateMeasurementMatrix(const StateInfo& 
     const double& mrPow1 = measurement_info.mean(MEASUREMENT::IDX::R);
     const double& myawPow1 = measurement_info.mean(MEASUREMENT::IDX::YAW);
 
+    // x*(x*x + w_r) = x**3 + x*w_r
     Eigen::MatrixXd state_observation_cov = Eigen::MatrixXd::Zero(2, 2); // sigma = E[XY^T] - E[X]E[Y]^T
     state_observation_cov(STATE::IDX::X, MEASUREMENT::IDX::R) = xPow3 + xPow1*wrPow1 - xPow1*mrPow1;
     state_observation_cov(STATE::IDX::X, MEASUREMENT::IDX::YAW) = xPow1_yawPow1 + xPow1*wyawPow1 - xPow1*myawPow1;

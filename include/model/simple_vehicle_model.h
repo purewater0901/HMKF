@@ -6,18 +6,10 @@
 #include <vector>
 #include <Eigen/Eigen>
 
+#include "model/base_model.h"
+
 namespace SimpleVehicle
 {
-    struct StateInfo {
-        Eigen::Vector3d mean;
-        Eigen::Matrix3d covariance;
-    };
-
-    struct ObservedInfo {
-        Eigen::Vector2d mean;
-        Eigen::Matrix2d covariance;
-    };
-
     namespace STATE {
         enum IDX {
             X = 0,

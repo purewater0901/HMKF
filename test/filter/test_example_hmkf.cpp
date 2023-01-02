@@ -110,7 +110,7 @@ TEST(ExampleHMKF, Simulation)
     control_inputs(1) = 0.1 * dt;
 
     // System Noise
-    const double wx_lambda = 0.1;
+    const double wx_lambda = 0.2;
     const double wyaw_alpha = 5.0;
     const double wyaw_beta = 1.0;
     std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map{

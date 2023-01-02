@@ -66,6 +66,8 @@ StateInfo SimpleVehicleNKF::predict(const StateInfo & state_info,
     const auto predicted_moment = vehicle_model_.propagateStateMoments(moment, system_noise_moments, controls);
 
     StateInfo predicted_info;
+    predicted_info.mean = Eigen::VectorXd::Zero(3);
+    predicted_info.covariance = Eigen::MatrixXd::Zero(3, 3);
     predicted_info.mean(STATE::IDX::X) = predicted_moment.xPow1;
     predicted_info.mean(STATE::IDX::Y) = predicted_moment.yPow1;
     predicted_info.mean(STATE::IDX::YAW)= predicted_moment.yawPow1;
@@ -136,7 +138,9 @@ StateInfo SimpleVehicleNKF::update(const StateInfo & state_info,
     // Step3. Get Observation Moments
     const auto observation_moments = vehicle_model_.getObservationMoments(reduced_moments, observation_noise, landmark);
 
-    ObservedInfo observed_info;
+    StateInfo observed_info;
+    observed_info.mean = Eigen::VectorXd::Zero(2);
+    observed_info.covariance = Eigen::MatrixXd::Zero(2, 2);
     observed_info.mean(OBSERVATION::IDX::RCOS) = observation_moments.rcosPow1;
     observed_info.mean(OBSERVATION::IDX::RSIN) = observation_moments.rsinPow1;
     observed_info.covariance(OBSERVATION::IDX::RCOS, OBSERVATION::IDX::RCOS) = observation_moments.rcosPow2 - observation_moments.rcosPow1*observation_moments.rcosPow1;
