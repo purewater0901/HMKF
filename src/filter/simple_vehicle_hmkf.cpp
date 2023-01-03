@@ -97,7 +97,7 @@ SimpleVehicleModel::HighOrderMoments SimpleVehicleHMKF::predict(const StateInfo&
     result.yPow2_cPow1;
     result.yPow2_sPow1;
     result.xPow1_yPow1_cPow1;
-    result.xPow1_cPow1_sPow1;
+    result.xPow1_yPow1_sPow1;
     result.xPow1_cPow1_sPow1;
     result.yPow1_cPow1_sPow1;
     result.xPow1_yawPow1_cPow1;
