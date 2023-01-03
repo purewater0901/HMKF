@@ -13,10 +13,10 @@ class SimpleVehicleHMKF
 {
 public:
     SimpleVehicleHMKF();
-    SimpleVehicleModel::HighOrderMoments predict(const StateInfo& state_info,
-                                                 const Eigen::Vector2d & control_inputs,
-                                                 const double dt,
-                                                 const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map);
+    StateInfo predict(const StateInfo& state_info,
+                      const Eigen::Vector2d & control_inputs,
+                      const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                      std::shared_ptr<SimpleVehicleModel::HighOrderMoments>& high_order_moments);
     StateInfo update(const SimpleVehicleModel::HighOrderMoments & predicted_moments,
                      const Eigen::VectorXd & observed_values,
                      const Eigen::Vector2d & landmark,

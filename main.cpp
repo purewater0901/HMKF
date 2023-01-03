@@ -11,6 +11,7 @@
 #include "distribution/uniform_distribution.h"
 #include "distribution/normal_distribution.h"
 #include "distribution/two_dimensional_normal_distribution.h"
+#include "filter/simple_vehicle_hmkf.h"
 #include "filter/simple_vehicle_nkf.h"
 #include "filter/simple_vehicle_ukf.h"
 #include "filter/simple_vehicle_ekf.h"
@@ -175,6 +176,7 @@ int main() {
     SimpleVehicleEKF ekf;
     SimpleVehicleUKF ukf;
     SimpleVehicleNKF nkf;
+    SimpleVehicleHMKF hmkf;
 
     // External disturbances
     const double mean_wv = 0.0;
@@ -193,6 +195,8 @@ int main() {
     nkf_state_info.covariance = scenario.ini_cov_;
     auto ekf_state_info = nkf_state_info;
     auto ukf_state_info = nkf_state_info;
+    auto hmkf_state_info = nkf_state_info;
+    std::shared_ptr<SimpleVehicleModel::HighOrderMoments> hmkf_predicted_moments = nullptr;
 
     ////////////////////////////////////////////////////
     // Start Simulation
@@ -204,9 +208,14 @@ int main() {
     std::vector<double> ukf_yaw_errors;
     std::vector<double> nkf_xy_errors;
     std::vector<double> nkf_yaw_errors;
+    std::vector<double> hmkf_xy_errors;
+    std::vector<double> hmkf_yaw_errors;
     std::vector<double> x_true_vec;
     std::vector<double> y_true_vec;
     std::vector<double> yaw_true_vec;
+    std::vector<double> hmkf_x_estimate;
+    std::vector<double> hmkf_y_estimate;
+    std::vector<double> hmkf_yaw_estimate;
     std::vector<double> nkf_x_estimate;
     std::vector<double> nkf_y_estimate;
     std::vector<double> nkf_yaw_estimate;
@@ -242,6 +251,7 @@ int main() {
                     ekf_state_info = ekf.predict(ekf_state_info, inputs, dt, system_noise_map);
                     ukf_state_info = ukf.predict(ukf_state_info, inputs, system_noise_map, measurement_noise_map);
                     nkf_state_info = nkf.predict(nkf_state_info, inputs, system_noise_map);
+                    hmkf_state_info = hmkf.predict(hmkf_state_info, inputs, system_noise_map, hmkf_predicted_moments);
                 }
 
                 // update
@@ -255,6 +265,9 @@ int main() {
                 ekf_state_info = ekf.update(ekf_state_info, y, {landmark.x, landmark.y}, measurement_noise_map);
                 ukf_state_info = ukf.update(ukf_state_info, y, {landmark.x, landmark.y}, system_noise_map, measurement_noise_map);
                 nkf_state_info = nkf.update(nkf_state_info, y, {landmark.x, landmark.y}, measurement_noise_map);
+                if(hmkf_predicted_moments) {
+                    hmkf_state_info = hmkf.update(*hmkf_predicted_moments, y, {landmark.x, landmark.y}, measurement_noise_map);
+                }
 
                 current_time = measurement_time.at(measurement_id);
                 ++measurement_id;
@@ -286,6 +299,7 @@ int main() {
                     ekf_state_info = ekf.predict(ekf_state_info, inputs, dt, system_noise_map);
                     ukf_state_info = ukf.predict(ukf_state_info, inputs, system_noise_map, measurement_noise_map);
                     nkf_state_info = nkf.predict(nkf_state_info, inputs, system_noise_map);
+                    hmkf_state_info = hmkf.predict(hmkf_state_info, inputs, system_noise_map, hmkf_predicted_moments);
                 }
 
                 // Compare
@@ -354,6 +368,24 @@ int main() {
                     std::cout << "-----------------------" << std::endl;
                 }
 
+                // HMKF
+                {
+                    const double dx = true_x - hmkf_state_info.mean(0);
+                    const double dy = true_y - hmkf_state_info.mean(1);
+                    const double xy_error = std::hypot(dx, dy);
+                    const double dyaw = normalizeRadian(true_yaw - hmkf_state_info.mean(2));
+
+                    nkf_xy_errors.push_back(xy_error);
+                    nkf_yaw_errors.push_back(std::fabs(dyaw));
+                    nkf_x_estimate.push_back(hmkf_state_info.mean(0));
+                    nkf_y_estimate.push_back(hmkf_state_info.mean(1));
+                    nkf_yaw_estimate.push_back(hmkf_state_info.mean(2));
+
+                    std::cout << "hmkf_xy_error: " << xy_error << std::endl;
+                    std::cout << "hmkf_yaw_error: " << dyaw << std::endl;
+                    std::cout << "-----------------------" << std::endl;
+                }
+
                 current_time = ground_truth_time.at(ground_truth_id);
                 ++ground_truth_id;
             }
@@ -369,12 +401,15 @@ int main() {
             ekf_state_info = ekf.predict(ekf_state_info, inputs, dt, system_noise_map);
             ukf_state_info = ukf.predict(ukf_state_info, inputs, system_noise_map, measurement_noise_map);
             nkf_state_info = nkf.predict(nkf_state_info, inputs, system_noise_map);
+            hmkf_state_info = hmkf.predict(hmkf_state_info, inputs, system_noise_map, hmkf_predicted_moments);
         }
     }
 
+    double hmkf_xy_error_sum = 0.0;
     double nkf_xy_error_sum = 0.0;
     double ekf_xy_error_sum = 0.0;
     double ukf_xy_error_sum = 0.0;
+    double hmkf_yaw_error_sum = 0.0;
     double nkf_yaw_error_sum = 0.0;
     double ekf_yaw_error_sum = 0.0;
     double ukf_yaw_error_sum = 0.0;
@@ -385,6 +420,10 @@ int main() {
         nkf_yaw_error_sum += nkf_yaw_errors.at(i);
         ekf_yaw_error_sum += ekf_yaw_errors.at(i);
         ukf_yaw_error_sum += ukf_yaw_errors.at(i);
+    }
+    for(size_t i=0; i<hmkf_xy_errors.size(); ++i) {
+        hmkf_xy_error_sum += hmkf_xy_errors.at(i);
+        hmkf_yaw_error_sum += hmkf_yaw_errors.at(i);
     }
 
     // Output data to file
@@ -414,19 +453,24 @@ int main() {
     std::cout << "ekf_xy_error mean: " << ekf_xy_error_sum / ekf_xy_errors.size() << std::endl;
     std::cout << "ukf_xy_error mean: " << ukf_xy_error_sum / ukf_xy_errors.size() << std::endl;
     std::cout << "nkf_xy_error mean: " << nkf_xy_error_sum / nkf_xy_errors.size() << std::endl;
+    std::cout << "hmkf_xy_error mean: " << hmkf_xy_error_sum / hmkf_xy_errors.size() << std::endl;
     std::cout << "ekf_yaw_error mean: " << ekf_yaw_error_sum / ekf_yaw_errors.size() << std::endl;
     std::cout << "ukf_yaw_error mean: " << ukf_yaw_error_sum / ukf_yaw_errors.size() << std::endl;
     std::cout << "nkf_yaw_error mean: " << nkf_yaw_error_sum / nkf_yaw_errors.size() << std::endl;
+    std::cout << "hmkf_yaw_error mean: " << hmkf_yaw_error_sum / hmkf_yaw_errors.size() << std::endl;
 
     matplotlibcpp::figure_size(1500, 900);
+    std::map<std::string, std::string> hmkf_keywords;
     std::map<std::string, std::string> nkf_keywords;
     std::map<std::string, std::string> ekf_keywords;
     std::map<std::string, std::string> ukf_keywords;
+    hmkf_keywords.insert(std::pair<std::string, std::string>("label", "hmkf error"));
     nkf_keywords.insert(std::pair<std::string, std::string>("label", "nkf error"));
     ekf_keywords.insert(std::pair<std::string, std::string>("label", "ekf error"));
     ukf_keywords.insert(std::pair<std::string, std::string>("label", "ukf error"));
     //matplotlibcpp::plot(times, nkf_xy_errors, nkf_keywords);
     //matplotlibcpp::plot(times, ukf_xy_errors, ukf_keywords);
+    matplotlibcpp::plot(hmkf_x_estimate, hmkf_y_estimate, hmkf_keywords);
     matplotlibcpp::plot(nkf_x_estimate, nkf_y_estimate, nkf_keywords);
     matplotlibcpp::plot(ekf_x_estimate, ekf_y_estimate, ekf_keywords);
     matplotlibcpp::plot(ukf_x_estimate, ukf_y_estimate, ukf_keywords);

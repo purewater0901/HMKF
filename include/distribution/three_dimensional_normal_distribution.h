@@ -33,6 +33,10 @@ public:
     double calc_cos_sin_moment(const int dim ,const int cos_moment, const int sin_moment);
     double calc_x_sin_x_moment(const int dim, const int moment, const int sin_moment);
     double calc_x_cos_x_moment(const int dim, const int moment, const int cos_moment);
+    double calc_x_cos_x_sin_x_moment(const int dim, const int moment, const int cos_moment, const int sin_moment);
+    double calc_xy_cos_y_sin_y_moment(const int x_dim, const int y_dim,
+                                      const int x_moment, const int y_moment,
+                                      const int cos_moment, const int sin_moment);
 
     double calc_cross_second_moment(const int dim1, const int dim2);
     double calc_x_sin_z_moment(const int dim_x, const int dim_z);

@@ -144,6 +144,29 @@ double ThreeDimensionalNormalDistribution::calc_x_cos_x_moment(const int dim, co
     return dist.calc_x_cos_moment(moment, cos_moment);
 }
 
+double ThreeDimensionalNormalDistribution::calc_xy_cos_y_sin_y_moment(const int x_dim, const int y_dim,
+                                                                      const int x_moment, const int y_moment,
+                                                                      const int cos_moment, const int sin_moment)
+{
+    if(x_dim > 2 || y_dim > 2) {
+        throw std::invalid_argument("Dim is larger than the size of the distribution");
+    }
+
+    auto dist = create2DNormalDistribution(x_dim, y_dim);
+    return dist.calc_xy_cos_y_sin_y_moment(x_moment, y_moment, cos_moment, sin_moment);
+}
+
+double ThreeDimensionalNormalDistribution::calc_x_cos_x_sin_x_moment(const int dim, const int moment,
+                                                                     const int cos_moment,
+                                                                     const int sin_moment)
+{
+    if(dim > 2) {
+        throw std::invalid_argument("Dim is larger than the size of the distribution");
+    }
+    NormalDistribution dist(mean_(dim), covariance_(dim, dim));
+    return dist.calc_x_cos_sin_moment(moment, cos_moment, sin_moment);
+}
+
 double ThreeDimensionalNormalDistribution::calc_cross_second_moment(const int dim1, const int dim2)
 {
     if(!initialization_) {
