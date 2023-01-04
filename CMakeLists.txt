@@ -117,3 +117,7 @@ gtest_add_tests(TARGET test_simple_vehicle_model)
 add_executable(test_example_hmkf test/filter/test_example_hmkf.cpp)
 target_link_libraries(test_example_hmkf GTest::GTest GTest::Main lib)
 gtest_add_tests(TARGET test_example_hmkf)
+
+add_executable(test_simple_vehicle_hmkf test/filter/test_simple_vehicle_hmkf.cpp)
+target_link_libraries(test_simple_vehicle_hmkf GTest::GTest GTest::Main lib)
+gtest_add_tests(TARGET test_simple_vehicle_hmkf)

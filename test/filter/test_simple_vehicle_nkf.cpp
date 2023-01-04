@@ -15,7 +15,7 @@ TEST(SimpleVehicleNKF, Update)
 {
     SimpleVehicleNKF filter;
     StateInfo state_info;
-    state_info.mean = {80.4759, 58.3819, 0.539531};
+    state_info.mean << 80.4759, 58.3819, 0.539531;
     state_info.covariance << 0.198053, -0.273244, -0.00354857,
                             -0.273244, 0.377295,  0.00497959,
                             -0.00354857,  0.00497959, 0.000928337;
