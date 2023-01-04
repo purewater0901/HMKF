@@ -228,7 +228,9 @@ int main() {
 
     size_t measurement_id = 0;
     size_t ground_truth_id = 0;
-    for(size_t odo_id = 0; odo_id < 20000; ++odo_id){
+    //for(size_t odo_id = 0; odo_id < 20000; ++odo_id){
+    for(size_t odo_id = 0; odo_id < 11000; ++odo_id){
+        std::cout << "Iteration: " << odo_id << std::endl;
         double current_time = odometry_time.at(odo_id);
         const double next_time = odometry_time.at(odo_id+1);
 
@@ -267,6 +269,7 @@ int main() {
                 nkf_state_info = nkf.update(nkf_state_info, y, {landmark.x, landmark.y}, measurement_noise_map);
                 if(hmkf_predicted_moments) {
                     hmkf_state_info = hmkf.update(*hmkf_predicted_moments, y, {landmark.x, landmark.y}, measurement_noise_map);
+                    hmkf.createHighOrderMoments(hmkf_state_info, hmkf_predicted_moments);
                 }
 
                 current_time = measurement_time.at(measurement_id);
@@ -280,11 +283,13 @@ int main() {
         }
 
         // predict till ground truth
-        while(ground_truth_time.at(ground_truth_id) < current_time && ground_truth_time.at(ground_truth_id) < next_time) {
+        while(ground_truth_time.at(ground_truth_id) < current_time && ground_truth_time.at(ground_truth_id) < next_time)
+        {
             ++ground_truth_id;
         }
 
-        if(current_time < ground_truth_time.at(ground_truth_id) && ground_truth_time.at(ground_truth_id) < next_time) {
+        if(current_time < ground_truth_time.at(ground_truth_id) && ground_truth_time.at(ground_truth_id) < next_time)
+        {
             while(true) {
                 if(next_time < ground_truth_time.at(ground_truth_id)) {
                     break;
@@ -375,11 +380,11 @@ int main() {
                     const double xy_error = std::hypot(dx, dy);
                     const double dyaw = normalizeRadian(true_yaw - hmkf_state_info.mean(2));
 
-                    nkf_xy_errors.push_back(xy_error);
-                    nkf_yaw_errors.push_back(std::fabs(dyaw));
-                    nkf_x_estimate.push_back(hmkf_state_info.mean(0));
-                    nkf_y_estimate.push_back(hmkf_state_info.mean(1));
-                    nkf_yaw_estimate.push_back(hmkf_state_info.mean(2));
+                    hmkf_xy_errors.push_back(xy_error);
+                    hmkf_yaw_errors.push_back(std::fabs(dyaw));
+                    hmkf_x_estimate.push_back(hmkf_state_info.mean(0));
+                    hmkf_y_estimate.push_back(hmkf_state_info.mean(1));
+                    hmkf_yaw_estimate.push_back(hmkf_state_info.mean(2));
 
                     std::cout << "hmkf_xy_error: " << xy_error << std::endl;
                     std::cout << "hmkf_yaw_error: " << dyaw << std::endl;

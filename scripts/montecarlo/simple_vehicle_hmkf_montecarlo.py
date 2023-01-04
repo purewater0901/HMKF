@@ -5,7 +5,7 @@ sample_num = 1000 * 10000
 dt = 0.1
 
 # initial state
-ini_mean = np.array([2.0, 1.0, np.pi/2.0])
+ini_mean = np.array([2.0, 1.0, np.pi/3.0])
 ini_cov = np.array([[1.0**2, 0.1, 0.01],
                     [0.1, 1.0**2, 0.2],
                     [0.01, 0.2, (np.pi/10)**2]])
@@ -204,8 +204,8 @@ sum_mrcos_mrsin = 0.0
 measurement_rcos_samples = []
 measurement_rsin_samples = []
 
-x_land = 0.0
-y_land = 0.0
+x_land = 1.0
+y_land = 2.0
 for (px, py, pyaw, mr, ma) in zip(next_x_samples, next_y_samples, next_yaw_samples, mr_samples, mtheta_samples):
     rcos_bearing = (x_land - px) * math.cos(pyaw) + (y_land - py) * math.sin(pyaw)
     rsin_bearing = (y_land - py) * math.cos(pyaw) - (x_land - px) * math.sin(pyaw)

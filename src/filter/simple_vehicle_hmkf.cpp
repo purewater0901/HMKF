@@ -13,7 +13,7 @@ StateInfo SimpleVehicleHMKF::predict(const StateInfo& state_info,
                                      const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
                                      std::shared_ptr<SimpleVehicleModel::HighOrderMoments>& high_order_moments)
 {
-// Step1. Approximate to Gaussian Distribution
+    // Step1. Approximate to Gaussian Distribution
     const auto state_mean = state_info.mean;
     const auto state_cov = state_info.covariance;
     ThreeDimensionalNormalDistribution dist(state_info.mean, state_info.covariance);
@@ -40,8 +40,6 @@ StateInfo SimpleVehicleHMKF::predict(const StateInfo& state_info,
     moment.yPow1_yawPow1 = dist.calc_cross_second_moment(STATE::IDX::Y, STATE::IDX::YAW); // y*yaw
     moment.cPow1_yawPow1 = dist.calc_x_cos_x_moment(STATE::IDX::YAW, 1, 1); // yaw*cos(yaw)
     moment.sPow1_yawPow1 = dist.calc_x_sin_x_moment(STATE::IDX::YAW, 1, 1); // yaw*sin(yaw)
-    const double& cPow1 = moment.cPow1;
-    const double& sPow1 = moment.sPow1;
     const double& cPow2 = moment.cPow2;
     const double& sPow2 = moment.sPow2;
     const double& cPow1_xPow1 = moment.cPow1_xPow1;
@@ -264,8 +262,8 @@ StateInfo SimpleVehicleHMKF::update(const SimpleVehicleModel::HighOrderMoments &
 
     const double xPow1_caPow1 = x_land * xPow1_cPow1 - xPow2_cPow1 + y_land * xPow1_sPow1 - xPow1_yPow1_sPow1;
     const double xPow1_saPow1 = y_land * xPow1_cPow1 - xPow1_yPow1_cPow1 - x_land * xPow1_sPow1 + xPow2_sPow1;
-    const double yPow1_caPow1 =  x_land * yPow1_cPow1 - xPow1_yPow1_cPow1 + y_land * yPow1_sPow1 - yPow2_sPow1;
-    const double yPow1_saPow1 =  y_land * yPow1_cPow1 - yPow2_cPow1 - x_land * yPow1_sPow1 + xPow1_yPow1_sPow1;
+    const double yPow1_caPow1 = x_land * yPow1_cPow1 - xPow1_yPow1_cPow1 + y_land * yPow1_sPow1 - yPow2_sPow1;
+    const double yPow1_saPow1 = y_land * yPow1_cPow1 - yPow2_cPow1 - x_land * yPow1_sPow1 + xPow1_yPow1_sPow1;
     const double yawPow1_caPow1 = x_land * yawPow1_cPow1 - xPow1_yawPow1_cPow1 + y_land * yawPow1_sPow1 - yPow1_yawPow1_sPow1;
     const double yawPow1_saPow1 = y_land * yawPow1_cPow1 - yPow1_yawPow1_cPow1 - x_land * yawPow1_sPow1 + xPow1_yawPow1_sPow1;
 
@@ -304,10 +302,10 @@ StateInfo SimpleVehicleHMKF::update(const SimpleVehicleModel::HighOrderMoments &
             =   wrPow1 * cwaPow1 * yawPow1_caPow1 - wrPow1 * swaPow1 * yawPow1_saPow1
                 - predicted_mean(STATE::IDX::YAW) * observation_mean(OBSERVATION::IDX::RCOS);
     state_observation_cov(STATE::IDX::YAW, OBSERVATION::IDX::RSIN)
-            =    wrPow1 * cwaPow1 * yawPow1_saPow1 + wrPow1 * swaPow1 * yawPow1_caPow1
+            =   wrPow1 * cwaPow1 * yawPow1_saPow1 + wrPow1 * swaPow1 * yawPow1_caPow1
                  - predicted_mean(STATE::IDX::YAW) * observation_mean(OBSERVATION::IDX::RSIN);
 
-    std::cout << state_observation_cov << std::endl;
+    // std::cout << state_observation_cov << std::endl;
 
     // Kalman Gain
     const auto K = state_observation_cov * observation_cov.inverse();
@@ -317,4 +315,62 @@ StateInfo SimpleVehicleHMKF::update(const SimpleVehicleModel::HighOrderMoments &
     updated_info.covariance = predicted_cov - K*observation_cov*K.transpose();
 
     return updated_info;
+}
+
+void SimpleVehicleHMKF::createHighOrderMoments(const StateInfo& state_info,
+                                               std::shared_ptr<SimpleVehicleModel::HighOrderMoments>& high_order_moments)
+{
+    ThreeDimensionalNormalDistribution dist(state_info.mean, state_info.covariance);
+
+    SimpleVehicleModel::HighOrderMoments result;
+    result.xPow1 = dist.calc_moment(STATE::IDX::X, 1);
+    result.yPow1 = dist.calc_moment(STATE::IDX::Y, 1);
+    result.yawPow1 = dist.calc_moment(STATE::IDX::YAW, 1);
+    result.cPow1 = dist.calc_cos_moment(STATE::IDX::YAW, 1);
+    result.sPow1 = dist.calc_sin_moment(STATE::IDX::YAW, 1);
+
+    result.xPow2 = dist.calc_moment(STATE::IDX::X, 2);
+    result.yPow2 = dist.calc_moment(STATE::IDX::Y, 2);
+    result.yawPow2 = dist.calc_moment(STATE::IDX::YAW, 2);
+    result.cPow2 = dist.calc_cos_moment(STATE::IDX::YAW, 2);
+    result.sPow2 = dist.calc_sin_moment(STATE::IDX::YAW, 2);
+    result.xPow1_yPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::Y, 1, 1, 0, 0);
+    result.xPow1_yawPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 1, 0, 0);
+    result.yPow1_yawPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 1, 0, 0);
+    result.xPow1_cPow1 = dist.calc_x_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    result.yPow1_cPow1 = dist.calc_x_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    result.xPow1_sPow1 = dist.calc_x_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    result.yPow1_sPow1 = dist.calc_x_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    result.cPow1_sPow1 = dist.calc_cos_sin_moment(STATE::IDX::YAW, 1, 1);
+    result.yawPow1_cPow1 = dist.calc_x_cos_x_moment(STATE::IDX::YAW, 1, 1);
+    result.yawPow1_sPow1 = dist.calc_x_sin_x_moment(STATE::IDX::YAW, 1, 1);
+
+    result.xPow1_cPow2 = dist.calc_x_cos_z_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    result.xPow1_sPow2 = dist.calc_x_sin_z_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    result.yPow1_cPow2 = dist.calc_x_cos_z_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    result.yPow1_sPow2 = dist.calc_x_sin_z_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    result.xPow2_cPow1 = dist.calc_xx_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    result.yPow2_cPow1 = dist.calc_xx_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    result.xPow2_sPow1 = dist.calc_xx_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    result.yPow2_sPow1 = dist.calc_xx_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    result.xPow1_yPow1_cPow1 = dist.calc_xy_cos_z_moment();
+    result.xPow1_yPow1_sPow1 = dist.calc_xy_sin_z_moment();
+    result.xPow1_cPow1_sPow1 = dist.calc_x_cos_z_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    result.yPow1_cPow1_sPow1 = dist.calc_x_cos_z_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    result.xPow1_yawPow1_cPow1 = dist.calc_xy_cos_y_moment(STATE::IDX::X, STATE::IDX::YAW);
+    result.xPow1_yawPow1_sPow1 = dist.calc_xy_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW);
+    result.yPow1_yawPow1_cPow1 = dist.calc_xy_cos_y_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    result.yPow1_yawPow1_sPow1 = dist.calc_xy_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW);
+
+    result.xPow2_cPow2 = dist.calc_xx_cos_z_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    result.yPow2_cPow2 = dist.calc_xx_cos_z_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    result.xPow2_sPow2 = dist.calc_xx_sin_z_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    result.yPow2_sPow2 = dist.calc_xx_sin_z_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    result.xPow1_yPow1_cPow2 = dist.calc_xy_cos_z_cos_z_moment();
+    result.xPow1_yPow1_sPow2 = dist.calc_xy_sin_z_sin_z_moment();
+    result.xPow2_cPow1_sPow1 = dist.calc_xx_cos_z_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    result.yPow2_cPow1_sPow1 = dist.calc_xx_cos_z_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    result.xPow1_yPow1_cPow1_sPow1 = dist.calc_xy_cos_z_sin_z_moment();
+
+    high_order_moments = std::make_shared<SimpleVehicleModel::HighOrderMoments>(result);
 }

@@ -21,6 +21,8 @@ public:
                      const Eigen::VectorXd & observed_values,
                      const Eigen::Vector2d & landmark,
                      const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map);
+    void createHighOrderMoments(const StateInfo& state_info,
+                                std::shared_ptr<SimpleVehicleModel::HighOrderMoments>& high_order_moments);
 
     SimpleVehicleModel vehicle_model_;
 };

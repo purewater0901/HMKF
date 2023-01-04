@@ -33,7 +33,7 @@ TEST(SimpleVehicleHMKF, Predict)
     ini_state.mean = Eigen::VectorXd::Zero(3);
     ini_state.mean(0) = 2.0;
     ini_state.mean(1) = 1.0;
-    ini_state.mean(2) = M_PI/2.0;
+    ini_state.mean(2) = M_PI/3.0;
     ini_state.covariance = Eigen::MatrixXd::Zero(3, 3);
     ini_state.covariance(0, 0) = 1.0*1.0; // V[x]
     ini_state.covariance(1, 1) = 1.0*1.0; // V[y]
@@ -105,6 +105,7 @@ TEST(SimpleVehicleHMKF, Predict)
     measured_values(OBSERVATION::IDX::RCOS) = std::sqrt(mx*mx+my*my)*std::cos(myaw);
     measured_values(OBSERVATION::IDX::RSIN) = std::sqrt(mx*mx+my*my)*std::sin(myaw);
     Eigen::Vector2d landmark = Eigen::Vector2d::Zero();
+    landmark(0) = 1.0;
+    landmark(1) = 2.0;
     hmkf.update(*high_order_moments, measured_values, landmark, measurement_noise_map);
-
 }
