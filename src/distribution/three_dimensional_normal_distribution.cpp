@@ -39,8 +39,9 @@ void ThreeDimensionalNormalDistribution::setValues(const Eigen::Vector3d &mean, 
 
 bool ThreeDimensionalNormalDistribution::checkPositiveDefiniteness(const Eigen::Matrix3d& covariance)
 {
-    Eigen::LLT<Eigen::MatrixXd> lltOfA(covariance_); // compute the Cholesky decomposition of A
+    Eigen::LLT<Eigen::MatrixXd> lltOfA(covariance); // compute the Cholesky decomposition of A
     if(lltOfA.info() == Eigen::NumericalIssue) {
+        std::cerr << covariance << std::endl;
         return false;
     }
 
