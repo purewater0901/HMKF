@@ -127,8 +127,8 @@ StateInfo SimpleVehicleHMKF::predict(const StateInfo& state_info,
     const double& cwuPow2 = system_noise_moments.cwuPow2;
     const double& swuPow2 = system_noise_moments.swuPow2;
     const double& cwuPow1_swuPow1 = system_noise_moments.cwuPow1_swuPow1;
-    const double cwuPow1_wuPow1 = wu_dist_ptr->calc_x_cos_moment(1, 1);
-    const double swuPow1_wuPow1 = wu_dist_ptr->calc_x_sin_moment(1, 1);
+    const double& cwuPow1_wuPow1 = system_noise_moments.wuPow1_cwuPow1;
+    const double& swuPow1_wuPow1 = system_noise_moments.wuPow1_swuPow1;
 
 
     // propagate moments

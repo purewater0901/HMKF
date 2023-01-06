@@ -182,9 +182,9 @@ int main() {
 
     // External disturbances
     const double mean_wv = 0.0;
-    const double cov_wv = std::pow(0.1, 2);
+    const double cov_wv = std::pow(0.5, 2);
     const double mean_wu = 0.0;
-    const double cov_wu = std::pow(1.0, 2);
+    const double cov_wu = std::pow(1.3, 2);
 
     std::default_random_engine generator;
     auto wr_dist = scenario.wr_dist_;
@@ -234,8 +234,7 @@ int main() {
 
     size_t measurement_id = 0;
     size_t ground_truth_id = 0;
-    //for(size_t odo_id = 0; odo_id < 20000; ++odo_id){
-    for(size_t odo_id = 0; odo_id < 17000; ++odo_id){
+    for(size_t odo_id = 0; odo_id < 20000; ++odo_id){
         std::cout << "Iteration: " << odo_id << std::endl;
         double current_time = odometry_time.at(odo_id);
         const double next_time = odometry_time.at(odo_id+1);

@@ -32,9 +32,9 @@ struct SimpleVehicleGaussianScenario
 
         // Observation Noise
         const double mean_wr = 1.0;
-        const double cov_wr = std::pow(0.09, 2);
+        const double cov_wr = std::pow(0.10, 2);
         const double mean_wa = 0.0;
-        const double cov_wa = std::pow(M_PI/120.0, 2);
+        const double cov_wa = std::pow(M_PI/100.0, 2);
         observation_noise_map_ = {
                 {OBSERVATION_NOISE::IDX::WR, std::make_shared<NormalDistribution>(mean_wr, cov_wr)},
                 {OBSERVATION_NOISE::IDX::WA, std::make_shared<NormalDistribution>(mean_wa, cov_wa)}};
@@ -65,8 +65,8 @@ struct SimpleVehicleNonGaussianScenario
 
         // Observation Noise
         const double lambda_wr = 1.0;
-        const double lower_bearing = -M_PI/2;
-        const double upper_bearing = M_PI/2;
+        const double lower_bearing = -M_PI/10;
+        const double upper_bearing = M_PI/10;
         observation_noise_map_ = {
                 {OBSERVATION_NOISE::IDX::WR , std::make_shared<ExponentialDistribution>(lambda_wr)},
                 {OBSERVATION_NOISE::IDX::WA , std::make_shared<UniformDistribution>(lower_bearing, upper_bearing)}};
