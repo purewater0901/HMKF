@@ -69,7 +69,8 @@ SimpleVehicleModel::StateMoments SimpleVehicleModel::propagateStateMoments(const
     const double &swuPow2 = system_noise_moments.swuPow2;
     const double &cwuPow1_swuPow1 = system_noise_moments.cwuPow1_swuPow1;
     const double &cwuPow1 = system_noise_moments.cwuPow1;
-
+    const double wuPow1_cwuPow1 = system_noise_moments.wuPow1_cwuPow1;
+    const double wuPow1_swuPow1 = system_noise_moments.wuPow1_swuPow1;
 
     const double &v = control_inputs.v;
     const double &u = control_inputs.u;
@@ -113,9 +114,9 @@ SimpleVehicleModel::StateMoments SimpleVehicleModel::propagateStateMoments(const
 
     state_moments.yPow1_yawPow1 = u*v*sPow1 + u*sPow1*wvPow1 + u*yPow1 + v*sPow1*wuPow1 + v*sPow1_yawPow1 + sPow1*wuPow1*wvPow1 + sPow1_yawPow1*wvPow1 + yPow1_yawPow1 + wuPow1*yPow1;
 
-    state_moments.cPow1_yawPow1 = cu*u*cPow1*cwuPow1 - cu*u*sPow1*swuPow1 + cu*cPow1*cwuPow1*wuPow1 + cu*cPow1_yawPow1*cwuPow1 - cu*sPow1*swuPow1*wuPow1 - cu*sPow1_yawPow1*swuPow1 - su*u*cPow1*swuPow1 - su*u*cwuPow1*sPow1 - su*cPow1*swuPow1*wuPow1 - su*cPow1_yawPow1*swuPow1 - su*cwuPow1*sPow1*wuPow1 - su*cwuPow1*sPow1_yawPow1;
+    state_moments.cPow1_yawPow1 = cu*u*cPow1*cwuPow1 - cu*u*sPow1*swuPow1 + cu*cPow1*wuPow1_cwuPow1+ cu*cPow1_yawPow1*cwuPow1 - cu*sPow1*wuPow1_swuPow1- cu*sPow1_yawPow1*swuPow1 - su*u*cPow1*swuPow1 - su*u*cwuPow1*sPow1 - su*cPow1*wuPow1_swuPow1 - su*cPow1_yawPow1*swuPow1 - su*wuPow1_cwuPow1*sPow1 - su*cwuPow1*sPow1_yawPow1;
 
-    state_moments.sPow1_yawPow1 = cu*u*cPow1*swuPow1 + cu*u*cwuPow1*sPow1 + cu*cPow1*swuPow1*wuPow1 + cu*cPow1_yawPow1*swuPow1 + cu*cwuPow1*sPow1*wuPow1 + cu*cwuPow1*sPow1_yawPow1 + su*u*cPow1*cwuPow1 - su*u*sPow1*swuPow1 + su*cPow1*cwuPow1*wuPow1 + su*cPow1_yawPow1*cwuPow1 - su*sPow1*swuPow1*wuPow1 - su*sPow1_yawPow1*swuPow1;
+    state_moments.sPow1_yawPow1 = cu*u*cPow1*swuPow1 + cu*u*cwuPow1*sPow1 + cu*cPow1*wuPow1_swuPow1 + cu*cPow1_yawPow1*swuPow1 + cu*wuPow1_cwuPow1*sPow1 + cu*cwuPow1*sPow1_yawPow1 + su*u*cPow1*cwuPow1 - su*u*sPow1*swuPow1 + su*cPow1*wuPow1_cwuPow1 + su*cPow1_yawPow1*cwuPow1 - su*sPow1*wuPow1_swuPow1 - su*sPow1_yawPow1*swuPow1;
 
     return state_moments;
 }

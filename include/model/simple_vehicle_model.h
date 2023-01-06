@@ -145,6 +145,8 @@ public:
         double swuPow2{0.0};
         double cwuPow2{0.0};
         double cwuPow1_swuPow1{0.0};
+        double wuPow1_cwuPow1{0.0};
+        double wuPow1_swuPow1{0.0};
     };
 
     struct ObservationNoiseMoments {

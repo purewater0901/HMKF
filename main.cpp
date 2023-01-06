@@ -182,7 +182,7 @@ int main() {
     const double mean_wv = 0.0;
     const double cov_wv = std::pow(0.1, 2);
     const double mean_wu = 0.0;
-    const double cov_wu = std::pow(1.0, 2);
+    const double cov_wu = std::pow(1.3, 2);
 
     // Observation Noise
     const auto measurement_noise_map = scenario.observation_noise_map_;
@@ -228,8 +228,7 @@ int main() {
 
     size_t measurement_id = 0;
     size_t ground_truth_id = 0;
-    //for(size_t odo_id = 0; odo_id < 20000; ++odo_id){
-    for(size_t odo_id = 0; odo_id < 11900; ++odo_id){
+    for(size_t odo_id = 0; odo_id < 20000; ++odo_id){
         std::cout << "Iteration: " << odo_id << std::endl;
         double current_time = odometry_time.at(odo_id);
         const double next_time = odometry_time.at(odo_id+1);
@@ -275,7 +274,6 @@ int main() {
                 ekf_state_info = ekf.update(ekf_state_info, y, {landmark.x, landmark.y}, measurement_noise_map);
                 ukf_state_info = ukf.update(ukf_state_info, y, {landmark.x, landmark.y}, system_noise_map, measurement_noise_map);
                 nkf_state_info = nkf.update(nkf_state_info, y, {landmark.x, landmark.y}, measurement_noise_map);
-                std::cout << nkf_state_info.covariance << std::endl;
                 if(hmkf_predicted_moments) {
                     hmkf_state_info = hmkf.update(*hmkf_predicted_moments, y, {landmark.x, landmark.y}, measurement_noise_map);
                     hmkf.createHighOrderMoments(hmkf_state_info, hmkf_predicted_moments);

@@ -2,33 +2,41 @@ import math
 import numpy as np
 
 sample_num = 1000 * 10000
-dt = 0.1
+dt = 0.208
 
 # initial state
-ini_mean = np.array([2.0, 1.0, np.pi/3.0])
-ini_cov = np.array([[1.0**2, 0.1, 0.01],
-                    [0.1, 1.0**2, 0.2],
-                    [0.01, 0.2, (np.pi/10)**2]])
+ini_mean = np.array([2.97581, 1.35239, 5.26836])
+ini_cov = np.array([[0.000761754, -1.2313e-05, -0.000206351],
+                    [-1.2313e-05, 0.000783393, -9.27536e-05],
+                    [-0.000206351, -9.27536e-05, 0.00141191]])
 
 # control info
-controls = [1.0*dt, 0.1*dt]
+controls = [0.017888, -0.0827841]
 
 # system noise
 wv_lambda = 1.0 / 1.0
 upper_wu = (np.pi/10.0) * dt
 lower_wu = -(np.pi/10.0) * dt
+mean_wv = 0.0
+cov_wv = (0.1*dt)**2
+mean_wu = 0.0
+cov_wu = (1.0*dt)**2
 
 # get samples
-wv_samples = np.random.exponential(wv_lambda, sample_num)
-wu_samples = np.random.uniform(upper_wu, lower_wu, sample_num)
+wv_samples = np.random.normal(mean_wv, math.sqrt(cov_wv), sample_num) #np.random.exponential(wv_lambda, sample_num)
+wu_samples = np.random.normal(mean_wu, math.sqrt(cov_wu), sample_num)#np.random.uniform(upper_wu, lower_wu, sample_num)
 state_samples = np.random.multivariate_normal(ini_mean, ini_cov, sample_num)
 
 # measurement noise
 mr_lambda = 1.0
 upper_mtheta = (np.pi/20.0)
 lower_mtheta = -(np.pi/20.0)
-mr_samples = np.random.exponential(mr_lambda, sample_num)
-mtheta_samples = np.random.uniform(upper_mtheta, lower_mtheta, sample_num)
+mean_wr = 1.0
+cov_wr = 0.09 ** 2
+mean_wa = 0.0
+cov_wa = (math.pi/100.0)**2
+mr_samples = np.random.normal(mean_wr, math.sqrt(cov_wr), sample_num)#np.random.exponential(mr_lambda, sample_num)
+mtheta_samples = np.random.normal(mean_wa, math.sqrt(cov_wa), sample_num) #np.random.uniform(upper_mtheta, lower_mtheta, sample_num)
 
 sum_x = 0.0
 sum_y = 0.0
@@ -100,7 +108,6 @@ for (state, wv, wu) in zip(state_samples, wv_samples, wu_samples):
     sum_sin += math.sin(next_yaw)
 
     # second order
-    """
     sum_x2 += next_x * next_x
     sum_y2 += next_y * next_y
     sum_yaw2 += next_yaw * next_yaw
@@ -116,7 +123,6 @@ for (state, wv, wu) in zip(state_samples, wv_samples, wu_samples):
     sum_cos1_sin1 += math.cos(next_yaw) * math.sin(next_yaw)
     sum_yaw1_cos1 += next_yaw * math.cos(next_yaw)
     sum_yaw1_sin1 += next_yaw * math.sin(next_yaw)
-    """
 
     # third order
     sum_x1_cos2 += next_x * math.cos(next_yaw)**2
@@ -146,7 +152,6 @@ for (state, wv, wu) in zip(state_samples, wv_samples, wu_samples):
     sum_x2_cos1_sin1 += next_x**2 * math.cos(next_yaw) * math.sin(next_yaw)
     sum_y2_cos1_sin1 += next_y**2 * math.cos(next_yaw) * math.sin(next_yaw)
     sum_xy_cos1_sin1 += next_x * next_y * math.cos(next_yaw) * math.sin(next_yaw)
-"""
 print('E[X]: ', sum_x/sample_num)
 print('E[Y]: ', sum_y/sample_num)
 print('E[YAW]: ', sum_yaw/sample_num)
@@ -167,7 +172,6 @@ print('E[ysin]: ', sum_y1_sin1/sample_num)
 print('E[cossin]: ', sum_cos1_sin1/sample_num)
 print('E[yawcos]: ', sum_yaw1_cos1/sample_num)
 print('E[yawsin]: ', sum_yaw1_sin1/sample_num)
-"""
 
 print('E[xcos^2]: ', sum_x1_cos2/sample_num)
 print('E[ycos^2]: ', sum_y1_cos2/sample_num)
@@ -204,8 +208,8 @@ sum_mrcos_mrsin = 0.0
 measurement_rcos_samples = []
 measurement_rsin_samples = []
 
-x_land = 1.0
-y_land = 2.0
+x_land = 3.7629
+y_land = -2.03092
 for (px, py, pyaw, mr, ma) in zip(next_x_samples, next_y_samples, next_yaw_samples, mr_samples, mtheta_samples):
     rcos_bearing = (x_land - px) * math.cos(pyaw) + (y_land - py) * math.sin(pyaw)
     rsin_bearing = (y_land - py) * math.cos(pyaw) - (x_land - px) * math.sin(pyaw)

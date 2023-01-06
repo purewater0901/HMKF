@@ -61,6 +61,8 @@ StateInfo SimpleVehicleNKF::predict(const StateInfo & state_info,
     system_noise_moments.swuPow2 = wu_dist_ptr->calc_sin_moment(2);
     system_noise_moments.cwuPow2 = wu_dist_ptr->calc_cos_moment(2);
     system_noise_moments.cwuPow1_swuPow1 = wu_dist_ptr->calc_cos_sin_moment(1, 1);
+    system_noise_moments.wuPow1_cwuPow1 = wu_dist_ptr->calc_x_cos_moment(1, 1);
+    system_noise_moments.wuPow1_swuPow1 = wu_dist_ptr->calc_x_sin_moment(1, 1);
 
     // Step5. Propagate
     const auto predicted_moment = vehicle_model_.propagateStateMoments(moment, system_noise_moments, controls);

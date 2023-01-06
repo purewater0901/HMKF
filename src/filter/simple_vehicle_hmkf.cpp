@@ -118,6 +118,8 @@ StateInfo SimpleVehicleHMKF::predict(const StateInfo& state_info,
     system_noise_moments.swuPow2 = wu_dist_ptr->calc_sin_moment(2);
     system_noise_moments.cwuPow2 = wu_dist_ptr->calc_cos_moment(2);
     system_noise_moments.cwuPow1_swuPow1 = wu_dist_ptr->calc_cos_sin_moment(1, 1);
+    system_noise_moments.wuPow1_cwuPow1 = wu_dist_ptr->calc_x_cos_moment(1, 1);
+    system_noise_moments.wuPow1_swuPow1 = wu_dist_ptr->calc_x_sin_moment(1, 1);
     const double& wvPow1 = system_noise_moments.wvPow1;
     const double& wvPow2 = system_noise_moments.wvPow2;
     const double& cwuPow1 = system_noise_moments.cwuPow1;
@@ -304,8 +306,6 @@ StateInfo SimpleVehicleHMKF::update(const SimpleVehicleModel::HighOrderMoments &
     state_observation_cov(STATE::IDX::YAW, OBSERVATION::IDX::RSIN)
             =   wrPow1 * cwaPow1 * yawPow1_saPow1 + wrPow1 * swaPow1 * yawPow1_caPow1
                  - predicted_mean(STATE::IDX::YAW) * observation_mean(OBSERVATION::IDX::RSIN);
-
-    // std::cout << state_observation_cov << std::endl;
 
     // Kalman Gain
     const auto K = state_observation_cov * observation_cov.inverse();
