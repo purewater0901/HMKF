@@ -24,26 +24,16 @@ std::complex<double> hypergeom(const double a, const double b, const double t)
     return value;
 }
 
-std::complex<double> first_diff_hypergeom(const double a, const double b, const double t)
+std::complex<double> diff_hypergeom(const double a, const double b, const double t, const int order)
 {
     const std::complex<double> i(0.0, 1.0);
-    return a / b * i * hypergeom(a+1.0, b+1.0, t);
-}
-
-std::complex<double> second_diff_hypergeom(const double a, const double b, const double t)
-{
-    return -(a*(a+1.0)) / (b*(b+1.0)) * hypergeom(a+2.0, b+2.0, t);
-}
-
-std::complex<double> third_diff_hypergeom(const double a, const double b, const double t)
-{
-    const std::complex<double> i(0.0, 1.0);
-    return -i * (a*(a+1.0)*(a+2.0)) / (b*(b+1.0)*(b+2.0)) * hypergeom(a+3.0, b+3.0, t);
-}
-
-std::complex<double> fourth_diff_hypergeom(const double a, const double b, const double t)
-{
-    return (a*(a+1.0)*(a+2.0)*(a+3.0)) / (b*(b+1.0)*(b+2.0)*(b+3.0)) * hypergeom(a+4.0, b+4.0, t);
+    double a_coeff = a;
+    double b_coeff = b;
+    for(size_t n=1; n<order; ++n) {
+        a_coeff *= a+static_cast<double>(n);
+        b_coeff *= b+static_cast<double>(n);
+    }
+    return a_coeff / b_coeff * std::pow(i, order) * hypergeom(a+order, b+order, t);
 }
 
 BetaDistribution::BetaDistribution(const double alpha, const double beta) : alpha_(alpha), beta_(beta)
@@ -65,22 +55,11 @@ std::complex<double> BetaDistribution::calc_characteristic(const int t)
     return hypergeom(alpha_, alpha_+beta_, t);
 }
 
-std::complex<double> BetaDistribution::calc_first_diff_characteristic(const int t)
+std::complex<double> BetaDistribution::calc_diff_characteristic(const int t, const int order)
 {
-    return first_diff_hypergeom(alpha_, alpha_+beta_, t);
-}
+    if(order==0) {
+        return calc_characteristic(order);
+    }
 
-std::complex<double> BetaDistribution::calc_second_diff_characteristic(const int t)
-{
-    return second_diff_hypergeom(alpha_, alpha_+beta_, t);
-}
-
-std::complex<double> BetaDistribution::calc_third_diff_characteristic(const int t)
-{
-    return third_diff_hypergeom(alpha_, alpha_+beta_, t);
-}
-
-std::complex<double> BetaDistribution::calc_fourth_diff_characteristic(const int t)
-{
-    return fourth_diff_hypergeom(alpha_, alpha_+beta_, t);
+    return diff_hypergeom(alpha_, alpha_+beta_, t, order);
 }

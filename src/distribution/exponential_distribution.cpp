@@ -21,34 +21,15 @@ std::complex<double> ExponentialDistribution::calc_characteristic(const int t)
     return lambda_ / (lambda_ - i *t_double);
 }
 
-std::complex<double> ExponentialDistribution::calc_first_diff_characteristic(const int t)
+std::complex<double> ExponentialDistribution::calc_diff_characteristic(const int t, const int order)
 {
-    const std::complex<double> i(0.0, 1.0);
-    const auto t_double = static_cast<double>(t);
-    const auto tmp = lambda_ - i * t_double;
-    return i*lambda_ / (tmp*tmp);
-}
+    if(order==0) {
+        return calc_characteristic(t);
+    }
 
-std::complex<double> ExponentialDistribution::calc_second_diff_characteristic(const int t)
-{
     const std::complex<double> i(0.0, 1.0);
     const auto t_double = static_cast<double>(t);
+    const auto order_double = static_cast<double>(order);
     const auto tmp = lambda_ - i * t_double;
-    return -2.0*lambda_ / (tmp*tmp*tmp);
-}
-
-std::complex<double> ExponentialDistribution::calc_third_diff_characteristic(const int t)
-{
-    const std::complex<double> i(0.0, 1.0);
-    const auto t_double = static_cast<double>(t);
-    const auto tmp = lambda_ - i * t_double;
-    return -6.0*i*lambda_ / (tmp*tmp*tmp*tmp);
-}
-
-std::complex<double> ExponentialDistribution::calc_fourth_diff_characteristic(const int t)
-{
-    const std::complex<double> i(0.0, 1.0);
-    const auto t_double = static_cast<double>(t);
-    const auto tmp = lambda_ - i * t_double;
-    return 24*lambda_/std::pow(tmp, 5);
+    return calc_diff_characteristic(t, order-1) * (order_double * i / tmp);
 }

@@ -19,9 +19,8 @@ public:
 
     std::complex<double> calc_characteristic(const int t);
     std::complex<double> calc_first_diff_characteristic(const int t);
-    std::complex<double> calc_second_diff_characteristic(const int t);
-    std::complex<double> calc_third_diff_characteristic(const int t);
-    std::complex<double> calc_fourth_diff_characteristic(const int t);
+
+    std::complex<double> calc_diff_characteristic(const int t, const int order);
 
     double mean_;
     double variance_;

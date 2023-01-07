@@ -14,10 +14,7 @@ public:
     virtual double calc_variance() = 0;
 
     virtual std::complex<double> calc_characteristic(const int t) = 0;
-    virtual std::complex<double> calc_first_diff_characteristic(const int t) = 0;
-    virtual std::complex<double> calc_second_diff_characteristic(const int t) = 0;
-    virtual std::complex<double> calc_third_diff_characteristic(const int t) = 0;
-    virtual std::complex<double> calc_fourth_diff_characteristic(const int t) = 0;
+    virtual std::complex<double> calc_diff_characteristic(const int t, const int order) = 0;
 
     double calc_moment(const int order);
     double calc_cos_moment(const int order);

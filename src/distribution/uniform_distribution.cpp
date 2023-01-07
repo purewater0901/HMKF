@@ -24,53 +24,22 @@ std::complex<double> UniformDistribution::calc_characteristic(const int t)
     return (std::exp(i*t_double*u_) - std::exp(i*t_double*l_))/ (i*t_double*(u_-l_));
 }
 
-std::complex<double> UniformDistribution::calc_first_diff_characteristic(const int t)
+std::complex<double> UniformDistribution::calc_diff_characteristic(const int t, const int order)
 {
-    if(t == 0)
-    {
-        return {0.0, (u_+l_)/2.0};
+    if(order==0) {
+        return calc_characteristic(t);
     }
 
     const std::complex<double> i(0.0, 1.0);
     const auto t_double = static_cast<double>(t);
-    return (u_*std::exp(i*t_double*u_) - l_*std::exp(i*t_double*l_)) / (t_double*(u_-l_)) - calc_characteristic(t) / t_double;
-}
+    const auto order_double = static_cast<double>(order);
 
-std::complex<double> UniformDistribution::calc_second_diff_characteristic(const int t)
-{
-    if(t == 0)
-    {
-        return {-(u_*u_+l_*l_+u_*l_)/3.0, 0.0};
+    if(t==0) {
+        return std::pow(i, order) * (std::pow(u_, order+1) - std::pow(l_, order+1)) / ((order+1)*(u_-l_));
     }
 
-    const std::complex<double> i(0.0, 1.0);
-    const auto t_double = static_cast<double>(t);
+    const auto deno = std::pow(i, order-1) * (std::pow(u_, order)*std::exp(i*t_double*u_) - std::pow(l_, order)*std::exp(i*t_double*l_));
+    const auto nume = t_double * (u_ - l_);
 
-    return (i*(u_*u_*std::exp(i*t_double*u_) - l_*l_*std::exp(i*t_double*l_)))/(t_double*(u_-l_)) - 2.0 * calc_first_diff_characteristic(t) / t_double;
-}
-
-std::complex<double> UniformDistribution::calc_third_diff_characteristic(const int t)
-{
-    if(t == 0)
-    {
-        return {0.0, -(u_+l_)*(u_*u_+l_*l_)/4.0};
-    }
-
-    const std::complex<double> i(0.0, 1.0);
-    const auto t_double = static_cast<double>(t);
-
-    return (-std::pow(u_, 3)*std::exp(i*t_double*u_) + std::pow(l_, 3)*std::exp(i*t_double*l_))/(t_double*(u_-l_)) - 3.0 * calc_second_diff_characteristic(t) / t_double;
-}
-
-std::complex<double> UniformDistribution::calc_fourth_diff_characteristic(const int t)
-{
-    if(t == 0)
-    {
-        return {(std::pow(u_, 5) - std::pow(l_, 5))/(5.0*(u_-l_)), 0.0};
-    }
-
-    const std::complex<double> i(0.0, 1.0);
-    const auto t_double = static_cast<double>(t);
-
-    return (i*(-std::pow(u_, 4)*std::exp(i*t_double*u_) + std::pow(l_, 4)*std::exp(i*t_double*l_)))/(t_double*(u_-l_)) - 4.0 * calc_third_diff_characteristic(t) / t_double;
+    return deno/nume - order_double * calc_diff_characteristic(t, order-1) / t_double;
 }

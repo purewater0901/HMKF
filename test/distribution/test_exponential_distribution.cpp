@@ -22,13 +22,13 @@ namespace {
     }
 } // namespace
 
-const double lambda = 1.0;
+const double lambda = 10.0;
 
 // Exact Distribution
 ExponentialDistribution dist(lambda);
 
 // Monte Carlo Simulation
-const int num_sample = 10000*100000;
+const int num_sample = 10000*10000;
 const auto samples = getExponentialDistributionSamples(lambda, num_sample);
 
 TEST(ExponentialDistribution, X_MOMENT)

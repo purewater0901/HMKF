@@ -28,6 +28,7 @@ TEST(ExampleHMKF, Predict)
 
     ExampleHMKF hmkf;
     MKF mkf(example_model);
+    EKF ekf(example_model);
 
     const double dt = 0.1;
 
@@ -55,6 +56,7 @@ TEST(ExampleHMKF, Predict)
 
     const auto predicted_moments = hmkf.predict(ini_state, control_inputs, dt, system_noise_map);
     const auto mkf_predicted_info = mkf.predict(ini_state, control_inputs, dt, system_noise_map);
+    const auto ekf_predicted_info = ekf.predict(ini_state, control_inputs, dt, system_noise_map);
 
     std::cout << "E[X]: " << predicted_moments.xPow1 << std::endl;
     std::cout << "E[Y]: " << predicted_moments.yPow1 << std::endl;
@@ -85,6 +87,7 @@ TEST(ExampleHMKF, Predict)
 
     Eigen::VectorXd meas_values = Eigen::VectorXd::Zero(1);
     const auto mkf_measurement_moments = mkf.update(mkf_predicted_info, meas_values, measurement_noise_map);
+    const auto ekf_measurement_moments = ekf.update(ekf_predicted_info, meas_values, measurement_noise_map);
 }
 
 /*

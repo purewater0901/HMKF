@@ -3,27 +3,7 @@
 
 double BaseDistribution::calc_moment(const int order)
 {
-    std::complex<double> result(0.0, 0.0);
-    if(order==0)
-    {
-        result += calc_characteristic(0);
-    }
-    else if(order==1)
-    {
-        result += calc_first_diff_characteristic(0);
-    }
-    else if(order==2)
-    {
-        result += calc_second_diff_characteristic(0);
-    }
-    else if(order==3)
-    {
-        result += calc_third_diff_characteristic(0);
-    }
-    else if(order==4)
-    {
-        result += calc_fourth_diff_characteristic(0);
-    }
+    const auto result = calc_diff_characteristic(0, order);
 
     std::complex<double> ideal(0.0, 1.0);
     std::complex<double> ideal_coeff(1.0, 0.0);
@@ -94,26 +74,8 @@ double BaseDistribution::calc_x_cos_moment(const int x_order, const int cos_orde
     {
         const auto coeff = static_cast<double>(nCr(cos_order, k));
         const int char_arg = 2*k - cos_order;
-        if(x_order==0)
-        {
-            result += coeff * calc_characteristic(char_arg);
-        }
-        else if(x_order==1)
-        {
-            result += coeff * calc_first_diff_characteristic(char_arg);
-        }
-        else if(x_order==2)
-        {
-            result += coeff * calc_second_diff_characteristic(char_arg);
-        }
-        else if(x_order==3)
-        {
-            result += coeff * calc_third_diff_characteristic(char_arg);
-        }
-        else if(x_order==4)
-        {
-            result += coeff * calc_fourth_diff_characteristic(char_arg);
-        }
+        result += coeff * calc_diff_characteristic(char_arg, x_order);
+
     }
 
     std::complex<double> ideal(0.0, 1.0);
@@ -132,26 +94,7 @@ double BaseDistribution::calc_x_sin_moment(const int x_order, const int sin_orde
     {
         const auto coeff = static_cast<double>(nCr(sin_order, k)) * std::pow(-1.0, sin_order-k);
         const int char_arg = 2*k - sin_order;
-        if(x_order==0)
-        {
-            result += coeff * calc_characteristic(char_arg);
-        }
-        else if(x_order==1)
-        {
-            result += coeff * calc_first_diff_characteristic(char_arg);
-        }
-        else if(x_order==2)
-        {
-            result += coeff * calc_second_diff_characteristic(char_arg);
-        }
-        else if(x_order==3)
-        {
-            result += coeff * calc_third_diff_characteristic(char_arg);
-        }
-        else if(x_order==4)
-        {
-            result += coeff * calc_fourth_diff_characteristic(char_arg);
-        }
+        result += coeff * calc_diff_characteristic(char_arg, x_order);
     }
 
     std::complex<double> i(0.0, 1.0);
@@ -171,26 +114,7 @@ double BaseDistribution::calc_x_cos_sin_moment(const int x_order, const int cos_
             const auto cos_coeff = static_cast<double>(nCr(cos_order, k1));
             const auto sin_coeff = static_cast<double>(nCr(sin_order, k2)) * std::pow(-1.0, sin_order-k2);
             const int char_arg = 2*(k1+k2) - cos_order - sin_order;
-            if(x_order==0)
-            {
-                result += cos_coeff * sin_coeff * calc_characteristic(char_arg);
-            }
-            else if(x_order==1)
-            {
-                result += cos_coeff * sin_coeff * calc_first_diff_characteristic(char_arg);
-            }
-            else if(x_order==2)
-            {
-                result += cos_coeff * sin_coeff * calc_second_diff_characteristic(char_arg);
-            }
-            else if(x_order==3)
-            {
-                result += cos_coeff * sin_coeff * calc_third_diff_characteristic(char_arg);
-            }
-            else if(x_order==4)
-            {
-                result += cos_coeff * sin_coeff * calc_fourth_diff_characteristic(char_arg);
-            }
+            result += cos_coeff * sin_coeff * calc_diff_characteristic(char_arg, x_order);
         }
     }
 
