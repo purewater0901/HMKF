@@ -87,7 +87,10 @@ Eigen::MatrixXd NormalVehicleModel::getStateMatrix(const Eigen::VectorXd& x_curr
     return A;
 }
 
-Eigen::MatrixXd NormalVehicleModel::getProcessNoiseMatrix(const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map)
+Eigen::MatrixXd NormalVehicleModel::getProcessNoiseMatrix(const Eigen::VectorXd& x_curr,
+                                                          const Eigen::VectorXd& u_curr,
+                                                          const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                                          const double dt)
 {
     const auto wx_dist_ptr = noise_map.at(SYSTEM_NOISE::IDX::WX);
     const auto wy_dist_ptr = noise_map.at(SYSTEM_NOISE::IDX::WY);

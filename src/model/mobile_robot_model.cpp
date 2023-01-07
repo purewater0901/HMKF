@@ -91,7 +91,10 @@ Eigen::MatrixXd MobileRobotModel::getStateMatrix(const Eigen::VectorXd& x_curr,
     return A;
 }
 
-Eigen::MatrixXd MobileRobotModel::getProcessNoiseMatrix(const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map)
+Eigen::MatrixXd MobileRobotModel::getProcessNoiseMatrix(const Eigen::VectorXd& x_curr,
+                                                        const Eigen::VectorXd& u_curr,
+                                                        const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                                        const double dt)
 {
     const auto wv_dist_ptr = noise_map.at(SYSTEM_NOISE::IDX::WV);
     const auto wyaw_dist_ptr = noise_map.at(SYSTEM_NOISE::IDX::WYAW);

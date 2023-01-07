@@ -74,7 +74,10 @@ public:
                                    const Eigen::VectorXd& u_curr,
                                    const double dt) override;
 
-    Eigen::MatrixXd getProcessNoiseMatrix(const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) override;
+    Eigen::MatrixXd getProcessNoiseMatrix(const Eigen::VectorXd& x_curr,
+                                          const Eigen::VectorXd& u_curr,
+                                          const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                          const double dt) override;
 
     // get dh/dx
     Eigen::MatrixXd getMeasurementMatrix(const Eigen::VectorXd& x_curr,

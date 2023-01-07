@@ -1,109 +1,100 @@
 import math
 import numpy as np
 
-sample_num = 10000 * 10000
+sample_num = 1000 * 1000
 dt = 0.1
 
 # initial state
-ini_mean = np.array([5.0, np.pi/2.0])
-ini_cov = np.array([[1.0**2, 0.0], [0.0, (np.pi/30)**2]])
+ini_mean = np.array([5.0, 3.0])
+ini_cov = np.array([[1.0**2, 0.0], [0.0, 1.0**2]])
 
 # control info
-controls = [1.0*dt, 0.1*dt]
+controls = [1.0]
 
 # system noise
-wx_lambda = 1.0
+wv_lambda = 1.0
 upper_wtheta = (np.pi/10.0)
 lower_wtheta = -(np.pi/10.0)
 
 # get samples
-wx_samples = np.random.exponential(wx_lambda, sample_num)
+wv_samples = np.random.exponential(wv_lambda, sample_num)
 wtheta_samples = np.random.uniform(upper_wtheta, lower_wtheta, sample_num)
 state_samples = np.random.multivariate_normal(ini_mean, ini_cov, sample_num)
 
 # measurement noise
 mr_lambda = 2.0
-upper_mtheta = (np.pi/20.0)
-lower_mtheta = -(np.pi/20.0)
 mr_samples = np.random.exponential(mr_lambda, sample_num)
-mtheta_samples = np.random.uniform(upper_mtheta, lower_mtheta, sample_num)
 
 sum_x = 0.0
-sum_yaw = 0.0
+sum_y = 0.0
 sum_x2 = 0.0
-sum_yaw2 = 0.0
-sum_x1_yaw1 = 0.0
+sum_y2 = 0.0
+sum_x1_y1 = 0.0
 sum_x3 = 0.0
-sum_x2_yaw1 = 0.0
+sum_y3 = 0.0
+sum_x2_y1 = 0.0
+sum_x1_y2 = 0.0
 sum_x4 = 0.0
+sum_y4 = 0.0
+sum_x2_y2 = 0.0
 next_x_samples = []
-next_yaw_samples = []
-for (state, wx, wtheta) in zip(state_samples, wx_samples, wtheta_samples):
+next_y_samples = []
+for (state, wv, wtheta) in zip(state_samples, wv_samples, wtheta_samples):
     curr_x = state[0]
-    curr_yaw = state[1]
+    curr_y = state[1]
     v = controls[0]
-    u = controls[1]
-    next_x = curr_x + v * np.cos(curr_yaw) + wx
-    next_yaw = curr_yaw + u + wtheta
+    next_x = curr_x + (v + wv) * np.cos(wtheta) * dt
+    next_y = curr_y + (v + wv) * np.sin(wtheta) * dt
     next_x_samples.append(next_x)
-    next_yaw_samples.append(next_yaw)
+    next_y_samples.append(next_y)
     sum_x += next_x
-    sum_yaw += next_yaw
+    sum_y += next_y
     sum_x2 += next_x * next_x
-    sum_yaw2 += next_yaw * next_yaw
-    sum_x1_yaw1 += next_x * next_yaw
+    sum_y2 += next_y * next_y
+    sum_x1_y1 += next_x * next_y
     sum_x3 += next_x ** 3
-    sum_x2_yaw1 += next_x**2 * next_yaw
+    sum_y3 += next_y ** 3
+    sum_x2_y1 += next_x**2 * next_y
+    sum_x1_y2 += next_x * next_y**2
     sum_x4 += next_x ** 4
+    sum_y4 += next_y ** 4
+    sum_x2_y2 += next_x**2 * next_y**2
 
 print('E[X]: ', sum_x/sample_num)
-print('E[YAW]: ', sum_yaw/sample_num)
+print('E[Y]: ', sum_y/sample_num)
 print('E[X^2]: ', sum_x2/sample_num)
-print('E[YAW^2]: ', sum_yaw2/sample_num)
-print('E[X*YAW]: ', sum_x1_yaw1/sample_num)
+print('E[Y^2]: ', sum_y2/sample_num)
+print('E[X*Y]: ', sum_x1_y1/sample_num)
 print('E[X^3]: ', sum_x3/sample_num)
-print('E[X^2*YAW]: ', sum_x2_yaw1/sample_num)
+print('E[Y^3]: ', sum_y3/sample_num)
+print('E[X^2*Y]: ', sum_x2_y1/sample_num)
+print('E[X*Y^2]: ', sum_x1_y2/sample_num)
 print('E[X^4]: ', sum_x4/sample_num)
+print('E[Y^4]: ', sum_y4/sample_num)
+print('E[X^2Y^2]: ', sum_x2_y2/sample_num)
 
 sum_mr = 0.0
-sum_myaw = 0.0
 sum_mr_square = 0.0
-sum_myaw_square = 0.0
-sum_mr_myaw = 0.0
 measurement_r_samples = []
-measurement_yaw_samples = []
-for (x, yaw, mr, myaw) in zip(next_x_samples, next_yaw_samples, mr_samples, mtheta_samples):
-    measurement_r = x*x + mr
-    measurement_yaw = yaw + myaw
+for (x, y, mr) in zip(next_x_samples, next_y_samples, mr_samples):
+    measurement_r = x**2 + y**2 + mr
     sum_mr += measurement_r
-    sum_myaw += measurement_yaw
     sum_mr_square += measurement_r * measurement_r
-    sum_myaw_square += measurement_yaw * measurement_yaw
-    sum_mr_myaw += measurement_r * measurement_yaw
     measurement_r_samples.append(measurement_r)
-    measurement_yaw_samples.append(measurement_yaw)
 
 print('E[R]: ', sum_mr/sample_num)
-print('E[YAW]: ', sum_myaw/sample_num)
 print('E[R^2]: ', sum_mr_square/sample_num)
-print('E[YAW^2]: ', sum_myaw_square/sample_num)
-print('E[R*YAW]: ', sum_mr_myaw/sample_num)
 
 sum_x1_mr1 = 0.0
-sum_x1_myaw1 = 0.0
-sum_yaw1_mr1 = 0.0
-sum_yaw1_myaw1 = 0.0
-for (x, yaw, mr, myaw) in zip(next_x_samples, next_yaw_samples, measurement_r_samples, measurement_yaw_samples):
+sum_y1_mr1 = 0.0
+for (x, y, mr) in zip(next_x_samples, next_y_samples, measurement_r_samples):
     sum_x1_mr1 += x * mr
-    sum_x1_myaw1 += x * myaw
-    sum_yaw1_mr1 += yaw * mr
-    sum_yaw1_myaw1 += yaw * myaw
+    sum_y1_mr1 += y * mr
 
 mean_mr = sum_mr/sample_num
-mean_myaw = sum_myaw/sample_num
 mean_x = sum_x / sample_num
-mean_yaw = sum_yaw / sample_num
+mean_y = sum_y / sample_num
 print('V[XR]: ', sum_x1_mr1/sample_num - mean_mr * mean_x)
-print('V[X*YAW]: ', sum_x1_myaw1/sample_num - mean_x * mean_myaw)
-print('V[YAW*R]: ', sum_yaw1_mr1/sample_num - mean_yaw * mean_mr)
-print('E[YAW^2]: ', sum_yaw1_myaw1/sample_num - mean_yaw * mean_myaw)
+print('V[YR]: ', sum_y1_mr1/sample_num - mean_mr * mean_y)
+print('E[XR]: ', sum_x1_mr1/sample_num)
+print('E[YR]: ', sum_y1_mr1/sample_num)

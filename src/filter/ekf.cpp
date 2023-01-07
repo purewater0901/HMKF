@@ -8,7 +8,7 @@ StateInfo EKF::predict(const StateInfo &state_info,
     // State mean prediction
     const auto A = vehicle_model_->getStateMatrix(state_info.mean, inputs, dt);
 
-    const auto Q = vehicle_model_->getProcessNoiseMatrix(noise_map);
+    const auto Q = vehicle_model_->getProcessNoiseMatrix(state_info.mean, inputs, noise_map, dt);
 
     StateInfo predicted_info;
     predicted_info.mean = vehicle_model_->propagate(state_info.mean, inputs, noise_map, dt);

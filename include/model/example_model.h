@@ -13,27 +13,25 @@ namespace Example
     namespace STATE {
         enum IDX {
             X = 0,
-            YAW = 1,
+            Y = 1,
         };
     }
 
     namespace MEASUREMENT {
         enum IDX {
             R = 0,
-            YAW = 1
         };
     }
 
     namespace INPUT {
         enum IDX {
             V = 0,
-            U = 1,
         };
     }
 
     namespace SYSTEM_NOISE {
         enum IDX {
-            WX = 0,
+            WV = 0,
             WYAW = 1,
         };
     }
@@ -41,7 +39,6 @@ namespace Example
     namespace MEASUREMENT_NOISE {
         enum IDX {
             WR = 0,
-            WYAW = 1,
         };
     }
 }
@@ -73,7 +70,10 @@ public:
                                    const Eigen::VectorXd& u_curr,
                                    const double dt) override;
 
-    Eigen::MatrixXd getProcessNoiseMatrix(const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) override;
+    Eigen::MatrixXd getProcessNoiseMatrix(const Eigen::VectorXd& x_curr,
+                                          const Eigen::VectorXd& u_curr,
+                                          const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                          const double dt) override;
 
     // get dh/dx
     Eigen::MatrixXd getMeasurementMatrix(const Eigen::VectorXd& x_curr,
