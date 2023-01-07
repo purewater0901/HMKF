@@ -15,6 +15,9 @@ StateInfo MKF::update(const StateInfo &state_info,
     const auto measurement_info = vehicle_model_->getMeasurementMoments(state_info, noise_map);
     const auto state_observation_cov = vehicle_model_->getStateMeasurementMatrix(state_info, measurement_info, noise_map);
 
+    std::cout << "MKF E[R]: " << measurement_info.mean(0) << std::endl;
+    std::cout << "MKF E[R^2]: " << measurement_info.covariance(0) + measurement_info.mean(0) * measurement_info.mean(0) << std::endl;
+
     const auto& predicted_mean = state_info.mean;
     const auto& predicted_cov = state_info.covariance;
     const auto& measurement_mean = measurement_info.mean;

@@ -24,18 +24,21 @@ using namespace Example;
 
 TEST(ExampleHMKF, Predict)
 {
+    std::shared_ptr<BaseModel> example_model = std::make_shared<ExampleVehicleModel>();
+
     ExampleHMKF hmkf;
+    MKF mkf(example_model);
 
     const double dt = 0.1;
 
     // Initial State
     StateInfo ini_state;
     ini_state.mean = Eigen::VectorXd::Zero(2);
-    ini_state.mean(0) = 5.0;
-    ini_state.mean(1) = 3.0;
+    ini_state.mean(0) = 0.0;
+    ini_state.mean(1) = 0.0;
     ini_state.covariance = Eigen::MatrixXd::Zero(2, 2);
-    ini_state.covariance(0, 0) = 1.0*1.0; // V[x]
-    ini_state.covariance(1, 1) = 1.0*1.0; // V[y]
+    ini_state.covariance(0, 0) = 0.1*0.1; // V[x]
+    ini_state.covariance(1, 1) = 0.1*0.1; // V[y]
 
     // Input
     Eigen::Vector2d control_inputs = Eigen::Vector2d::Zero();
@@ -51,6 +54,7 @@ TEST(ExampleHMKF, Predict)
             {SYSTEM_NOISE::IDX::WYAW, std::make_shared<UniformDistribution>(lower_wtheta, upper_wtheta)}};
 
     const auto predicted_moments = hmkf.predict(ini_state, control_inputs, dt, system_noise_map);
+    const auto mkf_predicted_info = mkf.predict(ini_state, control_inputs, dt, system_noise_map);
 
     std::cout << "E[X]: " << predicted_moments.xPow1 << std::endl;
     std::cout << "E[Y]: " << predicted_moments.yPow1 << std::endl;
@@ -67,7 +71,7 @@ TEST(ExampleHMKF, Predict)
 
     // Update
     // measurement noise
-    const double mr_lambda = 0.5;
+    const double mr_lambda = 10.0;
     std::map<int, std::shared_ptr<BaseDistribution>> measurement_noise_map{
             {MEASUREMENT_NOISE::IDX::WR, std::make_shared<ExponentialDistribution>(mr_lambda)}};
     Eigen::VectorXd measured_values = Eigen::VectorXd::Zero(1);
@@ -78,6 +82,9 @@ TEST(ExampleHMKF, Predict)
     std::cout << "E[R]: " << measurement_moments.rPow1 << std::endl;
     std::cout << "E[R^2]: " << measurement_moments.rPow2 << std::endl;
     std::cout << state_measurement_matrix << std::endl;
+
+    Eigen::VectorXd meas_values = Eigen::VectorXd::Zero(1);
+    const auto mkf_measurement_moments = mkf.update(mkf_predicted_info, meas_values, measurement_noise_map);
 }
 
 /*

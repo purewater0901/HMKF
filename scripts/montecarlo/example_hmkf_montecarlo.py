@@ -1,12 +1,12 @@
 import math
 import numpy as np
 
-sample_num = 1000 * 1000
+sample_num = 10000* 10000
 dt = 0.1
 
 # initial state
-ini_mean = np.array([5.0, 3.0])
-ini_cov = np.array([[1.0**2, 0.0], [0.0, 1.0**2]])
+ini_mean = np.array([0.0, 0.0])
+ini_cov = np.array([[0.1**2, 0.0], [0.0, 0.1**2]])
 
 # control info
 controls = [1.0]
@@ -22,7 +22,7 @@ wtheta_samples = np.random.uniform(upper_wtheta, lower_wtheta, sample_num)
 state_samples = np.random.multivariate_normal(ini_mean, ini_cov, sample_num)
 
 # measurement noise
-mr_lambda = 2.0
+mr_lambda = 0.1
 mr_samples = np.random.exponential(mr_lambda, sample_num)
 
 sum_x = 0.0
