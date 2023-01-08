@@ -9,6 +9,7 @@
 #include "model/normal_vehicle_model.h"
 #include "filter/normal_vehicle_ukf.h"
 #include "filter/ekf.h"
+#include "filter/ukf.h"
 #include "filter/mkf.h"
 
 using namespace NormalVehicle;
@@ -28,7 +29,7 @@ int main()
     EKF normal_vehicle_ekf(vehicle_model);
 
     // Normal Vehicle Unscented Kalman Filter
-    NormalVehicleUKF normal_vehicle_ukf;
+    UKF normal_vehicle_ukf(vehicle_model);
 
     // Position normal distribution
     const double x_mean = 0.0;

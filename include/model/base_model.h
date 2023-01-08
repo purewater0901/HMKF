@@ -29,6 +29,8 @@ public:
     {
     };
 
+    size_t getAugmentedSize() {return state_dim_ + system_noise_dim_ + measurement_noise_dim_;}
+
     // dynamics model
     virtual Eigen::VectorXd propagate(const Eigen::VectorXd& x_curr,
                                       const Eigen::VectorXd& u_curr,

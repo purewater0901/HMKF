@@ -52,7 +52,6 @@ public:
                         const size_t measurement_noise_dim)
                         : BaseModel(state_dim, system_noise_dim, measurement_dim, measurement_noise_dim)
     {
-
     }
 
     // dynamics model

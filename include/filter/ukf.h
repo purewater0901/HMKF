@@ -1,32 +1,32 @@
-#ifndef UNCERTAINTY_PROPAGATION_MOBILE_ROBOT_UKF_H
-#define UNCERTAINTY_PROPAGATION_MOBILE_ROBOT_UKF_H
+#ifndef HMKF_UKF_H
+#define HMKF_UKF_H
 
 #include <iostream>
 #include <vector>
-#include <cmath>
-#include <Eigen/Eigen>
 #include <memory>
+#include <map>
+#include <Eigen/Eigen>
 
+#include "model/base_model.h"
 #include "distribution/base_distribution.h"
-#include "model/mobile_robot_model.h"
 
-using namespace MobileRobot;
-
-class MobileRobotUKF
+class UKF
 {
 public:
-    MobileRobotUKF();
+    UKF(const std::shared_ptr<BaseModel>& vehicle_model);
 
     StateInfo predict(const StateInfo& state_info,
-                      const Eigen::Vector2d & control_inputs,
+                      const Eigen::VectorXd& control_inputs,
                       const double dt,
                       const std::map<int, std::shared_ptr<BaseDistribution>>& system_noise_map,
                       const std::map<int, std::shared_ptr<BaseDistribution>>& measurement_noise_map);
 
-    StateInfo update(const StateInfo &state_info,
-                     const Eigen::Vector3d &observed_values,
+    StateInfo update(const StateInfo& state_info,
+                     const Eigen::VectorXd& measurement_values,
                      const std::map<int, std::shared_ptr<BaseDistribution>>& system_noise_map,
                      const std::map<int, std::shared_ptr<BaseDistribution>>& measurement_noise_map);
+
+    std::shared_ptr<BaseModel> vehicle_model_;
 
     Eigen::MatrixXd sigma_points_;
     const int augmented_size_{10};
@@ -39,8 +39,6 @@ public:
     double Sigma_WC0_;
     double Sigma_WMI_;
     double Sigma_WCI_;
-
-    std::shared_ptr<MobileRobotModel> model_;
 };
 
-#endif //UNCERTAINTY_PROPAGATION_MOBILE_ROBOT_UKF_H
+#endif //HMKF_UKF_H

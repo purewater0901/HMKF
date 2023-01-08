@@ -7,9 +7,9 @@
 
 #include "matplotlibcpp.h"
 #include "model/mobile_robot_model.h"
-#include "filter/mobile_robot_ukf.h"
 #include "filter/mkf.h"
 #include "filter/ekf.h"
+#include "filter/ukf.h"
 #include "utilities.h"
 #include "scenario/mobile_robot_scenario.h"
 
@@ -31,7 +31,7 @@ int main()
     EKF mobile_robot_ekf(vehicle_model);
 
     // Mobile Robot Unscented Kalman Filter
-    MobileRobotUKF mobile_robot_ukf;
+    UKF mobile_robot_ukf(vehicle_model);
 
     StateInfo nkf_state_info;
     nkf_state_info.mean = scenario.ini_mean_;
