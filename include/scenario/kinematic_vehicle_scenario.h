@@ -14,6 +14,8 @@
 #include "distribution/exponential_distribution.h"
 #include "utilities.h"
 
+using namespace KinematicVehicle;
+
 struct KinematicVehicleGaussianScenario
 {
     KinematicVehicleGaussianScenario() : filename_("/kinematic_vehicle_gaussian.csv")

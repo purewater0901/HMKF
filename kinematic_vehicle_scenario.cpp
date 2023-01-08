@@ -8,8 +8,8 @@
 #include "matplotlibcpp.h"
 #include "distribution/normal_distribution.h"
 #include "model/kinematic_vehicle_model.h"
-#include "filter/kinematic_vehicle_ukf.h"
 #include "filter/ekf.h"
+#include "filter/ukf.h"
 #include "filter/mkf.h"
 #include "scenario/kinematic_vehicle_scenario.h"
 
@@ -28,7 +28,7 @@ int main()
     MKF kinematic_vehicle_mkf(vehicle_model);
 
     // Normal Vehicle Unscented Kalman Filter
-    KinematicVehicleUKF kinematic_vehicle_ukf;
+    UKF kinematic_vehicle_ukf(vehicle_model);
 
     // Normal Vehicle Extended Kalman Filter
     EKF kinematic_vehicle_ekf(vehicle_model);

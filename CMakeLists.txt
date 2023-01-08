@@ -31,8 +31,6 @@ add_library(lib
             src/filter/simple_vehicle_ukf.cpp
             src/filter/simple_vehicle_ekf.cpp
             src/filter/simple_vehicle_hmkf.cpp
-            src/filter/normal_vehicle_ukf.cpp
-            src/filter/kinematic_vehicle_ukf.cpp
             src/filter/paper_example_2d_ukf.cpp
             src/filter/paper_example_3d_ukf.cpp
             src/distribution/base_distribution.cpp
