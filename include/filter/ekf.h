@@ -24,6 +24,9 @@ public:
                      const Eigen::VectorXd& y,
                      const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map);
 
+    StateInfo getMeasurementInfo(const StateInfo& state_info,
+                                 const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map);
+
     std::shared_ptr<BaseModel> vehicle_model_;
 };
 

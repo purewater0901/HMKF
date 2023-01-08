@@ -26,6 +26,10 @@ public:
                      const std::map<int, std::shared_ptr<BaseDistribution>>& system_noise_map,
                      const std::map<int, std::shared_ptr<BaseDistribution>>& measurement_noise_map);
 
+    StateInfo getMeasurementInfo(const StateInfo& state_info,
+                                 const std::map<int, std::shared_ptr<BaseDistribution>>& system_noise_map,
+                                 const std::map<int, std::shared_ptr<BaseDistribution>>& measurement_noise_map);
+
     std::shared_ptr<BaseModel> vehicle_model_;
 
     Eigen::MatrixXd sigma_points_;
