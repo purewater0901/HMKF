@@ -40,7 +40,7 @@ public:
     double Sigma_WMI_;
     double Sigma_WCI_;
 
-    MobileRobotModel model_;
+    std::shared_ptr<MobileRobotModel> model_;
 };
 
 #endif //UNCERTAINTY_PROPAGATION_MOBILE_ROBOT_UKF_H

@@ -24,7 +24,13 @@ using namespace Example;
 
 TEST(ExampleHMKF, Predict)
 {
-    std::shared_ptr<BaseModel> example_model = std::make_shared<ExampleVehicleModel>();
+    const size_t state_dim = 2;
+    const size_t system_noise_dim = 2;
+    const size_t measurement_dim = 1;
+    const size_t measurement_noise_dim = 1;
+    std::shared_ptr<BaseModel> example_model = std::make_shared<ExampleVehicleModel>(state_dim, system_noise_dim,
+                                                                                     measurement_dim,
+                                                                                     measurement_noise_dim);
 
     ExampleHMKF hmkf;
     MKF mkf(example_model);

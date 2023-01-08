@@ -19,7 +19,7 @@ int main()
     const double dt = 0.1;
 
     // Vehicle Model
-    std::shared_ptr<BaseModel> vehicle_model = std::make_shared<NormalVehicleModel>();
+    std::shared_ptr<BaseModel> vehicle_model = std::make_shared<NormalVehicleModel>(3, 3, 2, 2);
 
     // Normal Vehicle Nonlinear Kalman Filter
     MKF normal_vehicle_mkf(vehicle_model);

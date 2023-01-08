@@ -22,7 +22,7 @@ int main()
     const double dt = scenario.dt;
 
     // Vehicle Model
-    std::shared_ptr<BaseModel> vehicle_model = std::make_shared<KinematicVehicleModel>();
+    std::shared_ptr<BaseModel> vehicle_model = std::make_shared<KinematicVehicleModel>(4, 2, 3, 3);
 
     // Kinematic Vehicle Nonlinear Kalman Filter
     MKF kinematic_vehicle_mkf(vehicle_model);

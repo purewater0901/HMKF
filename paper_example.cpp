@@ -111,7 +111,7 @@ int main()
         {
             // Exact Moment
             TwoDimensionalNormalDistribution two_dim_normal_dist(mean, cov);
-            const double exact_moment = two_dim_normal_dist.calc_xy_moment();
+            const double exact_moment = two_dim_normal_dist.calc_xy_cos_y_sin_y_moment(1, 1, 0, 0);
 
             // Linear(E[x]E[y)])
             NormalDistribution x_dist(mean(0), cov(0, 0));
@@ -138,7 +138,7 @@ int main()
         {
             // Exact Moment
             TwoDimensionalNormalDistribution two_dim_normal_dist(mean, cov);
-            const double exact_moment = two_dim_normal_dist.calc_x_cos_y_moment();
+            const double exact_moment = two_dim_normal_dist.calc_xy_cos_y_sin_y_moment(1, 0, 1, 0);
 
             // Linear(E[x]E[cos(theta)])
             NormalDistribution x_dist(mean(0), cov(0, 0));
@@ -165,7 +165,7 @@ int main()
         {
             // Exact Moment
             TwoDimensionalNormalDistribution two_dim_normal_dist(mean, cov);
-            const double exact_moment = two_dim_normal_dist.calc_x_cos_y_sin_y_moment();
+            const double exact_moment = two_dim_normal_dist.calc_xy_cos_y_sin_y_moment(1, 0, 1, 1);
 
             // Linear(E[x]E[cos(theta)]E[sin(theta)])
             NormalDistribution x_dist(mean(0), cov(0, 0));
@@ -199,7 +199,7 @@ int main()
         {
             // Exact Moment
             TwoDimensionalNormalDistribution two_dim_normal_dist(mean, cov);
-            const double exact_moment = two_dim_normal_dist.calc_xy_moment();
+            const double exact_moment = two_dim_normal_dist.calc_xy_cos_y_sin_y_moment(1, 1, 0, 0);
 
             // Linear(E[x]E[y)])
             NormalDistribution x_dist(mean(0), cov(0, 0));
@@ -226,7 +226,7 @@ int main()
         {
             // Exact Moment
             TwoDimensionalNormalDistribution two_dim_normal_dist(mean, cov);
-            const double exact_moment = two_dim_normal_dist.calc_x_cos_y_moment();
+            const double exact_moment = two_dim_normal_dist.calc_xy_cos_y_sin_y_moment(1, 0, 1, 0);
 
             // Linear
             NormalDistribution x_dist(mean(0), cov(0, 0));
@@ -253,7 +253,7 @@ int main()
         {
             // Exact Moment
             TwoDimensionalNormalDistribution two_dim_normal_dist(mean, cov);
-            const double exact_moment = two_dim_normal_dist.calc_x_cos_y_sin_y_moment();
+            const double exact_moment = two_dim_normal_dist.calc_xy_cos_y_sin_y_moment(1, 0, 1, 1);
 
             // Linear(E[x]E[cos(theta)]E[sin(theta)])
             NormalDistribution x_dist(mean(0), cov(0, 0));
@@ -309,7 +309,7 @@ int main()
             std::cout << "Linear: " << linear_moment << std::endl;
             std::cout << "E[x]E[y]E[sin(theta)]: " << non_correlation_exact << std::endl;
             std::cout << "UKF Moment: " << ukf_moment << std::endl;
-            std::cout << "MonteCarlo: " << 162.29415844773192 << std::endl;
+            std::cout << "MonteCarlo: " << 39.61  << std::endl;
             std::cout << "------------" << std::endl;
         }
 

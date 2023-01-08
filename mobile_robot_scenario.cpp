@@ -22,7 +22,7 @@ int main()
     const double& dt = scenario.dt;
 
     // Vehicle Model
-    std::shared_ptr<BaseModel> vehicle_model = std::make_shared<MobileRobotModel>();
+    std::shared_ptr<BaseModel> vehicle_model = std::make_shared<MobileRobotModel>(4, 2, 3, 4);
 
     // Mobile Robot Nonlinear Kalman Filter
     MKF mobile_robot_nkf(vehicle_model);

@@ -54,7 +54,14 @@ namespace MobileRobot
 class MobileRobotModel : public BaseModel
 {
 public:
-    MobileRobotModel() = default;
+    MobileRobotModel(const size_t state_dim,
+                     const size_t system_noise_dim,
+                     const size_t measurement_dim,
+                     const size_t measurement_noise_dim)
+                    : BaseModel(state_dim, system_noise_dim, measurement_dim, measurement_noise_dim)
+    {
+    }
+
 
     Eigen::VectorXd propagate(const Eigen::VectorXd& x_curr,
                               const Eigen::VectorXd& u_curr,

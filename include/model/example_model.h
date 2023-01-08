@@ -46,7 +46,14 @@ namespace Example
 class ExampleVehicleModel : public BaseModel
 {
 public:
-    ExampleVehicleModel() = default;
+    ExampleVehicleModel(const size_t state_dim,
+                        const size_t system_noise_dim,
+                        const size_t measurement_dim,
+                        const size_t measurement_noise_dim)
+                        : BaseModel(state_dim, system_noise_dim, measurement_dim, measurement_noise_dim)
+    {
+
+    }
 
     // dynamics model
     Eigen::VectorXd propagate(const Eigen::VectorXd& x_curr,

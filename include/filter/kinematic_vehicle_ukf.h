@@ -40,7 +40,7 @@ public:
     double Sigma_WMI_;
     double Sigma_WCI_;
 
-    KinematicVehicleModel model_;
+    std::shared_ptr<KinematicVehicleModel> model_;
 };
 
 #endif //UNCERTAINTY_PROPAGATION_KINEMATIC_VEHICLE_UKF_H

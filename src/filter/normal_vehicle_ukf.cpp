@@ -12,6 +12,7 @@ NormalVehicleUKF::NormalVehicleUKF() : augmented_size_(8),
     Sigma_WC0_ = Sigma_WM0_ + (1.0 - alpha_squared_ + beta_);
     Sigma_WMI_ = 1.0 / (2.0 * (augmented_size_ + lambda_));
     Sigma_WCI_ = Sigma_WMI_;
+    model_ = std::make_shared<NormalVehicleModel>(3, 3, 2, 2);
 }
 
 StateInfo NormalVehicleUKF::predict(const StateInfo& state_info,
@@ -48,19 +49,19 @@ StateInfo NormalVehicleUKF::predict(const StateInfo& state_info,
     Eigen::VectorXd processed_augmented_mean = Eigen::VectorXd::Zero(augmented_size_);
     for(size_t i=0; i<augmented_size_; ++i) {
         sigma_points_.col(i) = augmented_mean + augmented_cov_squared.col(i);
-        const Eigen::Vector3d processed_state = model_.propagate(sigma_points_.col(i).head(3), control_inputs, sigma_points_.col(i).segment(3, 3), dt);
+        const Eigen::Vector3d processed_state = model_->propagate(sigma_points_.col(i).head(3), control_inputs, sigma_points_.col(i).segment(3, 3), dt);
         sigma_points_.col(i).head(3) = processed_state;
         processed_augmented_mean += Sigma_WMI_ * sigma_points_.col(i);
     }
     for(size_t i=augmented_size_; i<2*augmented_size_; ++i) {
         sigma_points_.col(i) = augmented_mean - augmented_cov_squared.col(i-augmented_size_);
-        const Eigen::Vector3d processed_state = model_.propagate(sigma_points_.col(i).head(3), control_inputs, sigma_points_.col(i).segment(3, 3), dt);
+        const Eigen::Vector3d processed_state = model_->propagate(sigma_points_.col(i).head(3), control_inputs, sigma_points_.col(i).segment(3, 3), dt);
         sigma_points_.col(i).head(3) = processed_state;
         processed_augmented_mean += Sigma_WMI_ * sigma_points_.col(i);
     }
     {
         sigma_points_.col(2*augmented_size_) = augmented_mean;
-        const Eigen::Vector3d processed_state = model_.propagate(sigma_points_.col(2*augmented_size_).head(3), control_inputs, sigma_points_.col(2*augmented_size_).segment(3, 3), dt);
+        const Eigen::Vector3d processed_state = model_->propagate(sigma_points_.col(2*augmented_size_).head(3), control_inputs, sigma_points_.col(2*augmented_size_).segment(3, 3), dt);
         sigma_points_.col(2*augmented_size_).head(3) = processed_state;
         processed_augmented_mean += Sigma_WM0_ * sigma_points_.col(2*augmented_size_);
     }
@@ -127,7 +128,7 @@ StateInfo NormalVehicleUKF::update(const StateInfo &state_info,
     Eigen::MatrixXd observed_sigma_points = Eigen::MatrixXd::Zero(2, 2*augmented_size_+1);
     Eigen::Vector2d y_mean = Eigen::Vector2d::Zero();
     for(size_t i=0; i<2*augmented_size_+1; ++i) {
-        const Eigen::Vector2d y = model_.measure(sigma_points_.col(i).head(3), sigma_points_.col(i).segment(6, 2));
+        const Eigen::Vector2d y = model_->measure(sigma_points_.col(i).head(3), sigma_points_.col(i).segment(6, 2));
         observed_sigma_points.col(i) = y;
         if(i==2*augmented_size_) {
             y_mean += Sigma_WM0_ * y;

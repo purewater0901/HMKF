@@ -40,7 +40,7 @@ public:
     double Sigma_WMI_;
     double Sigma_WCI_;
 
-    NormalVehicleModel model_;
+    std::shared_ptr<NormalVehicleModel> model_;
 };
 
 #endif //UNCERTAINTY_PROPAGATION_NORMAL_UKF_H

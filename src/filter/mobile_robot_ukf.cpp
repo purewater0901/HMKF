@@ -12,6 +12,7 @@ MobileRobotUKF::MobileRobotUKF() : augmented_size_(10),
     Sigma_WC0_ = Sigma_WM0_ + (1.0 - alpha_squared_ + beta_);
     Sigma_WMI_ = 1.0 / (2.0 * (augmented_size_ + lambda_));
     Sigma_WCI_ = Sigma_WMI_;
+    model_ = std::make_shared<MobileRobotModel>(4, 2, 3, 4);
 }
 
 StateInfo MobileRobotUKF::predict(const StateInfo& state_info,
@@ -51,19 +52,19 @@ StateInfo MobileRobotUKF::predict(const StateInfo& state_info,
     Eigen::VectorXd processed_augmented_mean = Eigen::VectorXd::Zero(10);
     for(size_t i=0; i<10; ++i) {
         sigma_points_.col(i) = augmented_mean + augmented_cov_squared.col(i);
-        const Eigen::Vector4d processed_state = model_.propagate(sigma_points_.col(i).head(4), control_inputs, sigma_points_.col(i).segment(4, 2), dt);
+        const Eigen::Vector4d processed_state = model_->propagate(sigma_points_.col(i).head(4), control_inputs, sigma_points_.col(i).segment(4, 2), dt);
         sigma_points_.col(i).head(4) = processed_state;
         processed_augmented_mean += Sigma_WMI_ * sigma_points_.col(i);
     }
     for(size_t i=10; i<20; ++i) {
         sigma_points_.col(i) = augmented_mean - augmented_cov_squared.col(i-10);
-        const Eigen::Vector4d processed_state = model_.propagate(sigma_points_.col(i).head(4), control_inputs, sigma_points_.col(i).segment(4, 2), dt);
+        const Eigen::Vector4d processed_state = model_->propagate(sigma_points_.col(i).head(4), control_inputs, sigma_points_.col(i).segment(4, 2), dt);
         sigma_points_.col(i).head(4) = processed_state;
         processed_augmented_mean += Sigma_WMI_ * sigma_points_.col(i);
     }
     {
         sigma_points_.col(20) = augmented_mean;
-        const Eigen::Vector4d processed_state = model_.propagate(sigma_points_.col(20).head(4), control_inputs, sigma_points_.col(20).segment(4, 2), dt);
+        const Eigen::Vector4d processed_state = model_->propagate(sigma_points_.col(20).head(4), control_inputs, sigma_points_.col(20).segment(4, 2), dt);
         sigma_points_.col(20).head(4) = processed_state;
         processed_augmented_mean += Sigma_WM0_ * sigma_points_.col(20);
     }
@@ -133,7 +134,7 @@ StateInfo MobileRobotUKF::update(const StateInfo &state_info,
     Eigen::MatrixXd observed_sigma_points = Eigen::MatrixXd::Zero(3, 21);
     Eigen::Vector3d y_mean = Eigen::Vector3d::Zero();
     for(size_t i=0; i<21; ++i) {
-        const Eigen::Vector3d y = model_.measure(sigma_points_.col(i).head(4), sigma_points_.col(i).segment(6, 4));
+        const Eigen::Vector3d y = model_->measure(sigma_points_.col(i).head(4), sigma_points_.col(i).segment(6, 4));
         observed_sigma_points.col(i) = y;
         if(i==20) {
             y_mean += Sigma_WM0_ * y;

@@ -17,7 +17,17 @@ struct StateInfo {
 class BaseModel
 {
 public:
-    BaseModel() = default;
+    BaseModel(const size_t state_dim,
+              const size_t system_noise_dim,
+              const size_t measurement_dim,
+              const size_t measurement_noise_dim)
+              : state_dim_(state_dim),
+                system_noise_dim_(system_noise_dim),
+                measurement_dim_(measurement_dim),
+                measurement_noise_dim_(measurement_noise_dim)
+
+    {
+    };
 
     // dynamics model
     virtual Eigen::VectorXd propagate(const Eigen::VectorXd& x_curr,
@@ -64,6 +74,11 @@ public:
 
     virtual Eigen::MatrixXd getStateMeasurementMatrix(const StateInfo& state_info, const StateInfo& measurement_info,
                                                       const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map) = 0;
+
+    size_t state_dim_{0};
+    size_t system_noise_dim_{0};
+    size_t measurement_dim_{0};
+    size_t measurement_noise_dim_{0};
 
 protected:
 };

@@ -17,7 +17,7 @@ TEST(KinematicVehicleModel, propagate)
 {
     const double epsilon = 1e-6;
 
-    KinematicVehicleModel model;
+    KinematicVehicleModel model(4, 2 ,3, 3);
     const double dt = 0.1;
 
     // Input a
@@ -90,12 +90,12 @@ TEST(KinematicVehicleModel, observe)
 {
     const double epsilon = 1e-6;
 
-    KinematicVehicleModel model;
+    KinematicVehicleModel model(4, 2, 3, 3);
 
     {
         const Eigen::Vector4d x_curr = Eigen::Vector4d::Zero();
         const Eigen::Vector3d observation_noise{0.0, 0.0, 0.0};
-        const auto y = model.observe(x_curr, observation_noise);
+        const auto y = model.measure(x_curr, observation_noise);
 
         EXPECT_NEAR(y(OBSERVATION::IDX::R), 0.0, epsilon);
         EXPECT_NEAR(y(OBSERVATION::IDX::VC), 0.0, epsilon);
@@ -104,7 +104,7 @@ TEST(KinematicVehicleModel, observe)
     {
         const Eigen::Vector4d x_curr = Eigen::Vector4d::Zero();
         const Eigen::Vector3d observation_noise{10.2, 0.1, 0.0};
-        const auto y = model.observe(x_curr, observation_noise);
+        const auto y = model.measure(x_curr, observation_noise);
 
         EXPECT_NEAR(y(OBSERVATION::IDX::R), 10.2, epsilon);
         EXPECT_NEAR(y(OBSERVATION::IDX::VC), 0.1, epsilon);
@@ -113,7 +113,7 @@ TEST(KinematicVehicleModel, observe)
     {
         const Eigen::Vector4d x_curr{10.0, 10.0, 5.0, M_PI/4.0};
         const Eigen::Vector3d observation_noise{10.2, 0.1, 0.0};
-        const auto y = model.observe(x_curr, observation_noise);
+        const auto y = model.measure(x_curr, observation_noise);
 
         EXPECT_NEAR(y(OBSERVATION::IDX::R), 210.2, epsilon);
         EXPECT_NEAR(y(OBSERVATION::IDX::VC), 5.0*std::cos(M_PI/4.0)+0.1, epsilon);
@@ -390,10 +390,10 @@ TEST(KinematicVehicleModel, propagateStateMoments)
 }
  */
 
-TEST(KinematicVehicleModel, getObservationMoments_indpendent)
+TEST(KinematicVehicleModel, getMeasurementMoments_indpendent)
 {
     const double epsilon = 0.01;
-    KinematicVehicleModel model;
+    KinematicVehicleModel model(4, 2, 3, 3);
 
     const Eigen::Vector4d mean = {3.5, 5.5, 3.0, 0.8};
     Eigen::Matrix4d cov;
@@ -444,10 +444,10 @@ TEST(KinematicVehicleModel, getObservationMoments_indpendent)
     observation_noise.wyawPow2 = wyaw_dist.calc_moment(2);
 
     // Step3. Get Observation Moments
-    const auto observation_moments = model.getObservationMoments(reduced_moments, observation_noise);
+    const auto observation_moments = model.getMeasurementMoments(reduced_moments, observation_noise);
 
     // Monte Carlo
-    KinematicVehicleModel::ObservationMoments montecarlo_observation_moments;
+    KinematicVehicleModel::MeasurementMoments montecarlo_observation_moments;
     {
         std::random_device seed_gen;
         std::default_random_engine engine(seed_gen());
@@ -519,7 +519,7 @@ TEST(KinematicVehicleModel, getObservationMoments_indpendent)
     EXPECT_NEAR(observation_moments.vcPow1_yawPow1, montecarlo_observation_moments.vcPow1_yawPow1, epsilon);
 }
 
-TEST(KinematicVehicleModel, getObservationMoments)
+TEST(KinematicVehicleModel, getMeasurementMoments)
 {
     const double epsilon = 0.01;
 
@@ -556,7 +556,7 @@ TEST(KinematicVehicleModel, getObservationMoments)
         auto wr_dist = NormalDistribution(100, 10.5*10.5);
         auto wv_dist = NormalDistribution(0.0, 0.3*0.3);
         auto wyaw_dist = NormalDistribution(0.0, M_PI*M_PI/100);
-        KinematicVehicleModel::ObservationNoiseMoments observation_noise;
+        KinematicVehicleModel::MeasurementNoiseMoments observation_noise;
         observation_noise.wrPow1 = wr_dist.calc_moment(1);
         observation_noise.wrPow2 = wr_dist.calc_moment(2);
         observation_noise.wvPow1 = wv_dist.calc_moment(1);
@@ -565,7 +565,7 @@ TEST(KinematicVehicleModel, getObservationMoments)
         observation_noise.wyawPow2 = wyaw_dist.calc_moment(2);
 
         // Step3. Get Observation Moments
-        const auto observation_moments = model.getObservationMoments(reduced_moments, observation_noise);
+        const auto observation_moments = model.getMeasurementMoments(reduced_moments, observation_noise);
 
         EXPECT_NEAR(observation_moments.rPow1, 100.34659406906736, epsilon);
         EXPECT_NEAR(observation_moments.vcPow1, 2.0567334733086207, epsilon);
