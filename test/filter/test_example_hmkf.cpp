@@ -36,7 +36,7 @@ TEST(ExampleHMKF, Predict)
     ExampleHMKF hmkf;
     MKF mkf(example_model);
     EKF ekf(example_model);
-    UKF ukf(example_model);
+    UKF ukf(example_model, 0.15);
 
     const double dt = 0.1;
 
@@ -84,12 +84,22 @@ TEST(ExampleHMKF, Predict)
     std::cout << "E[X^4]: " << predicted_moments.xPow4 << std::endl;
     std::cout << "E[Y^4]: " << predicted_moments.yPow4 << std::endl;
     std::cout << "E[X^2Y^2]: " << predicted_moments.xPow2_yPow2 << std::endl;
+    std::cout << "EKF E[X]: " << ekf_predicted_info.mean(0) << std::endl;
+    std::cout << "EKF E[Y]: " << ekf_predicted_info.mean(1) << std::endl;
+    std::cout << "EKF E[X^2]: " << ekf_predicted_info.covariance(0,0) + ekf_predicted_info.mean(0)*ekf_predicted_info.mean(0) << std::endl;
+    std::cout << "EKF E[Y^2]: " << ekf_predicted_info.covariance(1,1) + ekf_predicted_info.mean(1)*ekf_predicted_info.mean(1) << std::endl;
+    std::cout << "UKF E[X]: " << ukf_predicted_info.mean(0) << std::endl;
+    std::cout << "UKF E[Y]: " << ukf_predicted_info.mean(1) << std::endl;
+    std::cout << "UKF E[X^2]: " << ukf_predicted_info.covariance(0,0) + ukf_predicted_info.mean(0)*ukf_predicted_info.mean(0) << std::endl;
+    std::cout << "UKF E[Y^2]: " << ukf_predicted_info.covariance(1,1) + ukf_predicted_info.mean(1)*ukf_predicted_info.mean(1) << std::endl;
+    std::cout << "MKF E[X]: " << mkf_predicted_info.mean(0) << std::endl;
+    std::cout << "MKF E[Y]: " << mkf_predicted_info.mean(1) << std::endl;
+    std::cout << "MKF E[X^2]: " << mkf_predicted_info.covariance(0,0) + mkf_predicted_info.mean(0)*mkf_predicted_info.mean(0) << std::endl;
+    std::cout << "MKF E[Y^2]: " << mkf_predicted_info.covariance(1,1) + mkf_predicted_info.mean(1)*mkf_predicted_info.mean(1) << std::endl;
+    std::cout << "-----------------------" << std::endl;
+    std::cout << "-----------------------" << std::endl;
 
     // Update
-
-    Eigen::VectorXd measured_values = Eigen::VectorXd::Zero(1);
-    measured_values(MEASUREMENT::IDX::R) = predicted_moments.xPow1*predicted_moments.xPow1;
-
     const auto measurement_moments = hmkf.getMeasurementMoments(predicted_moments, measurement_noise_map);
     const auto state_measurement_matrix = hmkf.getStateMeasurementMatrix(predicted_moments, measurement_moments, measurement_noise_map);
 
@@ -98,9 +108,9 @@ TEST(ExampleHMKF, Predict)
     const auto ukf_measurement_moments = ukf.getMeasurementInfo(ukf_predicted_info, system_noise_map, measurement_noise_map);
 
     std::cout << "EKF: E[R]: " << ekf_measurement_moments.mean(0) << std::endl;
-    std::cout << "EKF: E[R^2]: " << ekf_measurement_moments.covariance(0,0) + mkf_measurement_moments.mean(0)*mkf_measurement_moments.mean(0) << std::endl;
+    std::cout << "EKF: E[R^2]: " << ekf_measurement_moments.covariance(0,0) + ekf_measurement_moments.mean(0)*ekf_measurement_moments.mean(0) << std::endl;
     std::cout << "UKF: E[R]: " << ukf_measurement_moments.mean(0) << std::endl;
-    std::cout << "UKF: E[R^2]: " << ukf_measurement_moments.covariance(0,0) + mkf_measurement_moments.mean(0)*mkf_measurement_moments.mean(0) << std::endl;
+    std::cout << "UKF: E[R^2]: " << ukf_measurement_moments.covariance(0,0) + ukf_measurement_moments.mean(0)*ukf_measurement_moments.mean(0) << std::endl;
     std::cout << "MKF: E[R]: " << mkf_measurement_moments.mean(0) << std::endl;
     std::cout << "MKF: E[R^2]: " << mkf_measurement_moments.covariance(0,0) + mkf_measurement_moments.mean(0)*mkf_measurement_moments.mean(0) << std::endl;
     std::cout << "HMKF E[R]: " << measurement_moments.rPow1 << std::endl;

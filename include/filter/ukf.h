@@ -13,7 +13,10 @@
 class UKF
 {
 public:
-    UKF(const std::shared_ptr<BaseModel>& vehicle_model);
+    UKF(const std::shared_ptr<BaseModel>& vehicle_model,
+        const double alpha_squared=1.0,
+        const double beta=0.0,
+        const double kappa=3.0);
 
     StateInfo predict(const StateInfo& state_info,
                       const Eigen::VectorXd& control_inputs,
@@ -32,8 +35,7 @@ public:
 
     std::shared_ptr<BaseModel> vehicle_model_;
 
-    Eigen::MatrixXd sigma_points_;
-    const int augmented_size_{10};
+    const int augmented_size_{0};
     const double alpha_squared_{1.0};
     const double beta_{0.0};
     const double kappa_{0.0};
