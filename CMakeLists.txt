@@ -18,6 +18,7 @@ include_directories(include)
 
 add_library(lib
             src/model/example_model.cpp
+            src/model/squared_example_model.cpp
             src/model/simple_vehicle_model.cpp
             src/model/normal_vehicle_model.cpp
             src/model/kinematic_vehicle_model.cpp
