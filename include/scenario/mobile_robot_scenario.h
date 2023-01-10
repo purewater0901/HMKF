@@ -14,6 +14,8 @@
 #include "distribution/exponential_distribution.h"
 #include "utilities.h"
 
+using namespace MobileRobot;
+
 struct MobileRobotGaussianScenario
 {
     MobileRobotGaussianScenario() : N(1000), dt(0.1), filename_("/mobile_robot_gaussian.csv")
@@ -133,7 +135,6 @@ struct MobileRobotNonGaussianScenario
         a_input_ = Eigen::VectorXd::Constant(N, 0.03);
         u_input_ = Eigen::VectorXd::Constant(N, 0.05);
 
-        // System Noise
         // System Noise
         const double lower_wv = -3.0;
         const double upper_wv = 3.0;

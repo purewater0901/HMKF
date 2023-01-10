@@ -10,13 +10,15 @@
 #include "filter/ekf.h"
 #include "filter/ukf.h"
 #include "filter/mkf.h"
+#include "scenario/normal_vehicle_scenario.h"
 
 using namespace NormalVehicle;
 
 int main()
 {
-    const size_t N = 10000;
-    const double dt = 0.1;
+    NormalVehicleNonGaussianScenario scenario;
+    const size_t N = scenario.N;
+    const double dt = scenario.dt;
 
     // Vehicle Model
     std::shared_ptr<BaseModel> vehicle_model = std::make_shared<NormalVehicleModel>(3, 3, 2, 2);
@@ -30,28 +32,10 @@ int main()
     // Normal Vehicle Unscented Kalman Filter
     UKF normal_vehicle_ukf(vehicle_model);
 
-    // Position normal distribution
-    const double x_mean = 0.0;
-    const double x_cov = 0.1*0.1;
-    const double y_mean = 0.0;
-    const double y_cov = 0.1*0.1;
-    const double yaw_mean = M_PI/4.0;
-    const double yaw_cov = 0.1*0.1;
-
     // Uniform Distribution
-    NormalDistribution x_dist(x_mean, x_cov);
-    NormalDistribution y_dist(y_mean, y_cov);
-    NormalDistribution yaw_dist(yaw_mean, yaw_cov);
-
     StateInfo nkf_state_info;
-    nkf_state_info.mean = Eigen::VectorXd::Zero(3);
-    nkf_state_info.covariance = Eigen::MatrixXd::Zero(3, 3);
-    nkf_state_info.mean(0) = x_dist.calc_mean();
-    nkf_state_info.mean(1) = y_dist.calc_mean();
-    nkf_state_info.mean(2) = yaw_dist.calc_mean();
-    nkf_state_info.covariance << x_dist.calc_variance(), 0.0, 0.0,
-                                 0.0, y_dist.calc_variance(), 0.0,
-                                 0.0, 0.0, yaw_dist.calc_variance();
+    nkf_state_info.mean = scenario.ini_mean_;
+    nkf_state_info.covariance = scenario.ini_cov_;
     auto ekf_state_info = nkf_state_info;
     auto ukf_state_info = nkf_state_info;
 
@@ -59,38 +43,22 @@ int main()
     Eigen::Vector3d x_true = nkf_state_info.mean;
 
     // Input
-    const Eigen::VectorXd v_input = Eigen::VectorXd::Constant(N, 2.0);
-    const Eigen::VectorXd u_input = Eigen::VectorXd::Constant(N, 0.05);
+    const Eigen::VectorXd v_input = scenario.v_input_;
+    const Eigen::VectorXd u_input = scenario.u_input_;
 
     // System Noise
-    const double mean_wx = 0.0;
-    const double cov_wx = std::pow(0.1, 2);
-    const double mean_wy = 0.0;
-    const double cov_wy = std::pow(0.1, 2);
-    const double mean_wyaw = 0.0;
-    const double cov_wyaw = std::pow(M_PI/10, 2);
-    std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map{
-            {SYSTEM_NOISE::IDX::WX, std::make_shared<NormalDistribution>(mean_wx, cov_wx)},
-            {SYSTEM_NOISE::IDX::WY, std::make_shared<NormalDistribution>(mean_wy, cov_wy)},
-            {SYSTEM_NOISE::IDX::WYAW, std::make_shared<NormalDistribution>(mean_wyaw, cov_wyaw)}};
+    auto system_noise_map = scenario.system_noise_map_;
 
     // Observation Noise
-    const double mean_meas_noise_r = 100.0;
-    const double cov_meas_noise_r = std::pow(10.5, 2);
-    const double mean_meas_noise_yaw = 0.0;
-    const double cov_meas_noise_yaw = std::pow(M_PI/10.0, 2);
-
-    std::map<int, std::shared_ptr<BaseDistribution>> observation_noise_map{
-            {MEASUREMENT_NOISE::IDX::WR, std::make_shared<NormalDistribution>(mean_meas_noise_r, cov_meas_noise_r)},
-            {MEASUREMENT_NOISE::IDX::WYAW, std::make_shared<NormalDistribution>(mean_meas_noise_yaw, cov_meas_noise_yaw)}};
+    auto observation_noise_map = scenario.observation_noise_map_;
 
     // Random Variable Generator
     std::default_random_engine generator;
-    std::normal_distribution<double> wx_dist(mean_wx, std::sqrt(cov_wx));
-    std::normal_distribution<double> wy_dist(mean_wy, std::sqrt(cov_wy));
-    std::normal_distribution<double> wyaw_dist(mean_wyaw, std::sqrt(cov_wyaw));
-    std::normal_distribution<double> mr_dist(mean_meas_noise_r, std::sqrt(cov_meas_noise_r));
-    std::normal_distribution<double> myaw_dist(mean_meas_noise_yaw, std::sqrt(cov_meas_noise_yaw));
+    auto wx_dist = scenario.wx_dist_;
+    auto wy_dist = scenario.wy_dist_;
+    auto wyaw_dist = scenario.wyaw_dist_;
+    auto mr_dist = scenario.mr_dist_;
+    auto myaw_dist = scenario.myaw_dist_;
 
     std::vector<double> times(N);
     std::vector<double> ukf_xy_errors(N);
@@ -114,7 +82,7 @@ int main()
 
         // Simulate
         Eigen::Vector3d system_noise{wx_dist(generator), wy_dist(generator), wyaw_dist(generator)};
-        Eigen::Vector2d observation_noise{std::max(0.0, mr_dist(generator)), myaw_dist(generator)};
+        Eigen::Vector2d observation_noise{std::max(0.0, mr_dist(generator)), myaw_dist()};
         x_true = vehicle_model->propagate(x_true, controls, system_noise, dt);
         auto nkf_y = vehicle_model->measure(x_true, observation_noise);
         auto ukf_y = nkf_y;
