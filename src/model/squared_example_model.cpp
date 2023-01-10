@@ -104,7 +104,7 @@ Eigen::MatrixXd ExampleSquaredVehicleModel::getProcessNoiseMatrix(const Eigen::V
 }
 
 Eigen::MatrixXd ExampleSquaredVehicleModel::getMeasurementMatrix(const Eigen::VectorXd& x_curr,
-                                                          const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map)
+                                                                 const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map)
 {
     // Covariance Update
     /*  == Nonlinear model ==

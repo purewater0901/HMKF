@@ -28,6 +28,7 @@ add_library(lib
             src/filter/ukf.cpp
             src/filter/mkf.cpp
             src/filter/example_hmkf.cpp
+        src/filter/squared_example_hmkf.cpp
             src/filter/simple_vehicle_nkf.cpp
             src/filter/simple_vehicle_ukf.cpp
             src/filter/simple_vehicle_ekf.cpp

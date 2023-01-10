@@ -12,6 +12,7 @@
 #include <boost/random/mersenne_twister.hpp>
 
 #include "filter/example_hmkf.h"
+#include "filter/squared_example_hmkf.h"
 #include "filter/mkf.h"
 #include "filter/ekf.h"
 #include "filter/ukf.h"
@@ -132,6 +133,7 @@ TEST(SquaredExampleHMKF, Predict)
     MKF mkf(example_model);
     EKF ekf(example_model);
     UKF ukf(example_model, 0.15);
+    SquaredExampleHMKF hmkf;
 
     const double dt = 0.1;
 
@@ -162,25 +164,15 @@ TEST(SquaredExampleHMKF, Predict)
     std::map<int, std::shared_ptr<BaseDistribution>> measurement_noise_map{
             {MEASUREMENT_NOISE::IDX::WR, std::make_shared<ExponentialDistribution>(mr_lambda)}};
 
-    //const auto predicted_moments = hmkf.predict(ini_state, control_inputs, dt, system_noise_map);
+    const auto predicted_moments = hmkf.predict(ini_state, control_inputs, dt, system_noise_map);
     const auto mkf_predicted_info = mkf.predict(ini_state, control_inputs, dt, system_noise_map);
     const auto ekf_predicted_info = ekf.predict(ini_state, control_inputs, dt, system_noise_map);
     const auto ukf_predicted_info = ukf.predict(ini_state, control_inputs, dt, system_noise_map, measurement_noise_map);
 
-    /*
-    std::cout << "E[X]: " << predicted_moments.xPow1 << std::endl;
-    std::cout << "E[Y]: " << predicted_moments.yPow1 << std::endl;
-    std::cout << "E[X^2]: " << predicted_moments.xPow2 << std::endl;
-    std::cout << "E[Y^2]: " << predicted_moments.yPow2 << std::endl;
-    std::cout << "E[XY]: " << predicted_moments.xPow1_yPow1 << std::endl;
-    std::cout << "E[X^3]: " << predicted_moments.xPow3 << std::endl;
-    std::cout << "E[Y^3]: " << predicted_moments.yPow3 << std::endl;
-    std::cout << "E[X^2Y]: " << predicted_moments.xPow2_yPow1 << std::endl;
-    std::cout << "E[XY^2]: " << predicted_moments.xPow1_yPow2 << std::endl;
-    std::cout << "E[X^4]: " << predicted_moments.xPow4 << std::endl;
-    std::cout << "E[Y^4]: " << predicted_moments.yPow4 << std::endl;
-    std::cout << "E[X^2Y^2]: " << predicted_moments.xPow2_yPow2 << std::endl;
-     */
+    std::cout << "HMKF E[X]: " << predicted_moments.xPow1 << std::endl;
+    std::cout << "HMKF E[Y]: " << predicted_moments.yPow1 << std::endl;
+    std::cout << "HMKF E[X^2]: " << predicted_moments.xPow2 << std::endl;
+    std::cout << "HMKF E[Y^2]: " << predicted_moments.yPow2 << std::endl;
     std::cout << "EKF E[X]: " << ekf_predicted_info.mean(0) << std::endl;
     std::cout << "EKF E[Y]: " << ekf_predicted_info.mean(1) << std::endl;
     std::cout << "EKF E[X^2]: " << ekf_predicted_info.covariance(0,0) + ekf_predicted_info.mean(0)*ekf_predicted_info.mean(0) << std::endl;
@@ -197,8 +189,8 @@ TEST(SquaredExampleHMKF, Predict)
     std::cout << "-----------------------" << std::endl;
 
     // Update
-    //const auto measurement_moments = hmkf.getMeasurementMoments(predicted_moments, measurement_noise_map);
-    //const auto state_measurement_matrix = hmkf.getStateMeasurementMatrix(predicted_moments, measurement_moments, measurement_noise_map);
+    const auto measurement_moments = hmkf.getMeasurementMoments(predicted_moments, measurement_noise_map);
+    const auto state_measurement_matrix = hmkf.getStateMeasurementMatrix(predicted_moments, measurement_moments, measurement_noise_map);
 
     const auto mkf_measurement_moments = example_model->getMeasurementMoments(mkf_predicted_info, measurement_noise_map);
     const auto ekf_measurement_moments = ekf.getMeasurementInfo(ekf_predicted_info, measurement_noise_map);
@@ -210,8 +202,8 @@ TEST(SquaredExampleHMKF, Predict)
     std::cout << "UKF: E[R^2]: " << ukf_measurement_moments.covariance(0,0) + ukf_measurement_moments.mean(0)*ukf_measurement_moments.mean(0) << std::endl;
     std::cout << "MKF: E[R]: " << mkf_measurement_moments.mean(0) << std::endl;
     std::cout << "MKF: E[R^2]: " << mkf_measurement_moments.covariance(0,0) + mkf_measurement_moments.mean(0)*mkf_measurement_moments.mean(0) << std::endl;
-    //std::cout << "HMKF E[R]: " << measurement_moments.rPow1 << std::endl;
-    //std::cout << "HMKF E[R^2]: " << measurement_moments.rPow2 << std::endl;
+    std::cout << "HMKF E[R]: " << measurement_moments.rPow1 << std::endl;
+    std::cout << "HMKF E[R^2]: " << measurement_moments.rPow2 << std::endl;
 }
 
 /*
