@@ -182,9 +182,9 @@ int main() {
 
     // External disturbances
     const double mean_wv = 0.0;
-    const double cov_wv = std::pow(0.5, 2);
+    const double cov_wv = std::pow(0.3, 2);
     const double mean_wu = 0.0;
-    const double cov_wu = std::pow(1.3, 2);
+    const double cov_wu = std::pow(1.0, 2);
 
     std::default_random_engine generator;
     auto wr_dist = scenario.wr_dist_;

@@ -35,9 +35,11 @@ Eigen::VectorXd NormalVehicleModel::propagate(const Eigen::VectorXd& x_curr,
      */
 
     Eigen::VectorXd x_next = Eigen::VectorXd::Zero(3);
-    x_next(STATE::IDX::X) = x_curr(STATE::IDX::X) + u_curr(INPUT::IDX::V) * std::cos(x_curr(STATE::IDX::YAW)) + system_noise(SYSTEM_NOISE::IDX::WX);
-    x_next(STATE::IDX::Y) = x_curr(STATE::IDX::Y) + u_curr(INPUT::IDX::V) * std::sin(x_curr(STATE::IDX::YAW)) + system_noise(SYSTEM_NOISE::IDX::WY);
-    x_next(STATE::IDX::YAW) = x_curr(STATE::IDX::YAW) + u_curr(INPUT::IDX::U) + system_noise(SYSTEM_NOISE::IDX::WYAW);
+    x_next(STATE::IDX::X) = x_curr(STATE::IDX::X) + u_curr(INPUT::IDX::V) * std::cos(x_curr(STATE::IDX::YAW)) * dt
+                          + system_noise(SYSTEM_NOISE::IDX::WX);
+    x_next(STATE::IDX::Y) = x_curr(STATE::IDX::Y) + u_curr(INPUT::IDX::V) * std::sin(x_curr(STATE::IDX::YAW)) * dt
+                          + system_noise(SYSTEM_NOISE::IDX::WY);
+    x_next(STATE::IDX::YAW) = x_curr(STATE::IDX::YAW) + u_curr(INPUT::IDX::U) * dt + system_noise(SYSTEM_NOISE::IDX::WYAW);
 
     return x_next;
 }
@@ -78,11 +80,24 @@ Eigen::MatrixXd NormalVehicleModel::getStateMatrix(const Eigen::VectorXd& x_curr
                                                    const Eigen::VectorXd& u_curr,
                                                    const double dt)
 {
+    /*  == Nonlinear model ==
+     *
+     * x_{k+1}   = x_k + v_k * cos(yaw_k) * dt + wx
+     * y_{k+1}   = y_k + v_k * sin(yaw_k) * dt + wy
+     * yaw_{k+1} = yaw_k + u_k * dt + wyaw
+     *
+     * dx/dx = 1.0 dy/dx = 0.0 dyaw/dx = 0.0
+     * dy/dx = 0.0 dy/dy = 1.0 dyaw/dy = 0.0
+     * dx/dyaw = -v_k * sin(yaw_k) * dt
+     * dy/dyaw = vk * cos(yaw_k) * dt
+     * dyaw/dyaw = 1.0
+     */
+
     const double& v_k = u_curr(INPUT::IDX::V);
     const double& yaw_k = x_curr(STATE::IDX::YAW);
     Eigen::MatrixXd A = Eigen::MatrixXd::Identity(3, 3);
-    A(STATE::IDX::X, STATE::IDX::YAW) =  -v_k * std::sin(yaw_k);
-    A(STATE::IDX::Y, STATE::IDX::YAW) =   v_k * std::cos(yaw_k);
+    A(STATE::IDX::X, STATE::IDX::YAW) =  -v_k * std::sin(yaw_k) * dt;
+    A(STATE::IDX::Y, STATE::IDX::YAW) =   v_k * std::cos(yaw_k) * dt;
 
     return A;
 }
@@ -161,10 +176,8 @@ StateInfo NormalVehicleModel::propagateStateMoments(const StateInfo &state_info,
     const double sPow1_yawPow1 = dist.calc_x_sin_x_moment(STATE::IDX::YAW, 1, 1); // yaw*sin(yaw)
 
     // Step3. Control Input
-    const double v = control_inputs(INPUT::IDX::V);
-    const double u = control_inputs(INPUT::IDX::U);
-    const double cu = std::cos(u);
-    const double su = std::sin(u);
+    const double v = control_inputs(INPUT::IDX::V) * dt;
+    const double u = control_inputs(INPUT::IDX::U) * dt;
 
     // Step4. System Noise
     const auto wx_dist_ptr = noise_map.at(SYSTEM_NOISE::IDX::WX);
@@ -176,34 +189,21 @@ StateInfo NormalVehicleModel::propagateStateMoments(const StateInfo &state_info,
     const double wxPow2 = wx_dist_ptr->calc_moment(2);
     const double wyPow2 = wy_dist_ptr->calc_moment(2);
     const double wyawPow2 = wyaw_dist_ptr->calc_moment(2);
-    const double cyawPow1 = wyaw_dist_ptr->calc_cos_moment(1);
-    const double syawPow1 = wyaw_dist_ptr->calc_sin_moment(1);
-    const double syawPow2 = wyaw_dist_ptr->calc_sin_moment(2);
-    const double cyawPow2 = wyaw_dist_ptr->calc_cos_moment(2);
-    const double cyawPow1_syawPow1 = wyaw_dist_ptr->calc_cos_sin_moment(1, 1);
 
     // Dynamics updates.
     const double next_xPow1 = v*cPow1 + wxPow1 + xPow1;
-    const double next_cPow1 = cu*cPow1*cyawPow1 - cu*sPow1*syawPow1 - su*cPow1*syawPow1 - su*cyawPow1*sPow1;
-    const double next_sPow1 = cu*cPow1*syawPow1 + cu*cyawPow1*sPow1 + su*cPow1*cyawPow1 - su*sPow1*syawPow1;
     const double next_yPow1 = v*sPow1 + wyPow1 + yPow1;
-    const double next_yawPow1 = 1.0*u + wyawPow1 + yawPow1;
+    const double next_yawPow1 = u + wyawPow1 + yawPow1;
 
-    const double next_xPow2 = pow(v, 2)*cPow2 + 2*v*cPow1*wxPow1 + 2*v*cPow1_xPow1 + 2*wxPow1*xPow1 + wxPow2 + xPow2;
-    const double next_cPow2 = pow(cu, 2)*cPow2*cyawPow2 + pow(cu, 2)*sPow2*syawPow2 - 2*cu*su*cPow1_sPow1*cyawPow2 + 2*cu*su*cPow1_sPow1*syawPow2 - 2*cu*su*cPow2*cyawPow1_syawPow1 + 2*cu*su*cyawPow1_syawPow1*sPow2 + pow(su, 2)*cPow2*syawPow2 + pow(su, 2)*cyawPow2*sPow2 + cPow1_sPow1*cyawPow1_syawPow1*(-2*pow(cu, 2) + 2*pow(su, 2));
-    const double next_sPow2 = pow(cu, 2)*cPow2*syawPow2 + pow(cu, 2)*cyawPow2*sPow2 + 2*cu*su*cPow1_sPow1*cyawPow2 - 2*cu*su*cPow1_sPow1*syawPow2 + 2*cu*su*cPow2*cyawPow1_syawPow1 - 2*cu*su*cyawPow1_syawPow1*sPow2 + pow(su, 2)*cPow2*cyawPow2 + pow(su, 2)*sPow2*syawPow2 + cPow1_sPow1*cyawPow1_syawPow1*(2*pow(cu, 2) - 2*pow(su, 2));
-    const double next_cPow1_xPow1 = -cu*v*cPow1_sPow1*syawPow1 + cu*v*cPow2*cyawPow1 + cu*cPow1*cyawPow1*wxPow1 + cu*cPow1_xPow1*cyawPow1 - cu*sPow1*syawPow1*wxPow1 - cu*sPow1_xPow1*syawPow1 - su*v*cPow1_sPow1*cyawPow1 - su*v*cPow2*syawPow1 - su*cPow1*syawPow1*wxPow1 - su*cPow1_xPow1*syawPow1 - su*cyawPow1*sPow1*wxPow1 - su*cyawPow1*sPow1_xPow1;
-    const double next_sPow1_xPow1 = cu*v*cPow1_sPow1*cyawPow1 + cu*v*cPow2*syawPow1 + cu*cPow1*syawPow1*wxPow1 + cu*cPow1_xPow1*syawPow1 + cu*cyawPow1*sPow1*wxPow1 + cu*cyawPow1*sPow1_xPow1 - su*v*cPow1_sPow1*syawPow1 + su*v*cPow2*cyawPow1 + su*cPow1*cyawPow1*wxPow1 + su*cPow1_xPow1*cyawPow1 - su*sPow1*syawPow1*wxPow1 - su*sPow1_xPow1*syawPow1;
-    const double next_yPow2 = pow(v, 2)*sPow2 + 2*v*sPow1*wyPow1 + 2*v*sPow1_yPow1 + 2*wyPow1*yPow1 + wyPow2 + yPow2;
-    const double next_sPow1_yPow1 = cu*v*cPow1_sPow1*syawPow1 + cu*v*cyawPow1*sPow2 + cu*cPow1*syawPow1*wyPow1 + cu*cPow1_yPow1*syawPow1 + cu*cyawPow1*sPow1*wyPow1 + cu*cyawPow1*sPow1_yPow1 + su*v*cPow1_sPow1*cyawPow1 - su*v*sPow2*syawPow1 + su*cPow1*cyawPow1*wyPow1 + su*cPow1_yPow1*cyawPow1 - su*sPow1*syawPow1*wyPow1 - su*sPow1_yPow1*syawPow1;
-    const double next_cPow1_yPow1 = cu*v*cPow1_sPow1*cyawPow1 - cu*v*sPow2*syawPow1 + cu*cPow1*cyawPow1*wyPow1 + cu*cPow1_yPow1*cyawPow1 - cu*sPow1*syawPow1*wyPow1 - cu*sPow1_yPow1*syawPow1 - su*v*cPow1_sPow1*syawPow1 - su*v*cyawPow1*sPow2 - su*cPow1*syawPow1*wyPow1 - su*cPow1_yPow1*syawPow1 - su*cyawPow1*sPow1*wyPow1 - su*cyawPow1*sPow1_yPow1;
-    const double next_yawPow2 = 1.0*pow(u, 2) + 2*u*wyawPow1 + 2*u*yawPow1 + 2*wyawPow1*yawPow1 + wyawPow2 + yawPow2;
-    const double next_xPow1_yPow1 = pow(v, 2)*cPow1_sPow1 + v*cPow1*wyPow1 + v*cPow1_yPow1 + v*sPow1*wxPow1 + v*sPow1_xPow1 + wxPow1*wyPow1 + wxPow1*yPow1 + wyPow1*xPow1 + xPow1_yPow1;
-    const double next_cPow1_sPow1 = -4*cu*su*cPow1_sPow1*cyawPow1_syawPow1 + cu*su*cPow2*cyawPow2 - cu*su*cPow2*syawPow2 - cu*su*cyawPow2*sPow2 + cu*su*sPow2*syawPow2 + cPow1_sPow1*cyawPow2*(pow(cu, 2) - pow(su, 2)) + cPow1_sPow1*syawPow2*(-pow(cu, 2) + pow(su, 2)) + cPow2*cyawPow1_syawPow1*(pow(cu, 2) - pow(su, 2)) + cyawPow1_syawPow1*sPow2*(-pow(cu, 2) + pow(su, 2));
-    const double next_xPow1_yawPow1 = u*v*cPow1 + u*wxPow1 + u*xPow1 + v*cPow1*wyawPow1 + v*cPow1_yawPow1 + wxPow1*wyawPow1 + wxPow1*yawPow1 + wyawPow1*xPow1 + xPow1_yawPow1;
-    const double next_cPow1_yawPow1 = cu*u*cPow1*cyawPow1 - cu*u*sPow1*syawPow1 + cu*cPow1*cyawPow1*wyawPow1 + cu*cPow1_yawPow1*cyawPow1 - cu*sPow1*syawPow1*wyawPow1 - cu*sPow1_yawPow1*syawPow1 - su*u*cPow1*syawPow1 - su*u*cyawPow1*sPow1 - su*cPow1*syawPow1*wyawPow1 - su*cPow1_yawPow1*syawPow1 - su*cyawPow1*sPow1*wyawPow1 - su*cyawPow1*sPow1_yawPow1;
-    const double next_yPow1_yawPow1 = u*v*sPow1 + u*wyPow1 + u*yPow1 + v*sPow1*wyawPow1 + v*sPow1_yawPow1 + wyPow1*wyawPow1 + wyPow1*yawPow1 + wyawPow1*yPow1 + yPow1_yawPow1;
-    const double next_sPow1_yawPow1 = cu*u*cPow1*syawPow1 + cu*u*cyawPow1*sPow1 + cu*cPow1*syawPow1*wyawPow1 + cu*cPow1_yawPow1*syawPow1 + cu*cyawPow1*sPow1*wyawPow1 + cu*cyawPow1*sPow1_yawPow1 + su*u*cPow1*cyawPow1 - su*u*sPow1*syawPow1 + su*cPow1*cyawPow1*wyawPow1 + su*cPow1_yawPow1*cyawPow1 - su*sPow1*syawPow1*wyawPow1 - su*sPow1_yawPow1*syawPow1;
+    const double next_xPow2 = v*v*cPow2 + 2*v*cPow1*wxPow1 + 2*v*cPow1_xPow1 + 2*wxPow1*xPow1 + wxPow2 + xPow2;
+    const double next_yPow2 = v*v*sPow2 + 2*v*sPow1*wyPow1 + 2*v*sPow1_yPow1 + 2*wyPow1*yPow1 + wyPow2 + yPow2;
+    const double next_yawPow2 = u*u + 2*u*wyawPow1 + 2*u*yawPow1 + 2*wyawPow1*yawPow1 + wyawPow2 + yawPow2;
+    const double next_xPow1_yPow1 = v*v*cPow1_sPow1 + v*cPow1*wyPow1 + v*cPow1_yPow1 + v*sPow1*wxPow1
+                                  + v*sPow1_xPow1 + wxPow1*wyPow1 + wxPow1*yPow1 + wyPow1*xPow1 + xPow1_yPow1;
+    const double next_xPow1_yawPow1 = u*v*cPow1 + u*wxPow1 + u*xPow1 + v*cPow1*wyawPow1 + v*cPow1_yawPow1
+                                    + wxPow1*wyawPow1 + wxPow1*yawPow1 + wyawPow1*xPow1 + xPow1_yawPow1;
+    const double next_yPow1_yawPow1 = u*v*sPow1 + u*wyPow1 + u*yPow1 + v*sPow1*wyawPow1 + v*sPow1_yawPow1
+                                    + wyPow1*wyawPow1 + wyPow1*yawPow1 + wyawPow1*yPow1 + yPow1_yawPow1;
 
     StateInfo next_state;
     next_state.mean = Eigen::VectorXd::Zero(3);
@@ -246,17 +246,18 @@ StateInfo NormalVehicleModel::getMeasurementMoments(const StateInfo &state_info,
     // Observation Noise
     const auto wr_dist_ptr = noise_map.at(MEASUREMENT_NOISE::IDX::WR);
     const auto wyaw_dist_ptr = noise_map.at(MEASUREMENT_NOISE::IDX::WYAW);
-    const double w_rPow1 = wr_dist_ptr->calc_moment(1);
-    const double w_rPow2 = wr_dist_ptr->calc_moment(2);
-    const double w_yawPow1 = wyaw_dist_ptr->calc_moment(1);
-    const double w_yawPow2 = wyaw_dist_ptr->calc_moment(2);
+    const double mrPow1 = wr_dist_ptr->calc_moment(1);
+    const double mrPow2 = wr_dist_ptr->calc_moment(2);
+    const double myawPow1 = wyaw_dist_ptr->calc_moment(1);
+    const double myawPow2 = wyaw_dist_ptr->calc_moment(2);
 
     // measurement update
-    const double measurement_rPow1 = xPow2 + yPow2 + w_rPow1;
-    const double measurement_rPow2 = xPow4 + yPow4 + w_rPow2 + 2.0*xPow2_yPow2 + 2.0*xPow2*w_rPow1 + 2.0*yPow2*w_rPow1;
-    const double measurement_yawPow1 = yawPow1 + w_yawPow1;
-    const double measurement_yawPow2 = yawPow2 + w_yawPow2 + 2.0*yawPow1*w_yawPow1;
-    const double measurement_rPow1_yawPow1 = xPow2_yawPow1 + yPow2_yawPow1 + yawPow1*w_rPow1 + xPow2*w_yawPow1 + yPow2*w_yawPow1 + w_rPow1*w_yawPow1;
+    const double measurement_rPow1 = xPow2 + yPow2 + mrPow1;
+    const double measurement_rPow2 = xPow4 + yPow4 + mrPow2 + 2.0*xPow2_yPow2 + 2.0*xPow2*mrPow1 + 2.0*yPow2*mrPow1;
+    const double measurement_yawPow1 = yawPow1 + myawPow1;
+    const double measurement_yawPow2 = yawPow2 + myawPow2 + 2.0*yawPow1*myawPow1;
+    const double measurement_rPow1_yawPow1 = xPow2_yawPow1 + yPow2_yawPow1 + yawPow1*mrPow1 + xPow2*myawPow1
+                                           + yPow2*myawPow1 + mrPow1*myawPow1;
 
     StateInfo measurement_info;
     measurement_info.mean = Eigen::VectorXd::Zero(2);
@@ -283,34 +284,42 @@ Eigen::MatrixXd NormalVehicleModel::getStateMeasurementMatrix(const StateInfo& s
     // Observation Noise
     const auto wr_dist_ptr = noise_map.at(MEASUREMENT_NOISE::IDX::WR);
     const auto wyaw_dist_ptr = noise_map.at(MEASUREMENT_NOISE::IDX::WYAW);
-    const double w_rPow1 = wr_dist_ptr->calc_moment(1);
-    const double w_yawPow1 = wyaw_dist_ptr->calc_moment(1);
+    const double mrPow1 = wr_dist_ptr->calc_moment(1);
+    const double myawPow1 = wyaw_dist_ptr->calc_moment(1);
+
+    // State Moment
+    const double xPow1 = dist.calc_moment(STATE::IDX::X, 1);
+    const double yPow1 = dist.calc_moment(STATE::IDX::Y, 1);
+    const double yawPow1 = dist.calc_moment(STATE::IDX::YAW, 1);
+    const double xPow1_yawPow1 = dist.calc_cross_second_moment(STATE::IDX::X, STATE::IDX::YAW);
+    const double yPow1_yawPow1 = dist.calc_cross_second_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    const double xPow3 = dist.calc_moment(STATE::IDX::X, 3);
+    const double yPow3 = dist.calc_moment(STATE::IDX::Y, 3);
+    const double yawPow2 = dist.calc_moment(STATE::IDX::YAW, 2);
+    const double xPow1_yPow2 = dist.calc_cross_third_moment(STATE::IDX::X, STATE::IDX::Y, 1, 2);
+    const double xPow2_yPow1 = dist.calc_cross_third_moment(STATE::IDX::X, STATE::IDX::Y, 2, 1);
+    const double xPow2_yawPow1 = dist.calc_cross_third_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 1);
+    const double yPow2_yawPow1 = dist.calc_cross_third_moment(STATE::IDX::Y, STATE::IDX::YAW, 2, 1);
 
     Eigen::MatrixXd state_observation_cov(3, 2); // sigma = E[XY^T] - E[X]E[Y]^T
     state_observation_cov(STATE::IDX::X, MEASUREMENT::IDX::R)
-            = dist.calc_moment(STATE::IDX::X, 3) + dist.calc_cross_third_moment(STATE::IDX::X, STATE::IDX::Y, 1, 2)
-              + dist.calc_moment(STATE::IDX::X, 1) * w_rPow1
-              - predicted_mean(STATE::IDX::X) * measurement_mean(MEASUREMENT::IDX::R); // xp * (xp^2 + yp^2)
+            = xPow3 + xPow1_yPow2 + xPow1 * mrPow1
+              - predicted_mean(STATE::IDX::X) * measurement_mean(MEASUREMENT::IDX::R); // xp * (xp^2 + yp^2 + mr)
     state_observation_cov(STATE::IDX::X, MEASUREMENT::IDX::YAW)
-            = dist.calc_cross_second_moment(STATE::IDX::X, STATE::IDX::YAW)
-              + dist.calc_moment(STATE::IDX::X, 1) * w_yawPow1
-              - predicted_mean(STATE::IDX::X) * measurement_mean(MEASUREMENT::IDX::YAW); // x_p * yaw
+            = xPow1_yawPow1 + xPow1 * myawPow1
+              - predicted_mean(STATE::IDX::X) * measurement_mean(MEASUREMENT::IDX::YAW); // x_p * (yaw + myaw)
     state_observation_cov(STATE::IDX::Y, MEASUREMENT::IDX::R)
-            = dist.calc_cross_third_moment(STATE::IDX::X, STATE::IDX::Y, 2, 1)
-              + dist.calc_moment(STATE::IDX::Y, 3)  + dist.calc_moment(STATE::IDX::Y, 1) * w_rPow1
-              - predicted_mean(STATE::IDX::Y) * measurement_mean(MEASUREMENT::IDX::R); // yp * (xp^2 + yp^2)
+            = xPow2_yPow1 + yPow3  + yPow1 * mrPow1
+              - predicted_mean(STATE::IDX::Y) * measurement_mean(MEASUREMENT::IDX::R); // yp * (xp^2 + yp^2 + mr)
     state_observation_cov(STATE::IDX::Y, MEASUREMENT::IDX::YAW)
-            = dist.calc_cross_second_moment(STATE::IDX::Y, STATE::IDX::YAW)
-              + dist.calc_moment(STATE::IDX::Y, 1) * w_yawPow1
-              - predicted_mean(STATE::IDX::Y) * measurement_mean(MEASUREMENT::IDX::YAW); // y_p * yaw
+            = yPow1_yawPow1 + yPow1 * myawPow1
+              - predicted_mean(STATE::IDX::Y) * measurement_mean(MEASUREMENT::IDX::YAW); // y_p * (yaw + myaw)
     state_observation_cov(STATE::IDX::YAW, MEASUREMENT::IDX::R)
-            = dist.calc_cross_third_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 1)
-              + dist.calc_cross_third_moment(STATE::IDX::Y, STATE::IDX::YAW, 2 ,1)
-              + dist.calc_moment(STATE::IDX::YAW, 1) * w_rPow1
-              - predicted_mean(STATE::IDX::YAW) * measurement_mean(MEASUREMENT::IDX::R); // yaw_p * (x_p^2 + y_p^2 + w_r)
+            = xPow2_yawPow1 + yPow2_yawPow1 + yawPow1 * mrPow1
+              - predicted_mean(STATE::IDX::YAW) * measurement_mean(MEASUREMENT::IDX::R); // yaw_p * (x_p^2 + y_p^2 + mr)
     state_observation_cov(STATE::IDX::YAW, MEASUREMENT::IDX::YAW)
-            = dist.calc_moment(STATE::IDX::YAW, 2) + dist.calc_moment(STATE::IDX::YAW, 1) * w_yawPow1
-              - predicted_mean(STATE::IDX::YAW) * measurement_mean(MEASUREMENT::IDX::YAW); // yaw_p * (yaw_p + w_yaw)
+            = yawPow2 + yawPow1 * myawPow1
+              - predicted_mean(STATE::IDX::YAW) * measurement_mean(MEASUREMENT::IDX::YAW); // yaw_p * (yaw_p + myaw)
 
     return state_observation_cov;
 }

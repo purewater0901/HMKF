@@ -64,11 +64,11 @@ int main()
 
     // System Noise
     const double mean_wx = 0.0;
-    const double cov_wx = std::pow(0.1*dt, 2);
+    const double cov_wx = std::pow(0.1, 2);
     const double mean_wy = 0.0;
-    const double cov_wy = std::pow(0.1*dt, 2);
+    const double cov_wy = std::pow(0.1, 2);
     const double mean_wyaw = 0.0;
-    const double cov_wyaw = std::pow(0.1*dt, 2);
+    const double cov_wyaw = std::pow(M_PI/10, 2);
     std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map{
             {SYSTEM_NOISE::IDX::WX, std::make_shared<NormalDistribution>(mean_wx, cov_wx)},
             {SYSTEM_NOISE::IDX::WY, std::make_shared<NormalDistribution>(mean_wy, cov_wy)},
@@ -96,6 +96,9 @@ int main()
     std::vector<double> ukf_xy_errors(N);
     std::vector<double> nkf_xy_errors(N);
     std::vector<double> ekf_xy_errors(N);
+    std::vector<double> ukf_yaw_errors(N);
+    std::vector<double> nkf_yaw_errors(N);
+    std::vector<double> ekf_yaw_errors(N);
     std::vector<double> x_true_vec(N);
     std::vector<double> y_true_vec(N);
     std::vector<double> nkf_x_estimate(N);
@@ -107,7 +110,7 @@ int main()
     for(size_t i=0; i < N; ++i) {
         std::cout << "iteration: " << i << std::endl;
         // Control Inputs
-        Eigen::Vector2d controls(v_input(i)*dt, u_input(i)*dt);
+        Eigen::Vector2d controls(v_input(i), u_input(i));
 
         // Simulate
         Eigen::Vector3d system_noise{wx_dist(generator), wy_dist(generator), wyaw_dist(generator)};
@@ -143,11 +146,13 @@ int main()
             const double dx = x_true(STATE::IDX::X) - nkf_updated_info.mean(STATE::IDX::X);
             const double dy = x_true(STATE::IDX::Y) - nkf_updated_info.mean(STATE::IDX::Y);
             const double xy_error = std::sqrt(dx*dx + dy*dy);
-            const double nkf_yaw_error = std::abs(x_true(STATE::IDX::YAW) - nkf_updated_info.mean(STATE::IDX::YAW));
+            const double yaw_error = normalizeRadian(x_true(STATE::IDX::YAW) - nkf_updated_info.mean(STATE::IDX::YAW));
 
-            std::cout << "nkf_xy_error: " << xy_error << std::endl;
-            std::cout << "nkf_yaw_error: " << nkf_yaw_error << std::endl;
+            std::cout << "mkf_xy_error: " << xy_error << std::endl;
+            std::cout << "mkf_yaw_error: " << nkf_yaw_error << std::endl;
             nkf_xy_errors.at(i) = xy_error;
+            nkf_yaw_errors.at(i) = yaw_error;
+            nkf_yaw_errors.push_back(yaw_error);
             nkf_x_estimate.at(i) = nkf_state_info.mean(STATE::IDX::X);
             nkf_y_estimate.at(i) = nkf_state_info.mean(STATE::IDX::Y);
         }
@@ -157,11 +162,12 @@ int main()
             const double dx = x_true(STATE::IDX::X) - ukf_updated_info.mean(STATE::IDX::X);
             const double dy = x_true(STATE::IDX::Y) - ukf_updated_info.mean(STATE::IDX::Y);
             const double xy_error = std::sqrt(dx*dx + dy*dy);
-            const double ukf_yaw_error = std::abs(x_true(STATE::IDX::YAW) - ukf_updated_info.mean(STATE::IDX::YAW));
+            const double yaw_error = normalizeRadian(x_true(STATE::IDX::YAW) - ukf_updated_info.mean(STATE::IDX::YAW));
 
             std::cout << "ukf_xy_error: " << xy_error << std::endl;
             std::cout << "ukf_yaw_error: " << ukf_yaw_error << std::endl;
             ukf_xy_errors.at(i) = xy_error;
+            ukf_yaw_errors.at(i) = yaw_error;
             ukf_x_estimate.at(i) = ukf_updated_info.mean(STATE::IDX::X);
             ukf_y_estimate.at(i) = ukf_updated_info.mean(STATE::IDX::Y);
         }
@@ -171,11 +177,12 @@ int main()
             const double dx = x_true(STATE::IDX::X) - ekf_updated_info.mean(STATE::IDX::X);
             const double dy = x_true(STATE::IDX::Y) - ekf_updated_info.mean(STATE::IDX::Y);
             const double xy_error = std::sqrt(dx*dx + dy*dy);
-            const double ekf_yaw_error = std::abs(x_true(STATE::IDX::YAW) - ekf_updated_info.mean(STATE::IDX::YAW));
+            const double yaw_error = normalizeRadian(x_true(STATE::IDX::YAW) - ekf_updated_info.mean(STATE::IDX::YAW));
 
             std::cout << "ekf_xy_error: " << xy_error << std::endl;
             std::cout << "ekf_yaw_error: " << ekf_yaw_error << std::endl;
             ekf_xy_errors.at(i) = xy_error;
+            ekf_yaw_errors.at(i) = yaw_error;
             ekf_x_estimate.at(i) = ekf_state_info.mean(STATE::IDX::X);
             ekf_y_estimate.at(i) = ekf_state_info.mean(STATE::IDX::Y);
         }
@@ -184,6 +191,28 @@ int main()
         x_true_vec.at(i) = x_true(0);
         y_true_vec.at(i) = x_true(1);
     }
+
+    double nkf_xy_error_sum = 0.0;
+    double ekf_xy_error_sum = 0.0;
+    double ukf_xy_error_sum = 0.0;
+    double nkf_yaw_error_sum = 0.0;
+    double ekf_yaw_error_sum = 0.0;
+    double ukf_yaw_error_sum = 0.0;
+    for(size_t i=0; i<ukf_xy_errors.size(); ++i) {
+        nkf_xy_error_sum += nkf_xy_errors.at(i);
+        ekf_xy_error_sum += ekf_xy_errors.at(i);
+        ukf_xy_error_sum += ukf_xy_errors.at(i);
+        nkf_yaw_error_sum += nkf_yaw_errors.at(i);
+        ekf_yaw_error_sum += ekf_yaw_errors.at(i);
+        ukf_yaw_error_sum += ukf_yaw_errors.at(i);
+    }
+
+    std::cout << "nkf_xy_error mean: " << nkf_xy_error_sum / N << std::endl;
+    std::cout << "ekf_xy_error mean: " << ekf_xy_error_sum / N << std::endl;
+    std::cout << "ukf_xy_error mean: " << ukf_xy_error_sum / N << std::endl;
+    std::cout << "nkf_yaw_error mean: " << nkf_yaw_error_sum / N << std::endl;
+    std::cout << "ekf_yaw_error mean: " << ekf_yaw_error_sum / N << std::endl;
+    std::cout << "ukf_yaw_error mean: " << ukf_yaw_error_sum / N << std::endl;
 
     matplotlibcpp::figure_size(1500, 900);
     std::map<std::string, std::string> nkf_keywords;
