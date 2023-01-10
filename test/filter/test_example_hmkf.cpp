@@ -52,9 +52,8 @@ TEST(ExampleHMKF, Predict)
     ini_state.covariance(1, 1) = 0.1*0.1; // V[y]
 
     // Input
-    Eigen::Vector2d control_inputs = Eigen::Vector2d::Zero();
+    Eigen::VectorXd control_inputs = Eigen::VectorXd::Zero(2);
     control_inputs(0) = 1.0;
-    control_inputs(1) = 0.1;
 
     // System Noise
     const double wx_lambda = 1.0;
@@ -147,9 +146,8 @@ TEST(SquaredExampleHMKF, Predict)
     ini_state.covariance(1, 1) = 0.1*0.1; // V[y]
 
     // Input
-    Eigen::Vector2d control_inputs = Eigen::Vector2d::Zero();
+    Eigen::VectorXd control_inputs = Eigen::VectorXd::Zero(2);
     control_inputs(0) = 1.0;
-    control_inputs(1) = 0.1;
 
     // System Noise
     const double wx_lambda = 1.0;
