@@ -142,8 +142,8 @@ struct NormalVehicleNonGaussianScenario
         // Observation Noise
         const double lower_mean_noise_r = 100.0;
         const double upper_mean_noise_r = 0.0;
-        const double meas_noise_alpha = 0.5;
-        const double meas_noise_beta = 0.5;
+        const double meas_noise_alpha = 5.0;
+        const double meas_noise_beta = 1.0;
 
         observation_noise_map_ = {
                 {MEASUREMENT_NOISE::IDX::WR, std::make_shared<UniformDistribution>(lower_mean_noise_r, upper_mean_noise_r)},

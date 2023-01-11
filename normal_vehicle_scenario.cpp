@@ -160,27 +160,19 @@ int main()
         y_true_vec.at(i) = x_true(1);
     }
 
-    double nkf_xy_error_sum = 0.0;
-    double ekf_xy_error_sum = 0.0;
-    double ukf_xy_error_sum = 0.0;
-    double nkf_yaw_error_sum = 0.0;
-    double ekf_yaw_error_sum = 0.0;
-    double ukf_yaw_error_sum = 0.0;
-    for(size_t i=0; i<ukf_xy_errors.size(); ++i) {
-        nkf_xy_error_sum += nkf_xy_errors.at(i);
-        ekf_xy_error_sum += ekf_xy_errors.at(i);
-        ukf_xy_error_sum += ukf_xy_errors.at(i);
-        nkf_yaw_error_sum += nkf_yaw_errors.at(i);
-        ekf_yaw_error_sum += ekf_yaw_errors.at(i);
-        ukf_yaw_error_sum += ukf_yaw_errors.at(i);
-    }
+    const double mkf_xy_error_sum = std::accumulate(nkf_xy_errors.begin(), nkf_xy_errors.end(), 0.0);
+    const double ekf_xy_error_sum = std::accumulate(ekf_xy_errors.begin(), ekf_xy_errors.end(), 0.0);
+    const double ukf_xy_error_sum = std::accumulate(ukf_xy_errors.begin(), ukf_xy_errors.end(), 0.0);
+    const double mkf_yaw_error_sum = std::accumulate(nkf_yaw_errors.begin(), nkf_yaw_errors.end(), 0.0);
+    const double ekf_yaw_error_sum = std::accumulate(ekf_yaw_errors.begin(), ekf_yaw_errors.end(), 0.0);
+    const double ukf_yaw_error_sum = std::accumulate(ukf_yaw_errors.begin(), ukf_yaw_errors.end(), 0.0);
 
-    std::cout << "nkf_xy_error mean: " << nkf_xy_error_sum / N << std::endl;
-    std::cout << "ekf_xy_error mean: " << ekf_xy_error_sum / N << std::endl;
-    std::cout << "ukf_xy_error mean: " << ukf_xy_error_sum / N << std::endl;
-    std::cout << "nkf_yaw_error mean: " << nkf_yaw_error_sum / N << std::endl;
-    std::cout << "ekf_yaw_error mean: " << ekf_yaw_error_sum / N << std::endl;
-    std::cout << "ukf_yaw_error mean: " << ukf_yaw_error_sum / N << std::endl;
+    std::cout << "mkf_xy_error mean: " << mkf_xy_error_sum / nkf_xy_errors.size() << std::endl;
+    std::cout << "ekf_xy_error mean: " << ekf_xy_error_sum / ekf_xy_errors.size() << std::endl;
+    std::cout << "ukf_xy_error mean: " << ukf_xy_error_sum / ukf_xy_errors.size() << std::endl;
+    std::cout << "mkf_yaw_error mean: " << mkf_yaw_error_sum / nkf_yaw_errors.size() << std::endl;
+    std::cout << "ekf_yaw_error mean: " << ekf_yaw_error_sum / ekf_yaw_errors.size() << std::endl;
+    std::cout << "ukf_yaw_error mean: " << ukf_yaw_error_sum / ukf_yaw_errors.size() << std::endl;
 
     matplotlibcpp::figure_size(1500, 900);
     std::map<std::string, std::string> nkf_keywords;
