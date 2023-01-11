@@ -1,7 +1,7 @@
 #include "filter/mkf.h"
 
 StateInfo MKF::predict(const StateInfo &state_info,
-                       const Eigen::Vector2d &control_inputs,
+                       const Eigen::VectorXd &control_inputs,
                        const double dt,
                        const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map)
 {

@@ -16,7 +16,7 @@ public:
     MKF(const std::shared_ptr<BaseModel>& vehicle_model) : vehicle_model_(vehicle_model) {}
 
     StateInfo predict(const StateInfo & state_info,
-                      const Eigen::Vector2d & control_inputs,
+                      const Eigen::VectorXd & control_inputs,
                       const double dt,
                       const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map);
 

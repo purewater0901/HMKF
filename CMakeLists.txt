@@ -36,6 +36,7 @@ add_library(lib
             src/filter/simple_vehicle_hmkf.cpp
             src/filter/paper_example_2d_ukf.cpp
             src/filter/paper_example_3d_ukf.cpp
+            src/filter/normal_vehicle_hmkf.cpp
             src/distribution/base_distribution.cpp
             src/distribution/beta_distribution.cpp
             src/distribution/uniform_distribution.cpp

@@ -36,7 +36,7 @@ class ExampleHMKF
 {
 public:
     Example::PredictedMoments predict(const StateInfo& state,
-                                      const Eigen::Vector2d & control_inputs,
+                                      const Eigen::VectorXd & control_inputs,
                                       const double dt,
                                       const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map);
     StateInfo update(const Example::PredictedMoments & predicted_moments,
