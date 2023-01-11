@@ -142,21 +142,19 @@ struct NormalVehicleNonGaussianScenario
         // Observation Noise
         const double lower_mean_noise_r = 100.0;
         const double upper_mean_noise_r = 0.0;
-        const double meas_noise_alpha = 5.0;
-        const double meas_noise_beta = 1.0;
+        const double lower_meas_yaw_noise = -M_PI/3.0;
+        const double upper_meas_yaw_noise = M_PI/3.0;
 
         observation_noise_map_ = {
                 {MEASUREMENT_NOISE::IDX::WR, std::make_shared<UniformDistribution>(lower_mean_noise_r, upper_mean_noise_r)},
-                {MEASUREMENT_NOISE::IDX::WYAW, std::make_shared<BetaDistribution>(meas_noise_alpha, meas_noise_beta)}};
+                {MEASUREMENT_NOISE::IDX::WYAW, std::make_shared<UniformDistribution>(lower_meas_yaw_noise, upper_meas_yaw_noise)}};
 
         // Random Variable Generator
         wx_dist_ = std::normal_distribution<double>(mean_wx, std::sqrt(cov_wx));
         wy_dist_ = std::normal_distribution<double>(mean_wy, std::sqrt(cov_wy));
         wyaw_dist_ = std::normal_distribution<double>(mean_wyaw, std::sqrt(cov_wyaw));
         mr_dist_ = std::uniform_real_distribution<double>(lower_mean_noise_r, upper_mean_noise_r);
-        size_t seed = 1234567890;
-        boost::random::mt19937 engine(seed);
-        myaw_dist_ = boost::bind(boost::random::beta_distribution<>(meas_noise_alpha, meas_noise_beta), engine);
+        myaw_dist_ = std::uniform_real_distribution<double>(lower_meas_yaw_noise, upper_meas_yaw_noise);
     }
 
     // Initial Setting
@@ -180,7 +178,7 @@ struct NormalVehicleNonGaussianScenario
     std::normal_distribution<double> wy_dist_;
     std::normal_distribution<double> wyaw_dist_;
     std::uniform_real_distribution<double> mr_dist_;
-    boost::function<double()> myaw_dist_;
+    std::uniform_real_distribution<double> myaw_dist_;
 };
 
 #endif //HMKF_NORMAL_VEHICLE_SCENARIO_H

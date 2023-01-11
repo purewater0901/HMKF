@@ -82,7 +82,7 @@ int main()
 
         // Simulate
         Eigen::Vector3d system_noise{wx_dist(generator), wy_dist(generator), wyaw_dist(generator)};
-        Eigen::Vector2d observation_noise{std::max(0.0, mr_dist(generator)), myaw_dist()};
+        Eigen::Vector2d observation_noise{std::max(0.0, mr_dist(generator)), myaw_dist(generator)};
         x_true = vehicle_model->propagate(x_true, controls, system_noise, dt);
         auto nkf_y = vehicle_model->measure(x_true, observation_noise);
         auto ukf_y = nkf_y;
