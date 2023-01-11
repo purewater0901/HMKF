@@ -197,15 +197,16 @@ StateInfo NormalVehicleModel::propagateStateMoments(const StateInfo &state_info,
     const double wyawPow2 = wyaw_dist_ptr->calc_moment(2);
 
     // Dynamics updates.
-    const double next_xPow1 = v*cPow1 + wxPow1 + xPow1;
-    const double next_yPow1 = v*sPow1 + wyPow1 + yPow1;
-    const double next_yawPow1 = u + wyawPow1 + yawPow1;
+    const double next_xPow1 = xPow1 + v*cPow1 + wxPow1;
+    const double next_yPow1 = yPow1 + v*sPow1 + wyPow1;
+    const double next_yawPow1 = yawPow1 + u + wyawPow1;
 
-    const double next_xPow2 = v*v*cPow2 + 2*v*cPow1*wxPow1 + 2*v*cPow1_xPow1 + 2*wxPow1*xPow1 + wxPow2 + xPow2;
-    const double next_yPow2 = v*v*sPow2 + 2*v*sPow1*wyPow1 + 2*v*sPow1_yPow1 + 2*wyPow1*yPow1 + wyPow2 + yPow2;
-    const double next_yawPow2 = u*u + 2*u*wyawPow1 + 2*u*yawPow1 + 2*wyawPow1*yawPow1 + wyawPow2 + yawPow2;
-    const double next_xPow1_yPow1 = v*v*cPow1_sPow1 + v*cPow1*wyPow1 + v*cPow1_yPow1 + v*sPow1*wxPow1
-                                  + v*sPow1_xPow1 + wxPow1*wyPow1 + wxPow1*yPow1 + wyPow1*xPow1 + xPow1_yPow1;
+    const double next_xPow2 = xPow2 + v*v*cPow2 + wxPow2 + 2*v*cPow1*wxPow1 + 2*v*cPow1_xPow1 + 2*wxPow1*xPow1;
+    const double next_yPow2 = yPow2 + v*v*sPow2 + wyPow2 + 2*v*sPow1*wyPow1 + 2*v*sPow1_yPow1 + 2*wyPow1*yPow1;
+    const double next_yawPow2 = yawPow2 + u*u + wyawPow2 + 2*u*wyawPow1 + 2*u*yawPow1 + 2*wyawPow1*yawPow1;
+    const double next_xPow1_yPow1 = xPow1_yPow1 + v*sPow1_xPow1 + xPow1*wyPow1
+                                  + v*cPow1_yPow1 + v*v*cPow1_sPow1 + v*cPow1*wyPow1
+                                  + wxPow1*yPow1 + v*sPow1*wxPow1 + wxPow1*wyPow1;
     const double next_xPow1_yawPow1 = u*v*cPow1 + u*wxPow1 + u*xPow1 + v*cPow1*wyawPow1 + v*cPow1_yawPow1
                                     + wxPow1*wyawPow1 + wxPow1*yawPow1 + wyawPow1*xPow1 + xPow1_yawPow1;
     const double next_yPow1_yawPow1 = u*v*sPow1 + u*wyPow1 + u*yPow1 + v*sPow1*wyawPow1 + v*sPow1_yawPow1

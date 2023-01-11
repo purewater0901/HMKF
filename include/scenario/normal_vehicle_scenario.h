@@ -129,9 +129,9 @@ struct NormalVehicleNonGaussianScenario
 
         // System Noise
         const double mean_wx = 0.0;
-        const double cov_wx = std::pow(0.05, 2);
+        const double cov_wx = std::pow(0.03, 2);
         const double mean_wy = 0.0;
-        const double cov_wy = std::pow(0.01, 2);
+        const double cov_wy = std::pow(0.03, 2);
         const double mean_wyaw = 0.0;
         const double cov_wyaw = std::pow(M_PI/100, 2);
         system_noise_map_ = {
