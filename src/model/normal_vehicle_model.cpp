@@ -62,14 +62,13 @@ Eigen::VectorXd NormalVehicleModel::measure(const Eigen::VectorXd& x_curr,
 {
     /*  == Nonlinear model ==
     *
-    * r = x^2 + y^2 + wr
+    * r = x^4 + y^4 + wr
     * yaw_k = yaw_k + w_yaw
     *
     */
 
     Eigen::VectorXd y_next = Eigen::VectorXd::Zero(2);
-    y_next(MEASUREMENT::IDX::R) = x_curr(STATE::IDX::X)*x_curr(STATE::IDX::X)
-                                  + x_curr(STATE::IDX::Y)*x_curr(STATE::IDX::Y)
+    y_next(MEASUREMENT::IDX::R) = std::pow(x_curr(STATE::IDX::X), 4) + std::pow(x_curr(STATE::IDX::Y), 4)
                                   + measurement_noise(MEASUREMENT_NOISE::IDX::WR);
     y_next(MEASUREMENT::IDX::YAW) = x_curr(STATE::IDX::YAW) + measurement_noise(MEASUREMENT_NOISE::IDX::WYAW);
 
@@ -122,9 +121,16 @@ Eigen::MatrixXd NormalVehicleModel::getProcessNoiseMatrix(const Eigen::VectorXd&
 Eigen::MatrixXd NormalVehicleModel::getMeasurementMatrix(const Eigen::VectorXd& x_curr,
                                                          const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map)
 {
+    /*  == Nonlinear model ==
+     *
+     * r = x^4 + y^4 + wr
+     * yaw_k = yaw_k + w_yaw
+     * dr/dx = 4*x^3 dr/dy = 4y^3
+     * dyaw/dyaw = 1.0
+     */
     Eigen::MatrixXd H = Eigen::MatrixXd::Zero(2, 3);
-    H(MEASUREMENT::IDX::R, STATE::IDX::X) = 2.0 * x_curr(STATE::IDX::X);
-    H(MEASUREMENT::IDX::R, STATE::IDX::Y) = 2.0 * x_curr(STATE::IDX::Y);
+    H(MEASUREMENT::IDX::R, STATE::IDX::X) = 4.0 * std::pow(x_curr(STATE::IDX::X), 3);
+    H(MEASUREMENT::IDX::R, STATE::IDX::Y) = 4.0 * std::pow(x_curr(STATE::IDX::Y), 3);
     H(MEASUREMENT::IDX::YAW, STATE::IDX::YAW) = 1.0;
 
     return H;
@@ -234,14 +240,14 @@ StateInfo NormalVehicleModel::getMeasurementMoments(const StateInfo &state_info,
     ThreeDimensionalNormalDistribution dist(state_info.mean, state_info.covariance);
 
     const double yawPow1 = dist.calc_moment(STATE::IDX::YAW, 1);
-    const double xPow2 = dist.calc_moment(STATE::IDX::X, 2);
-    const double yPow2 = dist.calc_moment(STATE::IDX::Y, 2);
     const double yawPow2 = dist.calc_moment(STATE::IDX::YAW, 2);
-    const double xPow2_yawPow1 = dist.calc_cross_third_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 1);
-    const double yPow2_yawPow1 = dist.calc_cross_third_moment(STATE::IDX::Y, STATE::IDX::YAW, 2, 1);
     const double xPow4 = dist.calc_moment(STATE::IDX::X, 4);
     const double yPow4 = dist.calc_moment(STATE::IDX::Y, 4);
-    const double xPow2_yPow2 = dist.calc_xxyy_moment(STATE::IDX::X, STATE::IDX::Y);
+    const double xPow4_yawPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 4, 1, 0, 0);
+    const double yPow4_yawPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 4, 1, 0, 0);
+    const double xPow8 = dist.calc_moment(STATE::IDX::X, 8);
+    const double yPow8 = dist.calc_moment(STATE::IDX::Y, 8);
+    const double xPow4_yPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::Y, 4, 4, 0, 0);
 
     // Observation Noise
     const auto wr_dist_ptr = noise_map.at(MEASUREMENT_NOISE::IDX::WR);
@@ -252,12 +258,12 @@ StateInfo NormalVehicleModel::getMeasurementMoments(const StateInfo &state_info,
     const double myawPow2 = wyaw_dist_ptr->calc_moment(2);
 
     // measurement update
-    const double measurement_rPow1 = xPow2 + yPow2 + mrPow1;
-    const double measurement_rPow2 = xPow4 + yPow4 + mrPow2 + 2.0*xPow2_yPow2 + 2.0*xPow2*mrPow1 + 2.0*yPow2*mrPow1;
+    const double measurement_rPow1 = xPow4 + yPow4 + mrPow1;
+    const double measurement_rPow2 = xPow8 + yPow8 + mrPow2 + 2.0*xPow4_yPow4 + 2.0*xPow4*mrPow1 + 2.0*yPow4*mrPow1;
     const double measurement_yawPow1 = yawPow1 + myawPow1;
     const double measurement_yawPow2 = yawPow2 + myawPow2 + 2.0*yawPow1*myawPow1;
-    const double measurement_rPow1_yawPow1 = xPow2_yawPow1 + yPow2_yawPow1 + yawPow1*mrPow1 + xPow2*myawPow1
-                                           + yPow2*myawPow1 + mrPow1*myawPow1;
+    const double measurement_rPow1_yawPow1 = xPow4_yawPow1 + yPow4_yawPow1 + yawPow1*mrPow1 + xPow4*myawPow1
+                                           + yPow4*myawPow1 + mrPow1*myawPow1;
 
     StateInfo measurement_info;
     measurement_info.mean = Eigen::VectorXd::Zero(2);
@@ -293,30 +299,30 @@ Eigen::MatrixXd NormalVehicleModel::getStateMeasurementMatrix(const StateInfo& s
     const double yawPow1 = dist.calc_moment(STATE::IDX::YAW, 1);
     const double xPow1_yawPow1 = dist.calc_cross_second_moment(STATE::IDX::X, STATE::IDX::YAW);
     const double yPow1_yawPow1 = dist.calc_cross_second_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    const double xPow3 = dist.calc_moment(STATE::IDX::X, 3);
-    const double yPow3 = dist.calc_moment(STATE::IDX::Y, 3);
     const double yawPow2 = dist.calc_moment(STATE::IDX::YAW, 2);
-    const double xPow1_yPow2 = dist.calc_cross_third_moment(STATE::IDX::X, STATE::IDX::Y, 1, 2);
-    const double xPow2_yPow1 = dist.calc_cross_third_moment(STATE::IDX::X, STATE::IDX::Y, 2, 1);
-    const double xPow2_yawPow1 = dist.calc_cross_third_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 1);
-    const double yPow2_yawPow1 = dist.calc_cross_third_moment(STATE::IDX::Y, STATE::IDX::YAW, 2, 1);
+    const double xPow5 = dist.calc_moment(STATE::IDX::X, 5);
+    const double yPow5 = dist.calc_moment(STATE::IDX::Y, 5);
+    const double xPow1_yPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::Y, 1, 4, 0, 0);
+    const double xPow4_yPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::Y, 4, 1, 0, 0);
+    const double xPow4_yawPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 4, 1, 0, 0);
+    const double yPow4_yawPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 4, 1, 0, 0);
 
     Eigen::MatrixXd state_observation_cov(3, 2); // sigma = E[XY^T] - E[X]E[Y]^T
     state_observation_cov(STATE::IDX::X, MEASUREMENT::IDX::R)
-            = xPow3 + xPow1_yPow2 + xPow1 * mrPow1
-              - predicted_mean(STATE::IDX::X) * measurement_mean(MEASUREMENT::IDX::R); // xp * (xp^2 + yp^2 + mr)
+            = xPow5 + xPow1_yPow4 + xPow1 * mrPow1
+              - predicted_mean(STATE::IDX::X) * measurement_mean(MEASUREMENT::IDX::R); // xp * (xp^4 + yp^4 + mr)
     state_observation_cov(STATE::IDX::X, MEASUREMENT::IDX::YAW)
             = xPow1_yawPow1 + xPow1 * myawPow1
               - predicted_mean(STATE::IDX::X) * measurement_mean(MEASUREMENT::IDX::YAW); // x_p * (yaw + myaw)
     state_observation_cov(STATE::IDX::Y, MEASUREMENT::IDX::R)
-            = xPow2_yPow1 + yPow3  + yPow1 * mrPow1
-              - predicted_mean(STATE::IDX::Y) * measurement_mean(MEASUREMENT::IDX::R); // yp * (xp^2 + yp^2 + mr)
+            = xPow4_yPow1 + yPow5  + yPow1 * mrPow1
+              - predicted_mean(STATE::IDX::Y) * measurement_mean(MEASUREMENT::IDX::R); // yp * (xp^4 + yp^4 + mr)
     state_observation_cov(STATE::IDX::Y, MEASUREMENT::IDX::YAW)
             = yPow1_yawPow1 + yPow1 * myawPow1
               - predicted_mean(STATE::IDX::Y) * measurement_mean(MEASUREMENT::IDX::YAW); // y_p * (yaw + myaw)
     state_observation_cov(STATE::IDX::YAW, MEASUREMENT::IDX::R)
-            = xPow2_yawPow1 + yPow2_yawPow1 + yawPow1 * mrPow1
-              - predicted_mean(STATE::IDX::YAW) * measurement_mean(MEASUREMENT::IDX::R); // yaw_p * (x_p^2 + y_p^2 + mr)
+            = xPow4_yawPow1 + yPow4_yawPow1 + yawPow1 * mrPow1
+              - predicted_mean(STATE::IDX::YAW) * measurement_mean(MEASUREMENT::IDX::R); // yaw_p * (x_p^4 + y_p^4 + mr)
     state_observation_cov(STATE::IDX::YAW, MEASUREMENT::IDX::YAW)
             = yawPow2 + yawPow1 * myawPow1
               - predicted_mean(STATE::IDX::YAW) * measurement_mean(MEASUREMENT::IDX::YAW); // yaw_p * (yaw_p + myaw)

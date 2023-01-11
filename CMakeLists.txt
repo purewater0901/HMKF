@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 enable_testing()
 
 find_package(Boost REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIRS})
 find_package(Python3 COMPONENTS Development NumPy)
@@ -28,7 +29,7 @@ add_library(lib
             src/filter/ukf.cpp
             src/filter/mkf.cpp
             src/filter/example_hmkf.cpp
-        src/filter/squared_example_hmkf.cpp
+            src/filter/squared_example_hmkf.cpp
             src/filter/simple_vehicle_nkf.cpp
             src/filter/simple_vehicle_ukf.cpp
             src/filter/simple_vehicle_ekf.cpp
