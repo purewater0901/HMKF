@@ -1,29 +1,30 @@
 import math
 import numpy as np
 
-sample_num = 10000* 10000
+sample_num = 1000* 10000
 dt = 0.1
 
 # initial state
-ini_mean = np.array([0.0, 0.0])
-ini_cov = np.array([[0.1**2, 0.0], [0.0, 0.1**2]])
+ini_mean = np.array([0.54675, 0.315666])
+ini_cov = np.array([[0.194073, 0.102455], [0.102455, 0.0757687]])
 
 # control info
 controls = [1.0]
 
 # system noise
-wv_lambda = 1.0
+wv_lambda = 5.0
 upper_wtheta = (np.pi/10.0)
 lower_wtheta = -(np.pi/10.0)
 
 # get samples
 wv_samples = np.random.exponential(wv_lambda, sample_num)
-wtheta_samples = np.random.uniform(upper_wtheta, lower_wtheta, sample_num)
+wtheta_samples = np.random.normal(np.pi/6.0, np.pi/30, sample_num)
 state_samples = np.random.multivariate_normal(ini_mean, ini_cov, sample_num)
 
 # measurement noise
-mr_lambda = 0.1
-mr_samples = np.random.exponential(mr_lambda, sample_num)
+upper_lambda = 30
+lower_lambda = 0.0
+mr_samples = np.random.uniform(lower_lambda, upper_lambda, sample_num)
 
 sum_x = 0.0
 sum_y = 0.0
