@@ -513,13 +513,11 @@ TEST(SquaredExampleHMKF, Simulation)
 
     // System Noise
     const double wv_lambda = 1.0;
-    //const double wyaw_alpha = 5.0;
-    //const double wyaw_beta = 1.0;
-    const double wyaw_mean = 0.0;
-    const double wyaw_cov = M_PI/10 * M_PI/10;
+    const double wyaw_alpha = 5.0;
+    const double wyaw_beta = 1.0;
     std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map{
             {SYSTEM_NOISE::IDX::WV, std::make_shared<ExponentialDistribution>(wv_lambda)},
-            {SYSTEM_NOISE::IDX::WYAW, std::make_shared<NormalDistribution>(wyaw_mean, wyaw_cov)}};
+            {SYSTEM_NOISE::IDX::WYAW, std::make_shared<BetaDistribution>(wyaw_alpha, wyaw_beta)}};
 
     // measurement noise
     const double upper_mr_lambda = 100;
@@ -530,11 +528,8 @@ TEST(SquaredExampleHMKF, Simulation)
     // Random Variable Generator
     std::default_random_engine generator;
     std::exponential_distribution<double> wv_dist(wv_lambda);
-    /*
     boost::random::mt19937 engine(1234567890);
     boost::function<double()> wyaw_dist = boost::bind(boost::random::beta_distribution<>(wyaw_alpha, wyaw_beta), engine);
-    */
-    std::normal_distribution<double> wyaw_dist(wyaw_mean, std::sqrt(wyaw_cov));
     std::uniform_real_distribution<double> mr_dist(lower_mr_lambda, upper_mr_lambda);
 
     std::vector<double> hmkf_xy_diff_vec;
@@ -549,7 +544,7 @@ TEST(SquaredExampleHMKF, Simulation)
         // System propagation
         Eigen::VectorXd system_noise = Eigen::VectorXd::Zero(2);
         system_noise(0) = wv_dist(generator);
-        system_noise(1) = wyaw_dist(generator);
+        system_noise(1) = wyaw_dist();
         x_true = example_model->propagate(x_true, control_inputs, system_noise, dt);
 
         // Measurement
