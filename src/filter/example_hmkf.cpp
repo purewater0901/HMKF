@@ -20,7 +20,7 @@ Example::PredictedMoments ExampleHMKF::predict(const StateInfo &state,
     const double xPow2_yPow1 = dist.calc_xy_cos_y_sin_y_moment(2, 1, 0, 0);
     const double xPow1_yPow2 = dist.calc_xy_cos_y_sin_y_moment(1, 2, 0, 0);
     const double xPow4 = dist.calc_moment(STATE::IDX::X, 4); // x^4
-    const double yPow4 = dist.calc_xy_cos_y_sin_y_moment(0, 4, 0, 0); // y)^4
+    const double yPow4 = dist.calc_moment(STATE::IDX::Y, 4); // y^4
     const double xPow2_yPow2 = dist.calc_xy_cos_y_sin_y_moment(2, 2, 0, 0);
 
     // Input

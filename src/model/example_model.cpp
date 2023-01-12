@@ -36,7 +36,7 @@ Eigen::VectorXd ExampleVehicleModel::propagate(const Eigen::VectorXd& x_curr,
 
     Eigen::VectorXd x_next = Eigen::VectorXd::Zero(2);
     x_next(STATE::IDX::X) = x_curr(STATE::IDX::X) + (v + wv) * std::cos(wyaw)*dt;
-    x_next(STATE::IDX::Y) = x_curr(STATE::IDX::X) + (v + wv) * std::sin(wyaw)*dt;
+    x_next(STATE::IDX::Y) = x_curr(STATE::IDX::Y) + (v + wv) * std::sin(wyaw)*dt;
 
     return x_next;
 }
