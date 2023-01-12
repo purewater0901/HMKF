@@ -25,6 +25,8 @@
 
 using namespace Example;
 
+constexpr double epsilon = 1e-3;
+
 TEST(ExampleHMKF, Predict)
 {
     const size_t state_dim = 2;
@@ -116,6 +118,20 @@ TEST(ExampleHMKF, Predict)
     std::cout << "MKF: E[R^2]: " << mkf_measurement_moments.covariance(0,0) + mkf_measurement_moments.mean(0)*mkf_measurement_moments.mean(0) << std::endl;
     std::cout << "HMKF E[R]: " << measurement_moments.rPow1 << std::endl;
     std::cout << "HMKF E[R^2]: " << measurement_moments.rPow2 << std::endl;
+
+    EXPECT_NEAR(predicted_moments.xPow1, 0.19672, epsilon);
+    EXPECT_NEAR(predicted_moments.yPow1, 0.0, epsilon);
+    EXPECT_NEAR(predicted_moments.xPow2, 0.058389339283061455, epsilon);
+    EXPECT_NEAR(predicted_moments.yPow2, 0.011614470839380995, epsilon);
+    EXPECT_NEAR(predicted_moments.xPow1_yPow1, 0.0, epsilon);
+    EXPECT_NEAR(predicted_moments.xPow3, 0.021143192063091603, epsilon);
+    EXPECT_NEAR(predicted_moments.yPow3, 0.0, epsilon);
+    EXPECT_NEAR(predicted_moments.xPow2_yPow1, 0.0, epsilon);
+    EXPECT_NEAR(predicted_moments.xPow1_yPow2, 0.0024687403860974098, epsilon);
+    EXPECT_NEAR(predicted_moments.xPow4, 0.009301399614907455, epsilon);
+    EXPECT_NEAR(predicted_moments.yPow4, 0.00040906469343830905, epsilon);
+    EXPECT_NEAR(measurement_moments.rPow1, 0.17, epsilon);
+    EXPECT_NEAR(measurement_moments.rPow2, 0.0453, epsilon);
 }
 
 TEST(SquaredExampleHMKF, Predict)
@@ -214,7 +230,7 @@ TEST(ExampleHMKF, Simulation)
     UKF ukf(example_model);
 
     const double dt = 0.1;
-    size_t N = 30;
+    size_t N = 3000;
 
     // Initial State
     StateInfo ini_state;
@@ -233,14 +249,16 @@ TEST(ExampleHMKF, Simulation)
 
     // System Noise
     const double wv_lambda = 0.2;
-    const double wyaw_alpha = 5.0;
-    const double wyaw_beta = 1.0;
+    //const double wyaw_alpha = 5.0;
+    //const double wyaw_beta = 1.0;
+    const double wyaw_mean = 0.0;
+    const double wyaw_cov = M_PI/30 * M_PI/30;
     std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map{
             {SYSTEM_NOISE::IDX::WV, std::make_shared<ExponentialDistribution>(wv_lambda)},
-            {SYSTEM_NOISE::IDX::WYAW, std::make_shared<BetaDistribution>(wyaw_alpha, wyaw_beta)}};
+            {SYSTEM_NOISE::IDX::WYAW, std::make_shared<NormalDistribution>(wyaw_mean, wyaw_cov)}};
 
     // measurement noise
-    const double upper_mr_lambda = 300;
+    const double upper_mr_lambda = 30;
     const double lower_mr_lambda = 0.0;
     std::map<int, std::shared_ptr<BaseDistribution>> measurement_noise_map{
             {MEASUREMENT_NOISE::IDX::WR, std::make_shared<UniformDistribution>(lower_mr_lambda,upper_mr_lambda)}};
@@ -248,21 +266,26 @@ TEST(ExampleHMKF, Simulation)
     // Random Variable Generator
     std::default_random_engine generator;
     std::exponential_distribution<double> wv_dist(wv_lambda);
+    /*
     boost::random::mt19937 engine(1234567890);
     boost::function<double()> wyaw_dist = boost::bind(boost::random::beta_distribution<>(wyaw_alpha, wyaw_beta), engine);
+    */
+    std::normal_distribution<double> wyaw_dist(wyaw_mean, std::sqrt(wyaw_cov));
     std::uniform_real_distribution<double> mr_dist(lower_mr_lambda, upper_mr_lambda);
 
     std::vector<double> hmkf_xy_diff_vec;
     std::vector<double> mkf_xy_diff_vec;
     std::vector<double> ekf_xy_diff_vec;
+    std::vector<double> ukf_xy_diff_vec;
     StateInfo hmkf_state_info = ini_state;
     StateInfo mkf_state_info = ini_state;
     StateInfo ekf_state_info = ini_state;
+    StateInfo ukf_state_info = ini_state;
     for(size_t i=0; i<N; ++i) {
         // System propagation
         Eigen::VectorXd system_noise = Eigen::VectorXd::Zero(2);
         system_noise(0) = wv_dist(generator);
-        system_noise(1) = wyaw_dist();
+        system_noise(1) = wyaw_dist(generator);
         x_true = example_model->propagate(x_true, control_inputs, system_noise, dt);
 
         // Measurement
@@ -274,11 +297,13 @@ TEST(ExampleHMKF, Simulation)
         const auto hmkf_predicted = hmkf.predict(hmkf_state_info, control_inputs, dt, system_noise_map);
         const auto ekf_predicted = ekf.predict(ekf_state_info, control_inputs, dt, system_noise_map);
         const auto mkf_predicted = mkf.predict(mkf_state_info, control_inputs, dt, system_noise_map);
+        const auto ukf_predicted = ukf.predict(ukf_state_info, control_inputs, dt, system_noise_map, measurement_noise_map);
 
         // Update
         hmkf_state_info = hmkf.update(hmkf_predicted, y, measurement_noise_map);
         mkf_state_info = mkf.update(mkf_predicted, y, measurement_noise_map);
         ekf_state_info = ekf.update(ekf_predicted, y, measurement_noise_map);
+        ukf_state_info = ukf.update(ukf_predicted, y, system_noise_map, measurement_noise_map);
 
         // Evaluation
         // HMKF
@@ -288,22 +313,30 @@ TEST(ExampleHMKF, Simulation)
             const double dist = std::hypot(x_diff, y_diff);
             hmkf_xy_diff_vec.push_back(dist);
             std::cout << "hmkf_dist_diff: " << dist << " [m]" << std::endl;
-            std::cout << "-------------" << std::endl;
         }
+        // MKF
         {
             const double x_diff = std::fabs(mkf_state_info.mean(0) - x_true(0));
             const double y_diff = std::fabs(mkf_state_info.mean(1) - x_true(1));
             const double dist = std::hypot(x_diff, y_diff);
             mkf_xy_diff_vec.push_back(dist);
             std::cout << "mkf_dist_diff: " << dist << " [m]" << std::endl;
-            std::cout << "-------------" << std::endl;
         }
+        // EKF
         {
             const double x_diff = std::fabs(ekf_state_info.mean(0) - x_true(0));
             const double y_diff = std::fabs(ekf_state_info.mean(1) - x_true(1));
             const double dist = std::hypot(x_diff, y_diff);
             ekf_xy_diff_vec.push_back(dist);
             std::cout << "ekf_dist_diff: " << dist << " [m]" << std::endl;
+        }
+        // UKF
+        {
+            const double x_diff = std::fabs(ukf_state_info.mean(0) - x_true(0));
+            const double y_diff = std::fabs(ukf_state_info.mean(1) - x_true(1));
+            const double dist = std::hypot(x_diff, y_diff);
+            ukf_xy_diff_vec.push_back(dist);
+            std::cout << "ukf_dist_diff: " << dist << " [m]" << std::endl;
             std::cout << "-------------" << std::endl;
         }
     }
@@ -311,8 +344,10 @@ TEST(ExampleHMKF, Simulation)
     const double sum_hmkf_xy_diff = std::accumulate(hmkf_xy_diff_vec.begin(), hmkf_xy_diff_vec.end(), 0.0);
     const double sum_mkf_xy_diff = std::accumulate(mkf_xy_diff_vec.begin(), mkf_xy_diff_vec.end(), 0.0);
     const double sum_ekf_xy_diff = std::accumulate(ekf_xy_diff_vec.begin(), ekf_xy_diff_vec.end(), 0.0);
+    const double sum_ukf_xy_diff = std::accumulate(ukf_xy_diff_vec.begin(), ukf_xy_diff_vec.end(), 0.0);
 
     std::cout << "HMKF mean dist diff: " << sum_hmkf_xy_diff / hmkf_xy_diff_vec.size() << std::endl;
     std::cout << "MKF mean dist diff: " << sum_mkf_xy_diff / mkf_xy_diff_vec.size() << std::endl;
     std::cout << "EKF mean dist diff: " << sum_ekf_xy_diff / ekf_xy_diff_vec.size() << std::endl;
+    std::cout << "UKF mean dist diff: " << sum_ukf_xy_diff / ukf_xy_diff_vec.size() << std::endl;
 }

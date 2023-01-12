@@ -79,8 +79,8 @@ StateInfo ExampleHMKF::update(const PredictedMoments & predicted_moments,
     const double& xPow1_yPow1 = predicted_moments.xPow1_yPow1;
 
     // Predicted mean and covariance
-    Eigen::Vector2d predicted_mean = Eigen::Vector2d::Zero();
-    Eigen::Matrix2d predicted_cov = Eigen::Matrix2d::Zero();
+    Eigen::VectorXd predicted_mean = Eigen::VectorXd::Zero(2);
+    Eigen::MatrixXd predicted_cov = Eigen::MatrixXd::Zero(2, 2);
     predicted_mean(STATE::IDX::X) = xPow1;
     predicted_mean(STATE::IDX::Y) = yPow1;
     predicted_cov(STATE::IDX::X, STATE::IDX::X) = xPow2 - xPow1*xPow1;
@@ -127,7 +127,7 @@ Example::MeasurementMoments ExampleHMKF::getMeasurementMoments(const Example::Pr
 
     Example::MeasurementMoments meas_moments;
     meas_moments.rPow1 = xPow2 + yPow2 + wrPow1;
-    meas_moments.rPow2 = xPow4 + yPow4 + +wrPow2 + 2.0*xPow2_yPow2 + 2.0*xPow2*wrPow1 + 2.0*yPow2*wrPow1;
+    meas_moments.rPow2 = xPow4 + yPow4 + wrPow2 + 2.0*xPow2_yPow2 + 2.0*xPow2*wrPow1 + 2.0*yPow2*wrPow1;
 
     return meas_moments;
 }
