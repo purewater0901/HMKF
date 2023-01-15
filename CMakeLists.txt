@@ -21,8 +21,7 @@ add_library(lib
             src/model/example_model.cpp
             src/model/squared_example_model.cpp
             src/model/simple_vehicle_model.cpp
-            src/model/kinematic_vehicle_model.cpp
-            src/utilities.cpp
+        src/utilities.cpp
             src/filter/ekf.cpp
             src/filter/ukf.cpp
             src/filter/mkf.cpp
@@ -92,10 +91,6 @@ gtest_add_tests(TARGET test_three_dimensional_normal_distribution)
 add_executable(test_simple_vehicle_nkf test/filter/test_simple_vehicle_nkf.cpp)
 target_link_libraries(test_simple_vehicle_nkf GTest::GTest GTest::Main lib)
 gtest_add_tests(TARGET test_simple_vehicle_nkf)
-
-add_executable(test_kinematic_vehicle_model test/model/test_kinematic_vehicle_model.cpp)
-target_link_libraries(test_kinematic_vehicle_model GTest::GTest GTest::Main lib)
-gtest_add_tests(TARGET test_kinematic_vehicle_model)
 
 add_executable(test_simple_vehicle_model test/model/test_simple_vehicle_model.cpp)
 target_link_libraries(test_simple_vehicle_model GTest::GTest GTest::Main lib)
