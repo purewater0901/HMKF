@@ -14,7 +14,9 @@ Eigen::Vector3d SimpleVehicleModel::propagate(const Eigen::Vector3d& x_curr,
     return x_next;
 }
 
-Eigen::Vector2d SimpleVehicleModel::observe(const Eigen::Vector3d& x_curr, const Eigen::Vector2d& observation_noise, const Eigen::Vector2d& landmark)
+Eigen::Vector2d SimpleVehicleModel::observe(const Eigen::Vector3d& x_curr,
+                                            const Eigen::Vector2d& observation_noise,
+                                            const Eigen::Vector2d& landmark)
 {
     const double& x = x_curr(STATE::IDX::X);
     const double& y = x_curr(STATE::IDX::Y);

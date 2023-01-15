@@ -35,6 +35,85 @@ PredictedMoments NormalVehicleHMKF::predict(const StateInfo& state_info,
     const double cPow1_yawPow1 = dist.calc_x_cos_x_moment(STATE::IDX::YAW, 1, 1); // yaw*cos(yaw)
     const double sPow1_yawPow1 = dist.calc_x_sin_x_moment(STATE::IDX::YAW, 1, 1); // yaw*sin(yaw)
 
+    // third order
+    const double xPow3 = dist.calc_moment(STATE::IDX::X, 3);
+    const double yPow3 = dist.calc_moment(STATE::IDX::Y, 3);
+    const double cPow3 = dist.calc_cos_moment(STATE::IDX::YAW, 3);
+    const double sPow3 = dist.calc_sin_moment(STATE::IDX::YAW, 3);
+    const double cPow2_sPow1 = dist.calc_cos_sin_moment(STATE::IDX::YAW, 2, 1);
+    const double cPow1_sPow2 = dist.calc_cos_sin_moment(STATE::IDX::YAW, 1, 2);
+    const double xPow2_yPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::Y, 2, 1, 0, 0);
+    const double xPow1_yPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::Y, 1, 2, 0, 0);
+    const double cPow1_xPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 0, 1, 0);
+    const double cPow1_yPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 2, 0, 1, 0);
+    const double sPow1_xPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 0, 0, 1);
+    const double sPow1_yPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 2, 0, 0, 1);
+    const double cPow2_xPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 2, 0);
+    const double cPow2_yPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 0, 2, 0);
+    const double sPow2_xPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 0, 2);
+    const double sPow2_yPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 0, 0, 2);
+    const double cPow1_sPow1_xPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 1, 1);
+    const double cPow1_sPow1_yPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 0, 1, 1);
+
+    // fourth order
+    const double xPow4 = dist.calc_moment(STATE::IDX::X, 4);
+    const double yPow4 = dist.calc_moment(STATE::IDX::Y, 4);
+    const double xPow3_yPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::Y, 3, 1, 0, 0);
+    const double xPow1_yPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::Y, 1, 3, 0, 0);
+    const double cPow4 = dist.calc_cos_moment(STATE::IDX::YAW, 4);
+    const double sPow4 = dist.calc_sin_moment(STATE::IDX::YAW, 4);
+    const double cPow3_xPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 3, 0);
+    const double sPow3_xPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 0, 3);
+    const double cPow3_yPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 0, 3, 0);
+    const double sPow3_yPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 0, 0, 3);
+    const double cPow2_xPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 2, 0);
+    const double cPow2_yPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 0, 2, 0);
+    const double sPow2_xPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 0, 2);
+    const double sPow2_yPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 0, 0, 2);
+    const double cPow1_xPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 3, 0, 1, 0);
+    const double cPow1_yPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 3, 0, 1, 0);
+    const double sPow1_xPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 3, 0, 0, 1);
+    const double sPow1_yPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 3, 0, 0, 1);
+    const double cPow3_sPow1 = dist.calc_cos_sin_moment(STATE::IDX::YAW, 3, 1);
+    const double cPow1_sPow3 = dist.calc_cos_sin_moment(STATE::IDX::YAW, 1, 3);
+    const double cPow2_sPow2 = dist.calc_cos_sin_moment(STATE::IDX::YAW, 2, 2);
+    const double cPow2_sPow1_xPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 2, 1);
+    const double cPow2_sPow1_yPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 0, 2, 1);
+    const double cPow1_sPow2_xPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 1, 2);
+    const double cPow1_sPow2_yPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 0, 1, 2);
+    const double cPow1_sPow1_xPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 0, 1, 1);
+    const double cPow1_sPow1_yPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 2, 0, 1, 1);
+
+    // fifth order
+    const double xPow5 = dist.calc_moment(STATE::IDX::X, 5);
+    const double yPow5 = dist.calc_moment(STATE::IDX::Y, 5);
+    const double cPow5 = dist.calc_cos_moment(STATE::IDX::YAW, 5);
+    const double sPow5 = dist.calc_sin_moment(STATE::IDX::YAW, 5);
+    const double xPow1_yPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::Y, 1, 4, 0, 0);
+    const double xPow4_yPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::Y, 4, 1, 0, 0);
+    const double cPow1_xPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 4, 0, 1, 0);
+    const double sPow1_xPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 4, 0, 0, 1);
+    const double cPow1_yPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 4, 0, 1, 0);
+    const double sPow1_yPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 4, 0, 0, 1);
+    const double cPow4_xPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 4, 0);
+    const double sPow4_xPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 0, 4);
+    const double cPow4_yPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 0, 4, 0);
+    const double sPow4_yPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 0, 0, 4);
+    const double cPow3_xPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 0, 3, 0);
+    const double cPow3_yPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 2, 0, 3, 0);
+    const double sPow3_xPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 0, 0, 3);
+    const double sPow3_yPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 2, 0, 0, 3);
+    const double cPow2_xPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 3, 0, 2, 0);
+    const double cPow2_yPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 3, 0, 2, 0);
+    const double sPow2_xPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 3, 0, 0, 2);
+    const double sPow2_yPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 3, 0, 0, 2);
+    const double cPow1_sPow4 = dist.calc_cos_sin_moment(STATE::IDX::YAW, 1, 4);
+    const double cPow4_sPow1 = dist.calc_cos_sin_moment(STATE::IDX::YAW, 4, 1);
+    const double cPow3_sPow1_xPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 3, 1);
+    const double cPow3_sPow1_yPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 0, 3, 1);
+    const double cPow1_sPow3_xPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 1, 3);
+    const double cPow1_sPow3_yPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 0, 1, 3);
+
     // Step3. Control Input
     const double v = control_inputs(INPUT::IDX::V) * dt;
     const double u = control_inputs(INPUT::IDX::U) * dt;
@@ -49,6 +128,12 @@ PredictedMoments NormalVehicleHMKF::predict(const StateInfo& state_info,
     const double wxPow2 = wx_dist_ptr->calc_moment(2);
     const double wyPow2 = wy_dist_ptr->calc_moment(2);
     const double wyawPow2 = wyaw_dist_ptr->calc_moment(2);
+    const double wxPow3 = wx_dist_ptr->calc_moment(3);
+    const double wyPow3 = wy_dist_ptr->calc_moment(3);
+    const double wxPow4 = wx_dist_ptr->calc_moment(4);
+    const double wyPow4 = wy_dist_ptr->calc_moment(4);
+    const double wxPow5 = wx_dist_ptr->calc_moment(5);
+    const double wyPow5 = wy_dist_ptr->calc_moment(5);
 
     // Dynamics updates.
     PredictedMoments next_moments;
@@ -66,6 +151,13 @@ PredictedMoments NormalVehicleHMKF::predict(const StateInfo& state_info,
                                       + wxPow1*wyawPow1 + wxPow1*yawPow1 + wyawPow1*xPow1 + xPow1_yawPow1;
     next_moments.yPow1_yawPow1 = u*v*sPow1 + u*wyPow1 + u*yPow1 + v*sPow1*wyawPow1 + v*sPow1_yawPow1
                                       + wyPow1*wyawPow1 + wyPow1*yawPow1 + wyawPow1*yPow1 + yPow1_yawPow1;
+    next_moments.xPow4 = pow(v, 4)*cPow4 + 4*pow(v, 3)*cPow3*wxPow1 + 4*pow(v, 3)*cPow3_xPow1 + 6*pow(v, 2)*cPow2*wxPow2 + 12*pow(v, 2)*cPow2_xPow1*wxPow1 + 6*pow(v, 2)*cPow2_xPow2 + 4*v*cPow1*wxPow3 + 12*v*cPow1_xPow1*wxPow2 + 12*v*cPow1_xPow2*wxPow1 + 4*v*cPow1_xPow3 + 4*wxPow1*xPow3 + 6*wxPow2*xPow2 + 4*wxPow3*xPow1 + wxPow4 + xPow4;
+    next_moments.yPow4 = pow(v, 4)*sPow4 + 4*pow(v, 3)*sPow3*wyPow1 + 4*pow(v, 3)*sPow3_yPow1 + 6*pow(v, 2)*sPow2*wyPow2 + 12*pow(v, 2)*sPow2_yPow1*wyPow1 + 6*pow(v, 2)*sPow2_yPow2 + 4*v*sPow1*wyPow3 + 12*v*sPow1_yPow1*wyPow2 + 12*v*sPow1_yPow2*wyPow1 + 4*v*sPow1_yPow3 + 4*wyPow1*yPow3 + 6*wyPow2*yPow2 + 4*wyPow3*yPow1 + wyPow4 + yPow4;
+    next_moments.xPow5 = pow(v, 5)*cPow5 + 5*pow(v, 4)*cPow4*wxPow1 + 5*pow(v, 4)*cPow4_xPow1 + 10*pow(v, 3)*cPow3*wxPow2 + 20*pow(v, 3)*cPow3_xPow1*wxPow1 + 10*pow(v, 3)*cPow3_xPow2 + 10*pow(v, 2)*cPow2*wxPow3 + 30*pow(v, 2)*cPow2_xPow1*wxPow2 + 30*pow(v, 2)*cPow2_xPow2*wxPow1 + 10*pow(v, 2)*cPow2_xPow3 + 5*v*cPow1*wxPow4 + 20*v*cPow1_xPow1*wxPow3 + 30*v*cPow1_xPow2*wxPow2 + 20*v*cPow1_xPow3*wxPow1 + 5*v*cPow1_xPow4 + 5*wxPow1*xPow4 + 10*wxPow2*xPow3 + 10*wxPow3*xPow2 + 5*wxPow4*xPow1 + wxPow5 + xPow5;
+    next_moments.yPow5 = pow(v, 5)*sPow5 + 5*pow(v, 4)*sPow4*wyPow1 + 5*pow(v, 4)*sPow4_yPow1 + 10*pow(v, 3)*sPow3*wyPow2 + 20*pow(v, 3)*sPow3_yPow1*wyPow1 + 10*pow(v, 3)*sPow3_yPow2 + 10*pow(v, 2)*sPow2*wyPow3 + 30*pow(v, 2)*sPow2_yPow1*wyPow2 + 30*pow(v, 2)*sPow2_yPow2*wyPow1 + 10*pow(v, 2)*sPow2_yPow3 + 5*v*sPow1*wyPow4 + 20*v*sPow1_yPow1*wyPow3 + 30*v*sPow1_yPow2*wyPow2 + 20*v*sPow1_yPow3*wyPow1 + 5*v*sPow1_yPow4 + 5*wyPow1*yPow4 + 10*wyPow2*yPow3 + 10*wyPow3*yPow2 + 5*wyPow4*yPow1 + wyPow5 + yPow5;
+    //next_moments.xPow1_yPow4 = pow(v, 5)*cPow1_sPow4 + 4*pow(v, 4)*cPow1_sPow3*wyPow1 + 4*pow(v, 4)*cPow1_sPow3_yPow1 + pow(v, 4)*sPow4*wxPow1 + pow(v, 4)*sPow4_xPow1 + 6*pow(v, 3)*cPow1_sPow2*wyPow2 + 12*pow(v, 3)*cPow1_sPow2_yPow1*wyPow1 + 6*pow(v, 3)*cPow1_sPow2_yPow2 + 4*pow(v, 3)*sPow3*wxPow1*wyPow1 + 4*pow(v, 3)*sPow3_xPow1*wyPow1 + 4*pow(v, 3)*sPow3_xPow1_yPow1 + 4*pow(v, 3)*sPow3_yPow1*wxPow1 + 4*pow(v, 2)*cPow1_sPow1*wyPow3 + 12*pow(v, 2)*cPow1_sPow1_yPow1*wyPow2 + 12*pow(v, 2)*cPow1_sPow1_yPow2*wyPow1 + 4*pow(v, 2)*cPow1_sPow1_yPow3 + 6*pow(v, 2)*sPow2*wxPow1*wyPow2 + 6*pow(v, 2)*sPow2_xPow1*wyPow2 + 12*pow(v, 2)*sPow2_xPow1_yPow1*wyPow1 + 6*pow(v, 2)*sPow2_xPow1_yPow2 + 12*pow(v, 2)*sPow2_yPow1*wxPow1*wyPow1 + 6*pow(v, 2)*sPow2_yPow2*wxPow1 + v*cPow1*wyPow4 + 4*v*cPow1_yPow1*wyPow3 + 6*v*cPow1_yPow2*wyPow2 + 4*v*cPow1_yPow3*wyPow1 + v*cPow1_yPow4 + 4*v*sPow1*wxPow1*wyPow3 + 4*v*sPow1_xPow1*wyPow3 + 12*v*sPow1_xPow1_yPow1*wyPow2 + 12*v*sPow1_xPow1_yPow2*wyPow1 + 4*v*sPow1_xPow1_yPow3 + 12*v*sPow1_yPow1*wxPow1*wyPow2 + 12*v*sPow1_yPow2*wxPow1*wyPow1 + 4*v*sPow1_yPow3*wxPow1 + 4*wxPow1*wyPow1*yPow3 + 6*wxPow1*wyPow2*yPow2 + 4*wxPow1*wyPow3*yPow1 + wxPow1*wyPow4 + wxPow1*yPow4 + 4*wyPow1*xPow1_yPow3 + 6*wyPow2*xPow1_yPow2 + 4*wyPow3*xPow1_yPow1 + wyPow4*xPow1 + xPow1_yPow4;
+    //next_moments.xPow4_yPow1 = pow(v, 5)*cPow4_sPow1 + 4*pow(v, 4)*cPow3_sPow1*wxPow1 + 4*pow(v, 4)*cPow3_sPow1_xPow1 + pow(v, 4)*cPow4*wyPow1 + pow(v, 4)*cPow4_yPow1 + 6*pow(v, 3)*cPow2_sPow1*wxPow2 + 12*pow(v, 3)*cPow2_sPow1_xPow1*wxPow1 + 6*pow(v, 3)*cPow2_sPow1_xPow2 + 4*pow(v, 3)*cPow3*wxPow1*wyPow1 + 4*pow(v, 3)*cPow3_xPow1*wyPow1 + 4*pow(v, 3)*cPow3_xPow1_yPow1 + 4*pow(v, 3)*cPow3_yPow1*wxPow1 + 4*pow(v, 2)*cPow1_sPow1*wxPow3 + 12*pow(v, 2)*cPow1_sPow1_xPow1*wxPow2 + 12*pow(v, 2)*cPow1_sPow1_xPow2*wxPow1 + 4*pow(v, 2)*cPow1_sPow1_xPow3 + 6*pow(v, 2)*cPow2*wxPow2*wyPow1 + 12*pow(v, 2)*cPow2_xPow1*wxPow1*wyPow1 + 12*pow(v, 2)*cPow2_xPow1_yPow1*wxPow1 + 6*pow(v, 2)*cPow2_xPow2*wyPow1 + 6*pow(v, 2)*cPow2_xPow2_yPow1 + 6*pow(v, 2)*cPow2_yPow1*wxPow2 + 4*v*cPow1*wxPow3*wyPow1 + 12*v*cPow1_xPow1*wxPow2*wyPow1 + 12*v*cPow1_xPow1_yPow1*wxPow2 + 12*v*cPow1_xPow2*wxPow1*wyPow1 + 12*v*cPow1_xPow2_yPow1*wxPow1 + 4*v*cPow1_xPow3*wyPow1 + 4*v*cPow1_xPow3_yPow1 + 4*v*cPow1_yPow1*wxPow3 + v*sPow1*wxPow4 + 4*v*sPow1_xPow1*wxPow3 + 6*v*sPow1_xPow2*wxPow2 + 4*v*sPow1_xPow3*wxPow1 + v*sPow1_xPow4 + 4*wxPow1*wyPow1*xPow3 + 4*wxPow1*xPow3_yPow1 + 6*wxPow2*wyPow1*xPow2 + 6*wxPow2*xPow2_yPow1 + 4*wxPow3*wyPow1*xPow1 + 4*wxPow3*xPow1_yPow1 + wxPow4*wyPow1 + wxPow4*yPow1 + wyPow1*xPow4 + xPow4_yPow1;
+
 
     return next_moments;
 }

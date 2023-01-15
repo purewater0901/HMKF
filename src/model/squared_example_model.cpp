@@ -20,8 +20,8 @@ Eigen::VectorXd ExampleSquaredVehicleModel::propagate(const Eigen::VectorXd& x_c
     const auto wyaw_dist_ptr = noise_map.at(SYSTEM_NOISE::IDX::WYAW);
 
     Eigen::VectorXd system_noise = Eigen::VectorXd::Zero(2);
-    system_noise(0) = wv_dist_ptr->calc_mean();
-    system_noise(1) = wyaw_dist_ptr->calc_mean();
+    system_noise(SYSTEM_NOISE::IDX::WV) = wv_dist_ptr->calc_mean();
+    system_noise(SYSTEM_NOISE::IDX::WYAW) = wyaw_dist_ptr->calc_mean();
 
     return propagate(x_curr, u_curr, system_noise, dt);
 }

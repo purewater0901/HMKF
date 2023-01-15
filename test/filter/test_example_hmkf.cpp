@@ -489,7 +489,7 @@ TEST(SquaredExampleHMKF, Simulation)
     UKF ukf(example_model);
 
     const double dt = 0.1;
-    size_t N = 1000;
+    size_t N = 5000;
 
     // Initial State
     StateInfo ini_state;
@@ -508,24 +508,26 @@ TEST(SquaredExampleHMKF, Simulation)
 
     // System Noise
     const double wv_lambda = 1.0;
-    const double wyaw_alpha = 5.0;
-    const double wyaw_beta = 1.0;
+    const double wyaw_lower = -M_PI / 10.0;
+    const double wyaw_upper = M_PI / 10.0;
     std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map{
             {SYSTEM_NOISE::IDX::WV, std::make_shared<ExponentialDistribution>(wv_lambda)},
-            {SYSTEM_NOISE::IDX::WYAW, std::make_shared<BetaDistribution>(wyaw_alpha, wyaw_beta)}};
+            {SYSTEM_NOISE::IDX::WYAW, std::make_shared<UniformDistribution>(wyaw_lower, wyaw_upper)}};
 
     // measurement noise
-    const double upper_mr_lambda = 100;
-    const double lower_mr_lambda = 0.0;
+    const double upper_mr = 100;
+    const double lower_mr = 0.0;
     std::map<int, std::shared_ptr<BaseDistribution>> measurement_noise_map{
-            {MEASUREMENT_NOISE::IDX::WR, std::make_shared<UniformDistribution>(lower_mr_lambda,upper_mr_lambda)}};
+            {MEASUREMENT_NOISE::IDX::WR, std::make_shared<UniformDistribution>(lower_mr,upper_mr)}};
 
     // Random Variable Generator
-    std::default_random_engine generator;
-    std::exponential_distribution<double> wv_dist(wv_lambda);
-    boost::random::mt19937 engine(1234567890);
-    boost::function<double()> wyaw_dist = boost::bind(boost::random::beta_distribution<>(wyaw_alpha, wyaw_beta), engine);
-    std::uniform_real_distribution<double> mr_dist(lower_mr_lambda, upper_mr_lambda);
+    std::random_device seed_gen;
+    //std::mt19937 mt(seed_gen());
+    std::mt19937 mt(0);
+    std::default_random_engine generator(mt());
+    std::exponential_distribution<> wv_dist(wv_lambda);
+    std::uniform_real_distribution<> wyaw_dist(wyaw_lower, wyaw_upper);
+    std::uniform_real_distribution<> mr_dist(lower_mr, upper_mr);
 
     std::vector<double> hmkf_xy_diff_vec;
     std::vector<double> mkf_xy_diff_vec;
@@ -539,7 +541,7 @@ TEST(SquaredExampleHMKF, Simulation)
         // System propagation
         Eigen::VectorXd system_noise = Eigen::VectorXd::Zero(2);
         system_noise(0) = wv_dist(generator);
-        system_noise(1) = wyaw_dist();
+        system_noise(1) = wyaw_dist(generator);
         x_true = example_model->propagate(x_true, control_inputs, system_noise, dt);
 
         // Measurement
@@ -552,16 +554,6 @@ TEST(SquaredExampleHMKF, Simulation)
         ekf_state_info = ekf.predict(ekf_state_info, control_inputs, dt, system_noise_map);
         mkf_state_info = mkf.predict(mkf_state_info, control_inputs, dt, system_noise_map);
         ukf_state_info = ukf.predict(ukf_state_info, control_inputs, dt, system_noise_map, measurement_noise_map);
-
-        std::cout << "predicted hmkf" << std::endl;
-        std::cout << "V[x^2]: "<< hmkf_predicted.xPow2 - hmkf_predicted.xPow1*hmkf_predicted.xPow1<< std::endl;
-        std::cout << "V[y^2]: "<< hmkf_predicted.yPow2 - hmkf_predicted.yPow1*hmkf_predicted.yPow1<< std::endl;
-        std::cout << "V[xy]: "<< hmkf_predicted.xPow1_yPow1 - hmkf_predicted.xPow1*hmkf_predicted.yPow1<< std::endl;
-        std::cout << "predicted mkf" << std::endl;
-        std::cout << mkf_state_info.covariance << std::endl;
-        std::cout << "predicted ukf" << std::endl;
-        std::cout << ukf_state_info.covariance << std::endl;
-
 
         // Update
         hmkf_state_info = hmkf.update(hmkf_predicted, y, measurement_noise_map);
@@ -576,7 +568,6 @@ TEST(SquaredExampleHMKF, Simulation)
             const double y_diff = std::fabs(hmkf_state_info.mean(1) - x_true(1));
             const double dist = std::hypot(x_diff, y_diff);
             hmkf_xy_diff_vec.push_back(dist);
-            std::cout << hmkf_state_info.mean << std::endl;
             std::cout << "hmkf_dist_diff: " << dist << " [m]" << std::endl;
         }
         // MKF
