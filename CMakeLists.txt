@@ -50,10 +50,6 @@ add_executable(main_non_gaussian main_non_gaussian.cpp)
 target_include_directories(main_non_gaussian PRIVATE ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
 target_link_libraries(main_non_gaussian Python3::Python Python3::NumPy lib)
 
-add_executable(kinematic_vehicle_scenario kinematic_vehicle_scenario.cpp)
-target_include_directories(kinematic_vehicle_scenario PRIVATE ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
-target_link_libraries(kinematic_vehicle_scenario Python3::Python Python3::NumPy lib)
-
 add_executable(paper_example paper_example.cpp)
 target_include_directories(paper_example PRIVATE ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
 target_link_libraries(paper_example Python3::Python Python3::NumPy lib)
