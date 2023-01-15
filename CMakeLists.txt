@@ -21,9 +21,7 @@ add_library(lib
             src/model/example_model.cpp
             src/model/squared_example_model.cpp
             src/model/simple_vehicle_model.cpp
-            src/model/normal_vehicle_model.cpp
             src/model/kinematic_vehicle_model.cpp
-            src/model/mobile_robot_model.cpp
             src/utilities.cpp
             src/filter/ekf.cpp
             src/filter/ukf.cpp
@@ -36,8 +34,7 @@ add_library(lib
             src/filter/simple_vehicle_hmkf.cpp
             src/filter/paper_example_2d_ukf.cpp
             src/filter/paper_example_3d_ukf.cpp
-            src/filter/normal_vehicle_hmkf.cpp
-            src/distribution/base_distribution.cpp
+        src/distribution/base_distribution.cpp
             src/distribution/beta_distribution.cpp
             src/distribution/uniform_distribution.cpp
             src/distribution/normal_distribution.cpp
@@ -54,17 +51,9 @@ add_executable(main_non_gaussian main_non_gaussian.cpp)
 target_include_directories(main_non_gaussian PRIVATE ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
 target_link_libraries(main_non_gaussian Python3::Python Python3::NumPy lib)
 
-add_executable(normal_vehicle_scenario normal_vehicle_scenario.cpp)
-target_include_directories(normal_vehicle_scenario PRIVATE ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
-target_link_libraries(normal_vehicle_scenario Python3::Python Python3::NumPy lib)
-
 add_executable(kinematic_vehicle_scenario kinematic_vehicle_scenario.cpp)
 target_include_directories(kinematic_vehicle_scenario PRIVATE ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
 target_link_libraries(kinematic_vehicle_scenario Python3::Python Python3::NumPy lib)
-
-add_executable(mobile_robot_scenario mobile_robot_scenario.cpp)
-target_include_directories(mobile_robot_scenario PRIVATE ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
-target_link_libraries(mobile_robot_scenario Python3::Python Python3::NumPy lib)
 
 add_executable(paper_example paper_example.cpp)
 target_include_directories(paper_example PRIVATE ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
@@ -107,10 +96,6 @@ gtest_add_tests(TARGET test_simple_vehicle_nkf)
 add_executable(test_kinematic_vehicle_model test/model/test_kinematic_vehicle_model.cpp)
 target_link_libraries(test_kinematic_vehicle_model GTest::GTest GTest::Main lib)
 gtest_add_tests(TARGET test_kinematic_vehicle_model)
-
-add_executable(test_mobile_robot_model test/model/test_mobile_robot_model.cpp)
-target_link_libraries(test_mobile_robot_model GTest::GTest GTest::Main lib)
-gtest_add_tests(TARGET test_mobile_robot_model)
 
 add_executable(test_simple_vehicle_model test/model/test_simple_vehicle_model.cpp)
 target_link_libraries(test_simple_vehicle_model GTest::GTest GTest::Main lib)

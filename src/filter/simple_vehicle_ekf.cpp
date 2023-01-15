@@ -36,8 +36,8 @@ StateInfo SimpleVehicleEKF::predict(const StateInfo& state_info,
     A(STATE::IDX::Y, STATE::IDX::YAW) =   (uw_k + wu) * std::cos(yaw);
 
     Eigen::Matrix2d Q;
-    Q << wv_dist_ptr->calc_variance(), 0.0,
-         0.0, wu_dist_ptr->calc_variance();
+    Q << wv_dist_ptr->calc_variance()/(dt*dt), 0.0,
+         0.0, wu_dist_ptr->calc_variance()/(dt*dt);
     Eigen::MatrixXd L = Eigen::MatrixXd::Zero(3, 2);
     L(STATE::IDX::X, SYSTEM_NOISE::IDX::WV) = std::cos(yaw) * dt;
     L(STATE::IDX::Y, SYSTEM_NOISE::IDX::WV) = std::sin(yaw) * dt;
