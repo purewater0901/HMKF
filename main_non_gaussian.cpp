@@ -10,9 +10,9 @@
 #include "matplotlibcpp.h"
 #include "distribution/two_dimensional_normal_distribution.h"
 #include "filter/simple_vehicle_hmkf.h"
-#include "filter/simple_vehicle_nkf.h"
-#include "filter/simple_vehicle_ukf.h"
-#include "filter/simple_vehicle_ekf.h"
+#include "filter/mkf.h"
+#include "filter/ukf.h"
+#include "filter/ekf.h"
 #include "model/simple_vehicle_model.h"
 #include "scenario/simple_vehicle_scenario.h"
 
@@ -175,10 +175,12 @@ int main() {
     /////////////////////////////////
     SimpleVehicleNonGaussianScenario scenario;
 
-    SimpleVehicleEKF ekf;
-    SimpleVehicleUKF ukf;
-    SimpleVehicleNKF nkf;
-    SimpleVehicleHMKF hmkf;
+    std::shared_ptr<BaseModel> vehicle_model = std::make_shared<SimpleVehicleModel>(3, 2, 2, 2);
+
+    EKF ekf(vehicle_model);
+    UKF ukf(vehicle_model);
+    MKF mkf(vehicle_model);
+    SimpleVehicleHMKF hmkf(vehicle_model);
 
     // External disturbances
     const double mean_wv = 0.0;
@@ -256,8 +258,8 @@ int main() {
                             {SYSTEM_NOISE::IDX::WV, std::make_shared<NormalDistribution>(mean_wv*dt, cov_wv*dt*dt)},
                             {SYSTEM_NOISE::IDX::WU, std::make_shared<NormalDistribution>(mean_wu*dt, cov_wu*dt*dt)}};
                     ekf_state_info = ekf.predict(ekf_state_info, inputs, dt, system_noise_map);
-                    ukf_state_info = ukf.predict(ukf_state_info, inputs, system_noise_map, measurement_noise_map);
-                    nkf_state_info = nkf.predict(nkf_state_info, inputs, system_noise_map);
+                    ukf_state_info = ukf.predict(ukf_state_info, inputs, dt, system_noise_map, measurement_noise_map);
+                    nkf_state_info = mkf.predict(nkf_state_info, inputs, dt, system_noise_map);
                 }
 
                 {
@@ -266,7 +268,7 @@ int main() {
                     const std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map = {
                             {SYSTEM_NOISE::IDX::WV, std::make_shared<NormalDistribution>(mean_wv*dt_hmkf, cov_wv*dt_hmkf*dt_hmkf)},
                             {SYSTEM_NOISE::IDX::WU, std::make_shared<NormalDistribution>(mean_wu*dt_hmkf, cov_wu*dt_hmkf*dt_hmkf)}};
-                    hmkf_state_info = hmkf.predict(hmkf_state_info, inputs, system_noise_map, hmkf_predicted_moments);
+                    hmkf_state_info = hmkf.predict(hmkf_state_info, inputs, dt, system_noise_map, hmkf_predicted_moments);
                 }
 
                 // update
@@ -278,9 +280,9 @@ int main() {
                 const std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map = {
                         {SYSTEM_NOISE::IDX::WV, std::make_shared<NormalDistribution>(mean_wv*updated_dt, cov_wv*updated_dt*updated_dt)},
                         {SYSTEM_NOISE::IDX::WU, std::make_shared<NormalDistribution>(mean_wu*updated_dt, cov_wu*updated_dt*updated_dt)}};
-                ekf_state_info = ekf.update(ekf_state_info, y, {landmark.x, landmark.y}, measurement_noise_map);
-                ukf_state_info = ukf.update(ukf_state_info, y, {landmark.x, landmark.y}, system_noise_map, measurement_noise_map);
-                nkf_state_info = nkf.update(nkf_state_info, y, {landmark.x, landmark.y}, measurement_noise_map);
+                ekf_state_info = ekf.update(ekf_state_info, y, measurement_noise_map, {landmark.x, landmark.y});
+                ukf_state_info = ukf.update(ukf_state_info, y, system_noise_map, measurement_noise_map, {landmark.x, landmark.y});
+                nkf_state_info = mkf.update(nkf_state_info, y, measurement_noise_map, {landmark.x, landmark.y});
                 if(hmkf_predicted_moments) {
                     hmkf_state_info = hmkf.update(*hmkf_predicted_moments, y, {landmark.x, landmark.y}, measurement_noise_map);
                     hmkf.createHighOrderMoments(hmkf_state_info, hmkf_predicted_moments);
@@ -314,9 +316,9 @@ int main() {
                             {SYSTEM_NOISE::IDX::WV, std::make_shared<NormalDistribution>(mean_wv*dt, cov_wv*dt*dt)},
                             {SYSTEM_NOISE::IDX::WU, std::make_shared<NormalDistribution>(mean_wu*dt, cov_wu*dt*dt)}};
                     ekf_state_info = ekf.predict(ekf_state_info, inputs, dt, system_noise_map);
-                    ukf_state_info = ukf.predict(ukf_state_info, inputs, system_noise_map, measurement_noise_map);
-                    nkf_state_info = nkf.predict(nkf_state_info, inputs, system_noise_map);
-                    hmkf_state_info = hmkf.predict(hmkf_state_info, inputs, system_noise_map, hmkf_predicted_moments);
+                    ukf_state_info = ukf.predict(ukf_state_info, inputs, dt, system_noise_map, measurement_noise_map);
+                    nkf_state_info = mkf.predict(nkf_state_info, inputs, dt, system_noise_map);
+                    hmkf_state_info = hmkf.predict(hmkf_state_info, inputs, dt, system_noise_map, hmkf_predicted_moments);
                 }
 
                 // Compare
@@ -402,9 +404,9 @@ int main() {
                     {SYSTEM_NOISE::IDX::WV, std::make_shared<NormalDistribution>(mean_wv*dt, cov_wv*dt*dt)},
                     {SYSTEM_NOISE::IDX::WU, std::make_shared<NormalDistribution>(mean_wu*dt, cov_wu*dt*dt)}};
             ekf_state_info = ekf.predict(ekf_state_info, inputs, dt, system_noise_map);
-            ukf_state_info = ukf.predict(ukf_state_info, inputs, system_noise_map, measurement_noise_map);
-            nkf_state_info = nkf.predict(nkf_state_info, inputs, system_noise_map);
-            hmkf_state_info = hmkf.predict(hmkf_state_info, inputs, system_noise_map, hmkf_predicted_moments);
+            ukf_state_info = ukf.predict(ukf_state_info, inputs, dt, system_noise_map, measurement_noise_map);
+            nkf_state_info = mkf.predict(nkf_state_info, inputs, dt, system_noise_map);
+            hmkf_state_info = hmkf.predict(hmkf_state_info, inputs, dt, system_noise_map, hmkf_predicted_moments);
         }
     }
 
