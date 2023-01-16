@@ -70,9 +70,24 @@ Eigen::VectorXd ExampleSquaredVehicleModel::measure(const Eigen::VectorXd& x_cur
     return y;
 }
 
+Eigen::VectorXd ExampleSquaredVehicleModel::measureWithLandmark(const Eigen::VectorXd& x_curr,
+                                                                const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                                                const Eigen::Vector2d& landmark)
+{
+    return measure(x_curr, noise_map);
+}
+
+Eigen::VectorXd ExampleSquaredVehicleModel::measureWithLandmark(const Eigen::VectorXd& x_curr,
+                                                                const Eigen::VectorXd& observation_noise,
+                                                                const Eigen::Vector2d& landmark)
+{
+    return measure(x_curr, observation_noise);
+}
+
 Eigen::MatrixXd ExampleSquaredVehicleModel::getStateMatrix(const Eigen::VectorXd& x_curr,
-                                                    const Eigen::VectorXd& u_curr,
-                                                    const double dt)
+                                                           const Eigen::VectorXd& u_curr,
+                                                           const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                                           const double dt)
 {
     Eigen::MatrixXd A = Eigen::MatrixXd::Identity(2, 2);
     return A;
@@ -129,6 +144,20 @@ Eigen::MatrixXd ExampleSquaredVehicleModel::getMeasurementNoiseMatrix(const Eige
     R(MEASUREMENT_NOISE::IDX::WR, MEASUREMENT_NOISE::IDX::WR) = mr_dist_ptr->calc_variance();
 
     return R;
+}
+
+Eigen::MatrixXd ExampleSquaredVehicleModel::getMeasurementMatrix(const Eigen::VectorXd& x_curr,
+                                                          const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                                          const Eigen::Vector2d& landmark)
+{
+    throw std::runtime_error("[ExampleSquaredVehicleModel getMeasurementMatrix]: Undefined Function. No Need landmark in the argument");
+}
+
+Eigen::MatrixXd ExampleSquaredVehicleModel::getMeasurementNoiseMatrix(const Eigen::VectorXd& x_curr,
+                                                               const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                                               const Eigen::Vector2d& landmark)
+{
+    throw std::runtime_error("[ExampleSquaredVehicleModel getMeasurementNoiseMatrix]: Undefined Function. No Need landmark in the argument");
 }
 
 StateInfo ExampleSquaredVehicleModel::propagateStateMoments(const StateInfo &state_info,
@@ -247,4 +276,18 @@ Eigen::MatrixXd ExampleSquaredVehicleModel::getStateMeasurementMatrix(const Stat
     state_observation_cov(STATE::IDX::Y, MEASUREMENT::IDX::R) = xPow4_yPow1 + yPow5 + yPow1*wrPow1 - yPow1*mrPow1;
 
     return state_observation_cov;
+}
+
+StateInfo ExampleSquaredVehicleModel::getMeasurementMoments(const StateInfo &state_info,
+                                                     const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map,
+                                                     const Eigen::Vector2d& landmark)
+{
+    throw std::runtime_error("[ExampleSquaredVehicleModel getMeasurementMoments]: Undefined Function. No Need landmark in the argument");
+}
+
+Eigen::MatrixXd ExampleSquaredVehicleModel::getStateMeasurementMatrix(const StateInfo& state_info, const StateInfo& measurement_info,
+                                                               const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map,
+                                                               const Eigen::Vector2d& landmark)
+{
+    throw std::runtime_error("[ExampleSqauredVehicleModel getStateMeasurementMatrix]: Undefined Function. No Need landmark in the argument");
 }

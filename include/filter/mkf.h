@@ -24,6 +24,11 @@ public:
                      const Eigen::VectorXd & observed_values,
                      const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map);
 
+    StateInfo update(const StateInfo & state_info,
+                     const Eigen::VectorXd & observed_values,
+                     const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                     const Eigen::Vector2d& landmark);
+
     std::shared_ptr<BaseModel> vehicle_model_;
 };
 

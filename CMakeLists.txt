@@ -21,19 +21,16 @@ add_library(lib
             src/model/example_model.cpp
             src/model/squared_example_model.cpp
             src/model/simple_vehicle_model.cpp
-        src/utilities.cpp
+            src/utilities.cpp
             src/filter/ekf.cpp
             src/filter/ukf.cpp
             src/filter/mkf.cpp
             src/filter/example_hmkf.cpp
             src/filter/squared_example_hmkf.cpp
-            src/filter/simple_vehicle_nkf.cpp
-            src/filter/simple_vehicle_ukf.cpp
-            src/filter/simple_vehicle_ekf.cpp
             src/filter/simple_vehicle_hmkf.cpp
             src/filter/paper_example_2d_ukf.cpp
             src/filter/paper_example_3d_ukf.cpp
-        src/distribution/base_distribution.cpp
+            src/distribution/base_distribution.cpp
             src/distribution/beta_distribution.cpp
             src/distribution/uniform_distribution.cpp
             src/distribution/normal_distribution.cpp
@@ -83,10 +80,6 @@ gtest_add_tests(TARGET test_two_dimensional_normal_distribution)
 add_executable(test_three_dimensional_normal_distribution test/distribution/test_three_dimensional_normal_distribution.cpp)
 target_link_libraries(test_three_dimensional_normal_distribution GTest::GTest GTest::Main lib)
 gtest_add_tests(TARGET test_three_dimensional_normal_distribution)
-
-add_executable(test_simple_vehicle_nkf test/filter/test_simple_vehicle_nkf.cpp)
-target_link_libraries(test_simple_vehicle_nkf GTest::GTest GTest::Main lib)
-gtest_add_tests(TARGET test_simple_vehicle_nkf)
 
 add_executable(test_simple_vehicle_model test/model/test_simple_vehicle_model.cpp)
 target_link_libraries(test_simple_vehicle_model GTest::GTest GTest::Main lib)

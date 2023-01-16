@@ -48,9 +48,18 @@ public:
 
     virtual Eigen::VectorXd measure(const Eigen::VectorXd& x_curr, const Eigen::VectorXd& observation_noise) = 0;
 
+    virtual Eigen::VectorXd measureWithLandmark(const Eigen::VectorXd& x_curr,
+                                                const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                                const Eigen::Vector2d& landmark) = 0;
+
+    virtual Eigen::VectorXd measureWithLandmark(const Eigen::VectorXd& x_curr,
+                                                const Eigen::VectorXd& observation_noise,
+                                                const Eigen::Vector2d& landmark) = 0;
+
     // get df/dx
     virtual Eigen::MatrixXd getStateMatrix(const Eigen::VectorXd& x_curr,
                                            const Eigen::VectorXd& u_curr,
+                                           const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
                                            const double dt) = 0;
 
     virtual Eigen::MatrixXd getProcessNoiseMatrix(const Eigen::VectorXd& x_curr,
@@ -65,6 +74,14 @@ public:
     virtual Eigen::MatrixXd getMeasurementNoiseMatrix(const Eigen::VectorXd& x_curr,
                                                       const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) = 0;
 
+    virtual Eigen::MatrixXd getMeasurementMatrix(const Eigen::VectorXd& x_curr,
+                                                 const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                                 const Eigen::Vector2d& landmark) = 0;
+
+    virtual Eigen::MatrixXd getMeasurementNoiseMatrix(const Eigen::VectorXd& x_curr,
+                                                      const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                                      const Eigen::Vector2d& landmark) = 0;
+
     // propagate dynamics moment
     virtual StateInfo propagateStateMoments(const StateInfo &state_info,
                                             const Eigen::VectorXd &control_inputs,
@@ -76,6 +93,14 @@ public:
 
     virtual Eigen::MatrixXd getStateMeasurementMatrix(const StateInfo& state_info, const StateInfo& measurement_info,
                                                       const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map) = 0;
+
+    virtual StateInfo getMeasurementMoments(const StateInfo &state_info,
+                                            const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map,
+                                            const Eigen::Vector2d& landmark) = 0;
+
+    virtual Eigen::MatrixXd getStateMeasurementMatrix(const StateInfo& state_info, const StateInfo& measurement_info,
+                                                      const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map,
+                                                      const Eigen::Vector2d& landmark) = 0;
 
     size_t state_dim_{0};
     size_t system_noise_dim_{0};

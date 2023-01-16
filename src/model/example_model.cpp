@@ -69,8 +69,23 @@ Eigen::VectorXd ExampleVehicleModel::measure(const Eigen::VectorXd& x_curr, cons
     return y;
 }
 
+Eigen::VectorXd ExampleVehicleModel::measureWithLandmark(const Eigen::VectorXd& x_curr,
+                                                         const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                                         const Eigen::Vector2d& landmark)
+{
+    return measure(x_curr, noise_map);
+}
+
+Eigen::VectorXd ExampleVehicleModel::measureWithLandmark(const Eigen::VectorXd& x_curr,
+                                                         const Eigen::VectorXd& observation_noise,
+                                                         const Eigen::Vector2d& landmark)
+{
+    return measure(x_curr, observation_noise);
+}
+
 Eigen::MatrixXd ExampleVehicleModel::getStateMatrix(const Eigen::VectorXd& x_curr,
                                                     const Eigen::VectorXd& u_curr,
+                                                    const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
                                                     const double dt)
 {
     Eigen::MatrixXd A = Eigen::MatrixXd::Identity(2, 2);
@@ -128,6 +143,20 @@ Eigen::MatrixXd ExampleVehicleModel::getMeasurementNoiseMatrix(const Eigen::Vect
     R(MEASUREMENT_NOISE::IDX::WR, MEASUREMENT_NOISE::IDX::WR) = mr_dist_ptr->calc_variance();
 
     return R;
+}
+
+Eigen::MatrixXd ExampleVehicleModel::getMeasurementMatrix(const Eigen::VectorXd& x_curr,
+                                                          const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                                          const Eigen::Vector2d& landmark)
+{
+    throw std::runtime_error("[ExampleVehicleModel getMeasurementMatrix]: Undefined Function. No Need landmark in the argument");
+}
+
+Eigen::MatrixXd ExampleVehicleModel::getMeasurementNoiseMatrix(const Eigen::VectorXd& x_curr,
+                                                               const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                                               const Eigen::Vector2d& landmark)
+{
+    throw std::runtime_error("[ExampleVehicleModel getMeasurementNoiseMatrix]: Undefined Function. No Need landmark in the argument");
 }
 
 StateInfo ExampleVehicleModel::propagateStateMoments(const StateInfo &state_info,
@@ -246,4 +275,18 @@ Eigen::MatrixXd ExampleVehicleModel::getStateMeasurementMatrix(const StateInfo& 
     state_observation_cov(STATE::IDX::Y, MEASUREMENT::IDX::R) = xPow2_yPow1 + yPow3 + yPow1*wrPow1 - yPow1*mrPow1;
 
     return state_observation_cov;
+}
+
+StateInfo ExampleVehicleModel::getMeasurementMoments(const StateInfo &state_info,
+                                                     const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map,
+                                                     const Eigen::Vector2d& landmark)
+{
+    throw std::runtime_error("[ExampleVehicleModel getMeasurementMoments]: Undefined Function. No Need landmark in the argument");
+}
+
+Eigen::MatrixXd ExampleVehicleModel::getStateMeasurementMatrix(const StateInfo& state_info, const StateInfo& measurement_info,
+                                                               const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map,
+                                                               const Eigen::Vector2d& landmark)
+{
+    throw std::runtime_error("[ExampleVehicleModel getStateMeasurementMatrix]: Undefined Function. No Need landmark in the argument");
 }

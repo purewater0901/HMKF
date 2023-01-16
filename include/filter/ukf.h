@@ -33,6 +33,17 @@ public:
                                  const std::map<int, std::shared_ptr<BaseDistribution>>& system_noise_map,
                                  const std::map<int, std::shared_ptr<BaseDistribution>>& measurement_noise_map);
 
+    StateInfo update(const StateInfo& state_info,
+                     const Eigen::VectorXd& measurement_values,
+                     const std::map<int, std::shared_ptr<BaseDistribution>>& system_noise_map,
+                     const std::map<int, std::shared_ptr<BaseDistribution>>& measurement_noise_map,
+                     const Eigen::Vector2d& landmark);
+
+    StateInfo getMeasurementInfo(const StateInfo& state_info,
+                                 const std::map<int, std::shared_ptr<BaseDistribution>>& system_noise_map,
+                                 const std::map<int, std::shared_ptr<BaseDistribution>>& measurement_noise_map,
+                                 const Eigen::Vector2d& landmark);
+
     std::shared_ptr<BaseModel> vehicle_model_;
 
     const int augmented_size_{0};

@@ -18,7 +18,7 @@ namespace SimpleVehicle
         };
     }
 
-    namespace OBSERVATION {
+    namespace MEASUREMENT {
         enum IDX {
             RCOS = 0,
             RSIN = 1,
@@ -39,7 +39,7 @@ namespace SimpleVehicle
         };
     }
 
-    namespace OBSERVATION_NOISE {
+    namespace MEASUREMENT_NOISE {
         enum IDX {
             WR = 0,
             WA = 1,
@@ -47,33 +47,9 @@ namespace SimpleVehicle
     }
 }
 
-class SimpleVehicleModel
+class SimpleVehicleModel : public BaseModel
 {
 public:
-    struct StateMoments {
-        double xPow1{0.0};
-        double cPow1{0.0};
-        double sPow1{0.0};
-        double yPow1{0.0};
-        double yawPow1{0.0};
-
-        double xPow2{0.0};
-        double yPow2{0.0};
-        double cPow2{0.0};
-        double sPow2{0.0};
-        double yawPow2{0.0};
-        double cPow1_xPow1{0.0};
-        double sPow1_xPow1{0.0};
-        double sPow1_yPow1{0.0};
-        double cPow1_yPow1{0.0};
-        double xPow1_yPow1{0.0};
-        double cPow1_sPow1{0.0};
-        double xPow1_yawPow1{0.0};
-        double yPow1_yawPow1{0.0};
-        double cPow1_yawPow1{0.0};
-        double sPow1_yawPow1{0.0};
-    };
-
     struct HighOrderMoments{
         double xPow1{0.0};
         double yPow1{0.0};
@@ -125,60 +101,83 @@ public:
         double xPow1_yPow1_cPow1_sPow1{0.0};
     };
 
-    struct ObservationMoments {
-        double rcosPow1{0.0};
-        double rsinPow1{0.0};
+    SimpleVehicleModel(const size_t state_dim,
+                       const size_t system_noise_dim,
+                       const size_t measurement_dim,
+                       const size_t measurement_noise_dim)
+                       : BaseModel(state_dim, system_noise_dim, measurement_dim, measurement_noise_dim)
+    {
+    }
 
-        double rcosPow2{0.0};
-        double rsinPow2{0.0};
-        double rcosPow1_rsinPow1{0.0};
-    };
+    // dynamics model
+    Eigen::VectorXd propagate(const Eigen::VectorXd& x_curr,
+                              const Eigen::VectorXd& u_curr,
+                              const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                              const double dt) override;
 
-    struct SystemNoiseMoments {
-        double wvPow1{0.0};
-        double wuPow1{0.0};
-        double cwuPow1{0.0};
-        double swuPow1{0.0};
+    Eigen::VectorXd propagate(const Eigen::VectorXd& x_curr,
+                                      const Eigen::VectorXd& u_curr,
+                                      const Eigen::VectorXd& system_noise,
+                                      const double dt) override;
 
-        double wvPow2{0.0};
-        double wuPow2{0.0};
-        double swuPow2{0.0};
-        double cwuPow2{0.0};
-        double cwuPow1_swuPow1{0.0};
-        double wuPow1_cwuPow1{0.0};
-        double wuPow1_swuPow1{0.0};
-    };
+    // measurement model
+    Eigen::VectorXd measure(const Eigen::VectorXd& x_curr,
+                            const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) override;
 
-    struct ObservationNoiseMoments {
-        double wrPow1{0.0};
-        double cwaPow1{0.0};
-        double swaPow1{0.0};
+    Eigen::VectorXd measure(const Eigen::VectorXd& x_curr, const Eigen::VectorXd& observation_noise) override;
 
-        double wrPow2{0.0};
-        double cwaPow2{0.0};
-        double swaPow2{0.0};
-        double cwaPow1_swaPow1{0.0};
-    };
+    Eigen::VectorXd measureWithLandmark(const Eigen::VectorXd& x_curr,
+                                        const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                        const Eigen::Vector2d& landmark) override;
 
-    struct Controls{
-        double v;
-        double u;
-        double cu;
-        double su;
-    };
+    Eigen::VectorXd measureWithLandmark(const Eigen::VectorXd& x_curr,
+                                        const Eigen::VectorXd& observation_noise,
+                                        const Eigen::Vector2d& landmark) override;
 
-    SimpleVehicleModel() = default;
+    // get df/dx
+    Eigen::MatrixXd getStateMatrix(const Eigen::VectorXd& x_curr,
+                                   const Eigen::VectorXd& u_curr,
+                                   const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                   const double dt) override;
 
-    Eigen::Vector3d propagate(const Eigen::Vector3d& x_curr, const Eigen::Vector2d& u_curr, const Eigen::Vector2d& system_noise);
-    Eigen::Vector2d observe(const Eigen::Vector3d& x_curr, const Eigen::Vector2d& observation_noise, const Eigen::Vector2d& landmark);
+    Eigen::MatrixXd getProcessNoiseMatrix(const Eigen::VectorXd& x_curr,
+                                          const Eigen::VectorXd& u_curr,
+                                          const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                          const double dt) override;
 
-    StateMoments propagateStateMoments(const StateMoments & prev_state_moments,
-                                       const SystemNoiseMoments& system_noise_moments,
-                                       const Controls& control_inputs);
+    // get dh/dx
+    Eigen::MatrixXd getMeasurementMatrix(const Eigen::VectorXd& x_curr,
+                                         const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) override;
 
-    ObservationMoments getObservationMoments(const HighOrderMoments& state_moments,
-                                             const ObservationNoiseMoments & observation_noise_moments,
-                                             const Eigen::Vector2d& landmark);
+    Eigen::MatrixXd getMeasurementNoiseMatrix(const Eigen::VectorXd& x_curr,
+                                              const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map) override;
+
+    Eigen::MatrixXd getMeasurementMatrix(const Eigen::VectorXd& x_curr,
+                                         const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                         const Eigen::Vector2d& landmark) override;
+
+    Eigen::MatrixXd getMeasurementNoiseMatrix(const Eigen::VectorXd& x_curr,
+                                              const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
+                                              const Eigen::Vector2d& landmark) override;
+
+    StateInfo propagateStateMoments(const StateInfo &state_info,
+                                    const Eigen::VectorXd &control_inputs,
+                                    const double dt,
+                                    const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map) override;
+
+    StateInfo getMeasurementMoments(const StateInfo &state_info,
+                                    const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map) override;
+
+    Eigen::MatrixXd getStateMeasurementMatrix(const StateInfo& state_info, const StateInfo& measurement_info,
+                                              const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map) override;
+
+    StateInfo getMeasurementMoments(const StateInfo &state_info,
+                                    const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map,
+                                    const Eigen::Vector2d& landmark) override;
+
+    Eigen::MatrixXd getStateMeasurementMatrix(const StateInfo& state_info, const StateInfo& measurement_info,
+                                              const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map,
+                                              const Eigen::Vector2d& landmark) override;
 };
 
 #endif //UNCERTAINTY_PROPAGATION_SIMPLE_VEHICLE_MODEL_H
