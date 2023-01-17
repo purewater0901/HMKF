@@ -423,18 +423,29 @@ Eigen::MatrixXd SimpleVehicleModel::getStateMeasurementMatrix(const StateInfo& s
     const double& x_land = landmark(0);
     const double& y_land = landmark(1);
 
-    const double xPow1_caPow1 = x_land * dist.calc_x_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW) - dist.calc_xx_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW)
-                                + y_land * dist.calc_x_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW) - dist.calc_xy_sin_z_moment();
-    const double xPow1_saPow1 = y_land * dist.calc_x_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW) - dist.calc_xy_cos_z_moment()
-                                - x_land * dist.calc_x_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW) + dist.calc_xx_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    const double yPow1_caPow1 =  x_land * dist.calc_x_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW) - dist.calc_xy_cos_z_moment()
-                                 + y_land * dist.calc_x_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW) - dist.calc_xx_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    const double yPow1_saPow1 =  y_land * dist.calc_x_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW) - dist.calc_xx_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW)
-                                 - x_land * dist.calc_x_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW) + dist.calc_xy_sin_z_moment();
-    const double yawPow1_caPow1 = x_land * dist.calc_x_cos_x_moment(STATE::IDX::YAW, 1, 1) - dist.calc_xy_cos_y_moment(STATE::IDX::X, STATE::IDX::YAW)
-                                  + y_land * dist.calc_x_sin_x_moment(STATE::IDX::YAW, 1, 1) - dist.calc_xy_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    const double yawPow1_saPow1 = y_land * dist.calc_x_cos_x_moment(STATE::IDX::YAW, 1, 1) - dist.calc_xy_cos_y_moment(STATE::IDX::Y, STATE::IDX::YAW)
-                                  - x_land * dist.calc_x_sin_x_moment(STATE::IDX::YAW, 1, 1) + dist.calc_xy_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW);
+    const double xPow1_cPow1 = dist.calc_x_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    const double xPow1_sPow1 = dist.calc_x_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    const double xPow2_cPow1 = dist.calc_xx_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    const double xPow2_sPow1 = dist.calc_xx_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
+    const double yPow1_cPow1 = dist.calc_x_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    const double yPow1_sPow1 = dist.calc_x_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    const double yPow2_cPow1 = dist.calc_xx_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    const double yPow2_sPow1 = dist.calc_xx_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    const double xPow1_yPow1_cPow1 = dist.calc_xy_cos_z_moment();
+    const double xPow1_yPow1_sPow1 = dist.calc_xy_sin_z_moment();
+    const double yawPow1_cPow1 = dist.calc_x_cos_x_moment(STATE::IDX::YAW, 1, 1);
+    const double yawPow1_sPow1 = dist.calc_x_sin_x_moment(STATE::IDX::YAW, 1, 1);
+    const double xPow1_yawPow1_cPow1 = dist.calc_xy_cos_y_moment(STATE::IDX::X, STATE::IDX::YAW);
+    const double yPow1_yawPow1_cPow1 = dist.calc_xy_cos_y_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    const double xPow1_yawPow1_sPow1 = dist.calc_xy_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW);
+    const double yPow1_yawPow1_sPow1 = dist.calc_xy_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW);
+
+    const double xPow1_caPow1 = x_land * xPow1_cPow1 - xPow2_cPow1 + y_land * xPow1_sPow1 - xPow1_yPow1_sPow1;
+    const double xPow1_saPow1 = y_land * xPow1_cPow1 - xPow1_yPow1_cPow1 - x_land * xPow1_sPow1 + xPow2_sPow1;
+    const double yPow1_caPow1 = x_land * yPow1_cPow1 - xPow1_yPow1_cPow1 + y_land * yPow1_sPow1 - yPow2_sPow1;
+    const double yPow1_saPow1 = y_land * yPow1_cPow1 - yPow2_cPow1 - x_land * yPow1_sPow1 + xPow1_yPow1_sPow1;
+    const double yawPow1_caPow1 = x_land * yawPow1_cPow1 - xPow1_yawPow1_cPow1 + y_land * yawPow1_sPow1 - yPow1_yawPow1_sPow1;
+    const double yawPow1_saPow1 = y_land * yawPow1_cPow1 - yPow1_yawPow1_cPow1 - x_land * yawPow1_sPow1 + xPow1_yawPow1_sPow1;
 
     Eigen::MatrixXd state_observation_cov(3, 2); // sigma = E[XY^T] - E[X]E[Y]^T
     state_observation_cov(STATE::IDX::X, MEASUREMENT::IDX::RCOS)

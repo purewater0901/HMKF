@@ -1437,3 +1437,86 @@ double ThreeDimensionalNormalDistribution::calc_xy_cos_z_sin_z_moment()
           + t13*t23/(t33*t33) * l3Pow2_cosl3Pow2*cosl1Pow2*cosl2_sinl2
           + t13*t23/(t33*t33) * l3Pow2_cosl3_sinl3*cosl1Pow2*cosl2Pow2;
 }
+
+double ThreeDimensionalNormalDistribution::calc_xy_cos_z_sin_z_moment(const int x_moment, const int y_moment,
+                                                                      const int cos_moment, const int sin_moment)
+{
+    if (!initialization_) {
+        throw std::runtime_error("Need To Initialize two dimensional normal distribution");
+    }
+
+    if (std::fabs(covariance_(0, 2)) < cov_threshold_ &&
+        std::fabs(covariance_(1, 2)) < cov_threshold_ &&
+        std::fabs(covariance_(0,1))<cov_threshold_)
+    {
+        NormalDistribution dist_x(mean_(0), covariance_(0, 0));
+        NormalDistribution dist_y(mean_(1), covariance_(1, 1));
+        NormalDistribution dist_z(mean_(2), covariance_(2, 2));
+
+        return dist_x.calc_moment(x_moment) * dist_y.calc_moment(y_moment) * dist_z.calc_cos_sin_moment(cos_moment, sin_moment);
+    }
+
+    const auto y_mean = T_.transpose() * mean_;
+    const double t11 = T_(0, 0);
+    const double t12 = T_(0, 1);
+    const double t13 = T_(0, 2);
+    const double t21 = T_(1, 0);
+    const double t22 = T_(1, 1);
+    const double t23 = T_(1, 2);
+    const double t31 = T_(2, 0);
+    const double t32 = T_(2, 1);
+    const double t33 = T_(2, 2);
+
+    const double l1_mean = t31 * y_mean(0);
+    const double l1_cov = t31 * t31 / eigen_values_(0);
+    NormalDistribution l1(l1_mean, l1_cov);
+
+    const double l2_mean = t32 * y_mean(1);
+    const double l2_cov = t32 * t32 / eigen_values_(1);
+    NormalDistribution l2(l2_mean, l2_cov);
+
+    const double l3_mean = t33 * y_mean(2);
+    const double l3_cov = t33 * t33 / eigen_values_(2);
+    NormalDistribution l3(l3_mean, l3_cov);
+
+    const int& a = x_moment;
+    const int& b = y_moment;
+    const int& c = cos_moment;
+    const int& s = sin_moment;
+
+    double result = 0.0;
+    for(int a1=0; a1<=a; ++a1) {
+        for(int a2=0; a2<=a-a1; ++a2) {
+            for(int b1=0; b1<=b; ++b1) {
+                for(int b2=0; b2<=b-b1; ++b2) {
+                    const double coeff_ncrxy = nCr(a, a1) * nCr(a-a1, a2) * nCr(b, b1) * nCr(b-b1, b2);
+                    const double coeff_txy = std::pow(t11, a1) * std::pow(t12, a2) * std::pow(t13, a-a1-a2)
+                                           * std::pow(t21, b1) * std::pow(t22, b2) * std::pow(t23, b-b1-b2)
+                                           / (std::pow(t31, a1+b1) * std::pow(t32, a2+b2) * std::pow(t33, a+b-a1-a2-b1-b2));
+                    const double coeff_xy = coeff_ncrxy * coeff_txy;
+                    for(int c1=0; c1<=c; ++c1) {
+                        for(int c2=0; c2<=c1; ++c2) {
+                            for(int c3=0; c3<=c-c1; ++c3) {
+                                const double coeff_cos = std::pow(-1, c1+c3) * nCr(c, c1) * nCr(c1, c2) * nCr(c-c1, c3);
+                                for(int s1=0; s1<=s; ++s1) {
+                                    for(int s2=0; s2<=s1; ++s2) {
+                                        for(int s3=0; s3<=s-s1; ++s3) {
+                                            const double coeff_sin = std::pow(-1, s2) * nCr(s, s1) * nCr(s1, s2) * nCr(s-s1, s3);
+                                            const double coeff = coeff_xy * coeff_cos * coeff_sin;
+                                            const double l1_moment = l1.calc_x_cos_sin_moment(a1+b1, c+s-c1-s1, c1+s1);
+                                            const double l2_moment = l2.calc_x_cos_sin_moment(a2+b2, c+s-c2-c3-s2-s3, c2+c3+s2+s3);
+                                            const double l3_moment = l3.calc_x_cos_sin_moment(a+b-(a1+a2+b1+b2), c+c2-c1-c3+s1+s3-s2, s+s2-s1-s3+c1-c2+c3);
+                                            result += coeff * l1_moment *l2_moment * l3_moment;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return result;
+}

@@ -121,19 +121,19 @@ TEST(ThreeDimensionalNormalDistribution, SECOND_ORDER)
 
         // E[YsinZ]
         {
-            const auto exact_moment = dist.calc_x_sin_z_moment(1, 2);
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(0, 1, 0, 1);
             EXPECT_NEAR(exact_moment, 8.337759405477527, epsilon);
         }
 
         // E[XcosZ]
         {
-            const auto exact_moment = dist.calc_x_cos_z_moment(0, 2);
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(1, 0, 1, 0);
             EXPECT_NEAR(exact_moment, 4.719056827999589, epsilon);
         }
 
         // E[YcosZ]
         {
-            const auto exact_moment = dist.calc_x_cos_z_moment(1, 2);
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(0, 1, 1, 0);
             EXPECT_NEAR(exact_moment, 4.594809380237797, epsilon);
         }
     }
@@ -188,7 +188,7 @@ TEST(ThreeDimensionalNormalDistribution, SECOND_ORDER_INDEPENDENT)
 
     // E[YcosZ]
     {
-        const auto exact_moment = dist.calc_x_cos_z_moment(1, 2);
+        const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(0, 1, 1, 0);
         EXPECT_NEAR(exact_moment, 1.074661768382129, epsilon);
     }
 }
@@ -206,25 +206,25 @@ TEST(ThreeDimensionalNormalDistribution, THREE_ORDER)
 
         // E[XXsinZ]
         {
-            const auto exact_moment = dist.calc_xx_sin_z_moment(0, 2);
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(2, 0, 0, 1);
             EXPECT_NEAR(exact_moment, 1.5999219017662898, epsilon);
         }
 
         // E[YYsinZ]
         {
-            const auto exact_moment = dist.calc_xx_sin_z_moment(1, 2);
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(0, 2, 0, 1);
             EXPECT_NEAR(exact_moment, 1.2057279331745845, epsilon);
         }
 
         // E[XXcosZ]
         {
-            const auto exact_moment = dist.calc_xx_cos_z_moment(0, 2);
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(2, 0, 1, 0);
             EXPECT_NEAR(exact_moment, 1.9750118193977413, epsilon);
         }
 
         // E[YYcosZ]
         {
-            const auto exact_moment = dist.calc_xx_cos_z_moment(1, 2);
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(0, 2, 1, 0);
             EXPECT_NEAR(exact_moment,  1.4880104219569756, epsilon);
         }
     }
@@ -239,43 +239,43 @@ TEST(ThreeDimensionalNormalDistribution, THREE_ORDER)
 
         // E[XXsinZ]
         {
-            const auto exact_moment = dist.calc_xx_sin_z_moment(0, 2);
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(2, 0, 0, 1);
             EXPECT_NEAR(exact_moment, 83.73166675390627, epsilon);
         }
 
         // E[YYsinZ]
         {
-            const auto exact_moment = dist.calc_xx_sin_z_moment(1, 2);
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(0, 2, 0, 1);
             EXPECT_NEAR(exact_moment,  87.59306538840139, epsilon);
         }
 
         // E[XXcosZ]
         {
-            const auto exact_moment = dist.calc_xx_cos_z_moment(0, 2);
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(2, 0, 1, 0);
             EXPECT_NEAR(exact_moment, 47.253427437643346, epsilon);
         }
 
         // E[YYcosZ]
         {
-            const auto exact_moment = dist.calc_xx_cos_z_moment(1, 2);
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(0, 2, 1, 0);
             EXPECT_NEAR(exact_moment,  46.179867786188986, epsilon);
         }
 
         // E[XYcosZ]
         {
-            const auto exact_moment = dist.calc_xy_cos_z_moment();
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(1, 1, 1, 0);
             EXPECT_NEAR(exact_moment, 46.002933072079756, epsilon);
         }
 
         // E[XYsinZ]
         {
-            const auto exact_moment = dist.calc_xy_sin_z_moment();
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(1, 1, 0, 1);
             EXPECT_NEAR(exact_moment, 84.43723044965331, epsilon);
         }
 
         // E[XXYcosZ]
         {
-            const auto exact_moment = dist.calc_xxy_cos_z_moment();
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(2, 1, 1, 0);
             EXPECT_NEAR(exact_moment, 465.1488547888971, epsilon);
         }
     }
@@ -295,25 +295,25 @@ TEST(ThreeDimensionalNormalDistribution, THREE_ORDER_INDEPENDENT)
 
         // E[XXsinZ]
         {
-            const auto exact_moment = dist.calc_xx_sin_z_moment(0, 2);
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(2, 0, 0, 1);
             EXPECT_NEAR(exact_moment, 1.6001081135776964, epsilon);
         }
 
         // E[YYsinZ]
         {
-            const auto exact_moment = dist.calc_xx_sin_z_moment(1, 2);
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(0, 2, 0, 1);
             EXPECT_NEAR(exact_moment, 1.2056155207462655, epsilon);
         }
 
         // E[XXcosZ]
         {
-            const auto exact_moment = dist.calc_xx_cos_z_moment(0, 2);
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(2, 0, 1, 0);
             EXPECT_NEAR(exact_moment, 1.9749439225285936, epsilon);
         }
 
         // E[YYcosZ]
         {
-            const auto exact_moment = dist.calc_xx_cos_z_moment(1, 2);
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(0, 2, 1, 0);
             EXPECT_NEAR(exact_moment, 1.488038872588126, epsilon);
         }
     }
@@ -328,13 +328,13 @@ TEST(ThreeDimensionalNormalDistribution, THREE_ORDER_INDEPENDENT)
 
         // E[XYcos(z)]
         {
-            const double exact_moment = dist.calc_xy_cos_z_moment();
+            const double exact_moment = dist.calc_xy_cos_z_sin_z_moment(1, 1, 1, 0);
             EXPECT_NEAR(exact_moment, 0.5717082269602641, epsilon);
         }
 
         // E[XYsin(z)]
         {
-            const double exact_moment = dist.calc_xy_sin_z_moment();
+            const double exact_moment = dist.calc_xy_cos_z_sin_z_moment(1, 1, 0, 1);
             EXPECT_NEAR(exact_moment, 0.8408374011650688, epsilon);
         }
     }
@@ -350,19 +350,19 @@ TEST(ThreeDimensionalNormalDistribution, THREE_ORDER_INDEPENDENT)
 
         // E[XYcos(z)]
         {
-            const double exact_moment = dist.calc_xy_cos_z_moment();
+            const double exact_moment = dist.calc_xy_cos_z_sin_z_moment(1, 1, 1, 0);
             EXPECT_NEAR(exact_moment,  0.49767157402591145, epsilon);
         }
 
         // E[XYsin(z)]
         {
-            const double exact_moment = dist.calc_xy_sin_z_moment();
+            const double exact_moment = dist.calc_xy_cos_z_sin_z_moment(1, 1, 0, 1);
             EXPECT_NEAR(exact_moment, 0.8340922355209054, epsilon);
         }
 
         // E[XXYcos(Z)]
         {
-            const double exact_moment = dist.calc_xxy_cos_z_moment();
+            const double exact_moment = dist.calc_xy_cos_z_sin_z_moment(2, 1, 1, 0);
             EXPECT_NEAR(exact_moment, 0.9941102018163359, epsilon);
         }
     }
@@ -377,13 +377,13 @@ TEST(ThreeDimensionalNormalDistribution, THREE_ORDER_INDEPENDENT)
 
         // E[XYcos(z)]
         {
-            const double exact_moment = dist.calc_xy_cos_z_moment();
+            const double exact_moment = dist.calc_xy_cos_z_sin_z_moment(1, 1, 1, 0);
             EXPECT_NEAR(exact_moment, 0.6391623949442164, epsilon);
         }
 
         // E[XYsin(z)]
         {
-            const double exact_moment = dist.calc_xy_sin_z_moment();
+            const double exact_moment = dist.calc_xy_cos_z_sin_z_moment(1, 1, 0, 1);
             EXPECT_NEAR(exact_moment, 0.7737224521226675, epsilon);
         }
     }
@@ -398,13 +398,13 @@ TEST(ThreeDimensionalNormalDistribution, THREE_ORDER_INDEPENDENT)
 
         // E[XYcos(z)]
         {
-            const double exact_moment = dist.calc_xy_cos_z_moment();
+            const double exact_moment = dist.calc_xy_cos_z_sin_z_moment(1, 1, 1, 0);
             EXPECT_NEAR(exact_moment, 0.6727703373675349, epsilon);
         }
 
         // E[XYsin(z)]
         {
-            const double exact_moment = dist.calc_xy_sin_z_moment();
+            const double exact_moment = dist.calc_xy_cos_z_sin_z_moment(1, 1, 0, 1);
             EXPECT_NEAR(exact_moment, 0.6726921174920212, epsilon);
         }
     }
@@ -424,7 +424,7 @@ TEST(ThreeDimensionalNormalDistribution, FOURTH_ORDER)
 
         // E[XXYY]
         {
-            const auto exact_moment = dist.calc_xxyy_moment(0, 1);
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(2, 2, 0, 0);
             EXPECT_NEAR(exact_moment, 4.8555, epsilon);
         }
 
@@ -492,7 +492,7 @@ TEST(ThreeDimensionalNormalDistribution, FOURTH_ORDER_INDEPENDENT)
 
         // E[XXYY]
         {
-            const auto exact_moment = dist.calc_xxyy_moment(0, 1);
+            const auto exact_moment = dist.calc_xy_cos_z_sin_z_moment(2, 2, 0, 0);
             EXPECT_NEAR(exact_moment, 4.8685058886827735, epsilon);
         }
 
@@ -564,23 +564,20 @@ TEST(ThreeDimensionalNormalDistribution, FOURTH_ORDER_INDEPENDENT)
 
         // E[XYcos(Z)cos(Z)]
         {
-            const double exact_moment = dist.calc_xy_cos_z_cos_z_moment();
+            const double exact_moment = dist.calc_xy_cos_z_sin_z_moment(1, 1, 2, 0);
             EXPECT_NEAR(exact_moment, 1.3134247613800036, 0.001);
-            std::cout << "E[xycoszcosz]: " << exact_moment << std::endl;
         }
 
         // E[XYsin(Z)sin(Z)]
         {
-            const double exact_moment = dist.calc_xy_sin_z_sin_z_moment();
+            const double exact_moment = dist.calc_xy_cos_z_sin_z_moment(1, 1, 0, 2);
             EXPECT_NEAR(exact_moment,  4.786631915606325, 0.001);
-            std::cout << "E[xysinzsinz]: " << exact_moment << std::endl;
         }
 
         // E[XYcos(Z)sin(Z)]
         {
-            const double exact_moment = dist.calc_xy_cos_z_sin_z_moment();
+            const double exact_moment = dist.calc_xy_cos_z_sin_z_moment(1, 1, 1, 1);
             EXPECT_NEAR(exact_moment, 1.861773707968873, 0.001);
-            std::cout << "E[xycoszsinz]: " << exact_moment << std::endl;
         }
     }
 }

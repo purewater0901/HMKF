@@ -21,6 +21,7 @@ add_library(lib
             src/model/example_model.cpp
             src/model/squared_example_model.cpp
             src/model/simple_vehicle_model.cpp
+            src/model/simple_vehicle_squared_model.cpp
             src/utilities.cpp
             src/filter/ekf.cpp
             src/filter/ukf.cpp
