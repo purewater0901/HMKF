@@ -64,6 +64,8 @@ public:
 
     double calc_xy_cos_z_sin_z_moment(const int x_moment, const int y_moment,
                                       const int cos_moment, const int sin_moment);
+    double calc_xyz_cos_z_sin_z_moment(const int x_moment, const int y_moment, const int z_moment,
+                                        const int cos_moment, const int sin_moment);
 
     Eigen::Vector3d mean_;
     Eigen::Matrix3d covariance_;

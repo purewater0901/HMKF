@@ -348,23 +348,17 @@ StateInfo SimpleVehicleSquaredModel::getMeasurementMoments(const StateInfo &stat
     const auto predicted_cov = state_info.covariance;
 
     ThreeDimensionalNormalDistribution dist(predicted_mean, predicted_cov);
-    const double cPow1= dist.calc_cos_moment(STATE::IDX::YAW, 1);
-    const double sPow1= dist.calc_sin_moment(STATE::IDX::YAW, 1);
 
     const double cPow2= dist.calc_cos_moment(STATE::IDX::YAW, 2);
     const double sPow2= dist.calc_sin_moment(STATE::IDX::YAW, 2);
-    const double xPow1_cPow1 = dist.calc_x_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    const double yPow1_cPow1 = dist.calc_x_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    const double xPow1_sPow1 = dist.calc_x_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    const double yPow1_sPow1 = dist.calc_x_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
     const double cPow1_sPow1 = dist.calc_cos_sin_moment(STATE::IDX::YAW, 1, 1);
 
-    const double xPow1_cPow2 = dist.calc_x_cos_z_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    const double yPow1_cPow2 = dist.calc_x_cos_z_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    const double xPow1_sPow2 = dist.calc_x_sin_z_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    const double yPow1_sPow2 = dist.calc_x_sin_z_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    const double xPow1_cPow1_sPow1 = dist.calc_x_cos_z_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    const double yPow1_cPow1_sPow1 = dist.calc_x_cos_z_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    const double xPow1_cPow2 = dist.calc_xyz_cos_z_sin_z_moment(1, 0, 0, 2, 0);
+    const double yPow1_cPow2 = dist.calc_xyz_cos_z_sin_z_moment(0, 1, 0, 2, 0);
+    const double xPow1_sPow2 = dist.calc_xyz_cos_z_sin_z_moment(1, 0, 0, 0, 2);
+    const double yPow1_sPow2 = dist.calc_xyz_cos_z_sin_z_moment(0, 1, 0, 0, 2);
+    const double xPow1_cPow1_sPow1 = dist.calc_xyz_cos_z_sin_z_moment(1, 0, 0, 1, 1);
+    const double yPow1_cPow1_sPow1 = dist.calc_xyz_cos_z_sin_z_moment(0, 1, 0, 1, 1);
 
     const double cPow4 = dist.calc_cos_moment(STATE::IDX::YAW, 4);
     const double sPow4 = dist.calc_sin_moment(STATE::IDX::YAW, 4);
@@ -381,8 +375,8 @@ StateInfo SimpleVehicleSquaredModel::getMeasurementMoments(const StateInfo &stat
     const double xPow1_yPow1_sPow2 = dist.calc_xy_sin_z_sin_z_moment();
     const double xPow1_yPow1_cPow1_sPow1 = dist.calc_xy_cos_z_sin_z_moment();
 
-    const double xPow1_cPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 4, 0);
-    const double xPow1_sPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 0, 4);
+    const double xPow1_cPow4 = dist.calc_xyz_cos_z_sin_z_moment(1, 0, 0, 4, 0);
+    const double xPow1_sPow4 = dist.calc_xyz_cos_z_sin_z_moment(1, 0, 0, 0, 4);
     const double yPow1_cPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 0, 4, 0);
     const double yPow1_sPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 0, 0, 4);
     const double xPow1_cPow3_sPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 3, 1);
@@ -394,29 +388,29 @@ StateInfo SimpleVehicleSquaredModel::getMeasurementMoments(const StateInfo &stat
 
     const double xPow2_cPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 0, 4, 0);
     const double xPow2_sPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 0, 0, 4);
-    const double yPow2_cPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 0, 4, 0);
-    const double yPow2_sPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 0, 0, 4);
+    const double yPow2_cPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 2, 0, 4, 0);
+    const double yPow2_sPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 2, 0, 0, 4);
     const double xPow2_cPow2_sPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 0, 2, 2);
-    const double yPow2_cPow2_sPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 2, 0, 2, 2);
     const double xPow2_cPow3_sPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 0, 3, 1);
-    const double yPow2_cPow3_sPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 2, 0, 3, 1);
     const double xPow2_cPow1_sPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 0, 1, 3);
+    const double yPow2_cPow2_sPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 2, 0, 2, 2);
+    const double yPow2_cPow3_sPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 2, 0, 3, 1);
     const double yPow2_cPow1_sPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 2, 0, 1, 3);
-    const double xPow1_yPow1_cPow3_sPow1 = dist.calc_xy_cos_z_sin_z_moment(1, 1, 3, 1);
-    const double xPow1_yPow1_cPow2_sPow2 = dist.calc_xy_cos_z_sin_z_moment(1, 1, 2, 2);
-    const double xPow1_yPow1_cPow1_sPow3 = dist.calc_xy_cos_z_sin_z_moment(1, 1, 1, 3);
-    const double xPow1_yPow1_cPow4 = dist.calc_xy_cos_z_sin_z_moment(1, 1, 4, 0);
-    const double xPow1_yPow1_sPow4 = dist.calc_xy_cos_z_sin_z_moment(1, 1, 0, 4);
+    const double xPow1_yPow1_cPow3_sPow1 = dist.calc_xyz_cos_z_sin_z_moment(1, 1, 0, 3, 1);
+    const double xPow1_yPow1_cPow2_sPow2 = dist.calc_xyz_cos_z_sin_z_moment(1, 1, 0, 2, 2);
+    const double xPow1_yPow1_cPow1_sPow3 = dist.calc_xyz_cos_z_sin_z_moment(1, 1, 0, 1, 3);
+    const double xPow1_yPow1_cPow4 = dist.calc_xyz_cos_z_sin_z_moment(1, 1, 0, 4, 0);
+    const double xPow1_yPow1_sPow4 = dist.calc_xyz_cos_z_sin_z_moment(1, 1, 0, 0, 4);
 
     const double xPow3_cPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 3, 0, 4, 0);
     const double xPow3_sPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 3, 0, 0, 4);
     const double yPow3_cPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 3, 0, 4, 0);
     const double yPow3_sPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 3, 0, 0, 4);
     const double xPow3_cPow3_sPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 3, 0, 3, 1);
-    const double yPow3_cPow3_sPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 3, 0, 3, 1);
     const double xPow3_cPow1_sPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 3, 0, 1, 3);
-    const double yPow3_cPow1_sPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 3, 0, 1, 3);
     const double xPow3_cPow2_sPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 3, 0, 2, 2);
+    const double yPow3_cPow3_sPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 3, 0, 3, 1);
+    const double yPow3_cPow1_sPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 3, 0, 1, 3);
     const double yPow3_cPow2_sPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 3, 0, 2, 2);
     const double xPow2_yPow1_cPow3_sPow1 = dist.calc_xy_cos_z_sin_z_moment(2, 1, 3, 1);
     const double xPow2_yPow1_cPow1_sPow3 = dist.calc_xy_cos_z_sin_z_moment(2, 1, 1, 3);
@@ -434,10 +428,10 @@ StateInfo SimpleVehicleSquaredModel::getMeasurementMoments(const StateInfo &stat
     const double yPow4_cPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 4, 0, 4, 0);
     const double yPow4_sPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 4, 0, 0, 4);
     const double xPow4_cPow2_sPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 4, 0, 2, 2);
-    const double yPow4_cPow2_sPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 4, 0, 2, 2);
     const double xPow4_cPow3_sPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 4, 0, 3, 1);
-    const double yPow4_cPow3_sPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 4, 0, 3, 1);
     const double xPow4_cPow1_sPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 4, 0, 1, 3);
+    const double yPow4_cPow2_sPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 4, 0, 2, 2);
+    const double yPow4_cPow3_sPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 4, 0, 3, 1);
     const double yPow4_cPow1_sPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 4, 0, 1, 3);
     const double xPow3_yPow1_cPow3_sPow1 = dist.calc_xy_cos_z_sin_z_moment(3, 1, 3, 1);
     const double xPow2_yPow2_cPow2_sPow2 = dist.calc_xy_cos_z_sin_z_moment(2, 2, 2, 2);
@@ -457,11 +451,8 @@ StateInfo SimpleVehicleSquaredModel::getMeasurementMoments(const StateInfo &stat
 
     const auto wr_dist_ptr = noise_map.at(MEASUREMENT_NOISE::IDX::WR);
     const auto wa_dist_ptr = noise_map.at(MEASUREMENT_NOISE::IDX::WA);
-    const double wrPow1 = wr_dist_ptr->calc_moment(1);
     const double wrPow2 = wr_dist_ptr->calc_moment(2);
     const double wrPow4 = wr_dist_ptr->calc_moment(4);
-    const double cwaPow1 = wa_dist_ptr->calc_cos_moment(1);
-    const double swaPow1 = wa_dist_ptr->calc_sin_moment(1);
     const double cwaPow2 = wa_dist_ptr->calc_cos_moment(2);
     const double swaPow2 = wa_dist_ptr->calc_sin_moment(2);
     const double cwaPow4 = wa_dist_ptr->calc_cos_moment(4);
@@ -475,8 +466,6 @@ StateInfo SimpleVehicleSquaredModel::getMeasurementMoments(const StateInfo &stat
     const double &x_land = landmark(0);
     const double &y_land = landmark(1);
 
-    const double haPow1 = x_land * cPow1 - xPow1_cPow1 + y_land * sPow1 - yPow1_sPow1;
-    const double hbPow1 = y_land * cPow1 - yPow1_cPow1 - x_land * sPow1 + xPow1_sPow1;
     const double haPow2 = std::pow(x_land, 2) * cPow2 + xPow2_cPow2 - 2.0 * x_land * xPow1_cPow2
                           + std::pow(y_land, 2) * sPow2 + yPow2_sPow2 - 2.0 * y_land * yPow1_sPow2
                           + 2.0 * x_land * y_land * cPow1_sPow1 - 2.0 * x_land * yPow1_cPow1_sPow1
@@ -539,57 +528,127 @@ Eigen::MatrixXd SimpleVehicleSquaredModel::getStateMeasurementMatrix(const State
 
     const auto wr_dist_ptr = noise_map.at(MEASUREMENT_NOISE::IDX::WR);
     const auto wa_dist_ptr = noise_map.at(MEASUREMENT_NOISE::IDX::WA);
-    const double wrPow1 = wr_dist_ptr->calc_moment(1);
-    const double cwaPow1 = wa_dist_ptr->calc_cos_moment(1);
-    const double swaPow1 = wa_dist_ptr->calc_sin_moment(1);
+    const double wrPow2 = wr_dist_ptr->calc_moment(2);
+    const double cwaPow2 = wa_dist_ptr->calc_cos_moment(2);
+    const double swaPow2 = wa_dist_ptr->calc_sin_moment(2);
+    const double cwaPow1_swaPow1 = wa_dist_ptr->calc_cos_sin_moment(1, 1);
 
     const double& x_land = landmark(0);
     const double& y_land = landmark(1);
 
-    const double xPow1_cPow1 = dist.calc_x_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    const double xPow1_sPow1 = dist.calc_x_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    const double xPow2_cPow1 = dist.calc_xx_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    const double xPow2_sPow1 = dist.calc_xx_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    const double yPow1_cPow1 = dist.calc_x_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    const double yPow1_sPow1 = dist.calc_x_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    const double yPow2_cPow1 = dist.calc_xx_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    const double yPow2_sPow1 = dist.calc_xx_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    const double xPow1_yPow1_cPow1 = dist.calc_xy_cos_z_moment();
-    const double xPow1_yPow1_sPow1 = dist.calc_xy_sin_z_moment();
-    const double yawPow1_cPow1 = dist.calc_x_cos_x_moment(STATE::IDX::YAW, 1, 1);
-    const double yawPow1_sPow1 = dist.calc_x_sin_x_moment(STATE::IDX::YAW, 1, 1);
-    const double xPow1_yawPow1_cPow1 = dist.calc_xy_cos_y_moment(STATE::IDX::X, STATE::IDX::YAW);
-    const double yPow1_yawPow1_cPow1 = dist.calc_xy_cos_y_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    const double xPow1_yawPow1_sPow1 = dist.calc_xy_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW);
-    const double yPow1_yawPow1_sPow1 = dist.calc_xy_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    const double xPow1_cPow2 = dist.calc_xy_cos_z_sin_z_moment(1, 0, 2, 0);
+    const double xPow1_sPow2 = dist.calc_xy_cos_z_sin_z_moment(1, 0, 0, 2);
+    const double yPow1_cPow2 = dist.calc_xy_cos_z_sin_z_moment(0, 1, 2, 0);
+    const double yPow1_sPow2 = dist.calc_xy_cos_z_sin_z_moment(0, 1, 0, 2);
+    const double xPow1_cPow1_sPow1 = dist.calc_xy_cos_z_sin_z_moment(1, 0, 1, 1);
+    const double yPow1_cPow1_sPow1 = dist.calc_xy_cos_z_sin_z_moment(0, 1, 1, 1);
+    const double yawPow1_cPow2 = dist.calc_x_cos_x_moment(STATE::IDX::YAW, 1, 2);
+    const double yawPow1_sPow2 = dist.calc_x_sin_x_moment(STATE::IDX::YAW, 1, 2);
+    const double yawPow1_cPow1_sPow1 = dist.calc_x_cos_x_sin_x_moment(STATE::IDX::YAW, 1, 1, 1);
 
-    const double xPow1_caPow1 = x_land * xPow1_cPow1 - xPow2_cPow1 + y_land * xPow1_sPow1 - xPow1_yPow1_sPow1;
-    const double xPow1_saPow1 = y_land * xPow1_cPow1 - xPow1_yPow1_cPow1 - x_land * xPow1_sPow1 + xPow2_sPow1;
-    const double yPow1_caPow1 = x_land * yPow1_cPow1 - xPow1_yPow1_cPow1 + y_land * yPow1_sPow1 - yPow2_sPow1;
-    const double yPow1_saPow1 = y_land * yPow1_cPow1 - yPow2_cPow1 - x_land * yPow1_sPow1 + xPow1_yPow1_sPow1;
-    const double yawPow1_caPow1 = x_land * yawPow1_cPow1 - xPow1_yawPow1_cPow1 + y_land * yawPow1_sPow1 - yPow1_yawPow1_sPow1;
-    const double yawPow1_saPow1 = y_land * yawPow1_cPow1 - yPow1_yawPow1_cPow1 - x_land * yawPow1_sPow1 + xPow1_yawPow1_sPow1;
+    const double xPow2_cPow2 = dist.calc_xy_cos_z_sin_z_moment(2, 0, 2, 0);
+    const double xPow2_sPow2 = dist.calc_xy_cos_z_sin_z_moment(2, 0, 0, 2);
+    const double yPow2_cPow2 = dist.calc_xy_cos_z_sin_z_moment(0, 2, 2, 0);
+    const double yPow2_sPow2 = dist.calc_xy_cos_z_sin_z_moment(0, 2, 0, 2);
+    const double xPow1_yPow1_cPow2 = dist.calc_xy_cos_z_sin_z_moment(1, 1, 2, 0);
+    const double xPow1_yPow1_sPow2 = dist.calc_xy_cos_z_sin_z_moment(1, 1, 0, 2);
+    const double xPow2_cPow1_sPow1 = dist.calc_xy_cos_z_sin_z_moment(2, 0, 1, 1);
+    const double yPow2_cPow1_sPow1 = dist.calc_xy_cos_z_sin_z_moment(0, 2, 1, 1);
+    const double xPow1_yPow1_cPow1_sPow1 = dist.calc_xy_cos_z_sin_z_moment(1, 1, 1, 1);
+    const double xPow1_yawPow1_cPow1_sPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 1, 1, 1);
+    const double yPow1_yawPow1_cPow1_sPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 1, 1, 1);
+
+    const double xPow3_cPow2 = dist.calc_xy_cos_z_sin_z_moment(3, 0, 2, 0);
+    const double yPow3_cPow2 = dist.calc_xy_cos_z_sin_z_moment(0, 3, 2, 0);
+    const double xPow3_sPow2 = dist.calc_xy_cos_z_sin_z_moment(3, 0, 0, 2);
+    const double yPow3_sPow2 = dist.calc_xy_cos_z_sin_z_moment(0, 3, 0, 2);
+    const double xPow1_yPow2_cPow1_sPow1 = dist.calc_xy_cos_z_sin_z_moment(1, 2, 1, 1);
+    const double xPow2_yPow1_cPow1_sPow1 = dist.calc_xy_cos_z_sin_z_moment(2, 1, 1, 1);
+    const double xPow3_cPow1_sPow1 = dist.calc_xy_cos_z_sin_z_moment(3, 0, 1, 1);
+    const double yPow3_cPow1_sPow1 = dist.calc_xy_cos_z_sin_z_moment(0, 3, 1, 1);
+    const double xPow1_yPow2_cPow2 = dist.calc_xy_cos_z_sin_z_moment(1, 2, 2, 0);
+    const double xPow2_yPow1_cPow2 = dist.calc_xy_cos_z_sin_z_moment(2, 1, 2, 0);
+    const double xPow1_yPow2_sPow2 = dist.calc_xy_cos_z_sin_z_moment(1, 2, 0, 2);
+    const double xPow2_yPow1_sPow2 = dist.calc_xy_cos_z_sin_z_moment(2, 1, 0, 2);
+    const double xPow1_yawPow1_cPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 1, 2, 0);
+    const double xPow1_yawPow1_sPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 1, 0, 2);
+    const double yPow1_yawPow1_cPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 1, 2, 0);
+    const double yPow1_yawPow1_sPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 1, 0, 2);
+    const double xPow2_yawPow1_cPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 1, 2, 0);
+    const double xPow2_yawPow1_sPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 1, 0, 2);
+    const double yPow2_yawPow1_cPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 2, 1, 2, 0);
+    const double yPow2_yawPow1_sPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 2, 1, 0, 2);
+    const double xPow2_yawPow1_cPow1_sPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 2, 1, 1, 1);
+    const double yPow2_yawPow1_cPow1_sPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 2, 1, 1, 1);
+    const double xPow1_yPow1_yawPow1_cPow1_sPow1 = dist.calc_xyz_cos_z_sin_z_moment(1, 1, 1, 1, 1);
+    const double xPow1_yPow1_yawPow1_cPow2 = dist.calc_xyz_cos_z_sin_z_moment(1, 1, 1, 2, 0);
+    const double xPow1_yPow1_yawPow1_sPow2 = dist.calc_xyz_cos_z_sin_z_moment(1, 1, 1, 0, 2);
+
+
+    const double xPow1_haPow2 =  std::pow(x_land, 2) * xPow1_cPow2 + xPow3_cPow2 - 2.0 * x_land * xPow2_cPow2
+                                 + std::pow(y_land, 2) * xPow1_sPow2 + xPow1_yPow2_sPow2 - 2.0 * y_land * xPow1_yPow1_sPow2
+                                 + 2.0 * x_land * y_land * xPow1_cPow1_sPow1 - 2.0 * x_land * xPow1_yPow1_cPow1_sPow1
+                                 - 2.0 * y_land * xPow2_cPow1_sPow1 + 2.0 * xPow2_yPow1_cPow1_sPow1;
+    const double xPow1_hbPow2 = std::pow(y_land, 2) * xPow1_cPow2 + xPow1_yPow2_cPow2 - 2.0 * y_land * xPow1_yPow1_cPow2
+                                + std::pow(x_land, 2) * xPow1_sPow2 + xPow3_sPow2 - 2.0 * x_land * xPow2_sPow2
+                                - 2.0 * x_land * y_land * xPow1_cPow1_sPow1 + 2.0 * x_land * xPow1_yPow1_cPow1_sPow1
+                                + 2.0 * y_land * xPow2_cPow1_sPow1 - 2.0 * xPow2_yPow1_cPow1_sPow1;
+    const double xPow1_haPow1_hbPow1 =  x_land * y_land * xPow1_cPow2 + xPow2_yPow1_cPow2 - x_land * xPow1_yPow1_cPow2
+                                        - y_land * xPow2_cPow2 - std::pow(x_land, 2) * xPow1_cPow1_sPow1
+                                        - xPow3_cPow1_sPow1 + 2.0 * x_land * xPow2_cPow1_sPow1
+                                        + std::pow(y_land, 2) * xPow1_cPow1_sPow1 + xPow1_yPow2_cPow1_sPow1
+                                        - 2.0 * y_land * xPow1_yPow1_cPow1_sPow1 - x_land * y_land * xPow1_sPow2
+                                        - xPow2_yPow1_sPow2 + x_land * xPow1_yPow1_sPow2 + y_land * xPow2_sPow2;
+    const double yPow1_haPow2 = std::pow(x_land, 2) * yPow1_cPow2 + xPow2_yPow1_cPow2 - 2.0 * x_land * xPow1_yPow1_cPow2
+                              + std::pow(y_land, 2) * yPow1_sPow2 + yPow3_sPow2 - 2.0 * y_land * yPow2_sPow2
+                              + 2.0 * x_land * y_land * yPow1_cPow1_sPow1 - 2.0 * x_land * yPow2_cPow1_sPow1
+                              - 2.0 * y_land * xPow1_yPow1_cPow1_sPow1 + 2.0 * xPow1_yPow2_cPow1_sPow1;
+    const double yPow1_hbPow2 = std::pow(y_land, 2) * yPow1_cPow2 + yPow3_cPow2 - 2.0 * y_land * yPow2_cPow2
+                              + std::pow(x_land, 2) * yPow1_sPow2 + xPow2_yPow1_sPow2 - 2.0 * x_land * xPow1_yPow1_sPow2
+                              - 2.0 * x_land * y_land * yPow1_cPow1_sPow1 + 2.0 * x_land * yPow2_cPow1_sPow1
+                              + 2.0 * y_land * xPow1_yPow1_cPow1_sPow1 - 2.0 * xPow1_yPow2_cPow1_sPow1;
+    const double yPow1_haPow1_hbPow1 =  x_land * y_land * yPow1_cPow2 + xPow1_yPow2_cPow2 - x_land * yPow2_cPow2
+                                        - y_land * xPow1_yPow1_cPow2 - std::pow(x_land, 2) * yPow1_cPow1_sPow1
+                                        - xPow2_yPow1_cPow1_sPow1 + 2.0 * x_land * xPow1_yPow1_cPow1_sPow1
+                                        + std::pow(y_land, 2) * yPow1_cPow1_sPow1 + yPow3_cPow1_sPow1
+                                        - 2.0 * y_land * yPow2_cPow1_sPow1 - x_land * y_land * yPow1_sPow2
+                                        - xPow1_yPow2_sPow2 + x_land * yPow2_sPow2 + y_land * xPow1_yPow1_sPow2;
+    const double yawPow1_haPow2 = std::pow(x_land, 2) * yawPow1_cPow2 + xPow2_yawPow1_cPow2 - 2.0 * x_land * xPow1_yawPow1_cPow2
+                                + std::pow(y_land, 2) * yawPow1_sPow2 + yPow2_yawPow1_sPow2 - 2.0 * y_land * yPow1_yawPow1_sPow2
+                                + 2.0 * x_land * y_land * yawPow1_cPow1_sPow1 - 2.0 * x_land * yPow1_yawPow1_cPow1_sPow1
+                                - 2.0 * y_land * xPow1_yawPow1_cPow1_sPow1 + 2.0 * xPow1_yPow1_yawPow1_cPow1_sPow1;
+    const double yawPow1_hbPow2 = std::pow(y_land, 2) * yawPow1_cPow2 + yPow2_yawPow1_cPow2 - 2.0 * y_land * yPow1_yawPow1_cPow2
+                                + std::pow(x_land, 2) * yawPow1_sPow2 + xPow2_yawPow1_sPow2 - 2.0 * x_land * xPow1_yawPow1_sPow2
+                                - 2.0 * x_land * y_land * yawPow1_cPow1_sPow1 + 2.0 * x_land * yPow1_yawPow1_cPow1_sPow1
+                                + 2.0 * y_land * xPow1_yawPow1_cPow1_sPow1 - 2.0 * xPow1_yPow1_yawPow1_cPow1_sPow1;
+    const double yawPow1_haPow1_hbPow1 =  x_land * y_land * yawPow1_cPow2 + xPow1_yPow1_yawPow1_cPow2
+                                       - x_land * yPow1_yawPow1_cPow2 - y_land * xPow1_yawPow1_cPow2
+                                       - std::pow(x_land, 2) * yawPow1_cPow1_sPow1 - xPow2_yawPow1_cPow1_sPow1
+                                       + 2.0 * x_land * xPow1_yawPow1_cPow1_sPow1 + std::pow(y_land, 2) * yawPow1_cPow1_sPow1
+                                       + yPow2_yawPow1_cPow1_sPow1 - 2.0 * y_land * yPow1_yawPow1_cPow1_sPow1
+                                       - x_land * y_land * yawPow1_sPow2 - xPow1_yPow1_yawPow1_sPow2
+                                       + x_land * yPow1_yawPow1_sPow2 + y_land * xPow1_yawPow1_sPow2;
 
     Eigen::MatrixXd state_observation_cov(3, 2); // sigma = E[XY^T] - E[X]E[Y]^T
     state_observation_cov(STATE::IDX::X, MEASUREMENT::IDX::RCOS)
-            = wrPow1 * cwaPow1 * xPow1_caPow1 - wrPow1 * swaPow1 * xPow1_saPow1
+            = wrPow2 * cwaPow2 * xPow1_haPow2 + wrPow2 * swaPow2 * xPow1_hbPow2 - 2.0 * wrPow2 * cwaPow1_swaPow1 * xPow1_haPow1_hbPow1
               - predicted_mean(STATE::IDX::X) * measurement_mean(MEASUREMENT::IDX::RCOS);
     state_observation_cov(STATE::IDX::X, MEASUREMENT::IDX::RSIN)
-            = wrPow1 * cwaPow1 * xPow1_saPow1 + wrPow1 * swaPow1 * xPow1_caPow1
+            = wrPow2 * cwaPow2 * xPow1_hbPow2 + wrPow2 * swaPow2 * xPow1_haPow2 + 2.0 * wrPow2 * cwaPow1_swaPow1 * xPow1_haPow1_hbPow1
               - predicted_mean(STATE::IDX::X) * measurement_mean(MEASUREMENT::IDX::RSIN); // x_p * yaw
 
     state_observation_cov(STATE::IDX::Y, MEASUREMENT::IDX::RCOS)
-            =  wrPow1 * cwaPow1 * yPow1_caPow1 - wrPow1 * swaPow1 * yPow1_saPow1
+            = wrPow2 * cwaPow2 * yPow1_haPow2 + wrPow2 * swaPow2 * yPow1_hbPow2 - 2.0 * wrPow2 * cwaPow1_swaPow1 * yPow1_haPow1_hbPow1
                - predicted_mean(STATE::IDX::Y) * measurement_mean(MEASUREMENT::IDX::RCOS); // yp * (xp^2 + yp^2)
     state_observation_cov(STATE::IDX::Y, MEASUREMENT::IDX::RSIN)
-            =  wrPow1 * cwaPow1 * yPow1_saPow1 + wrPow1 * swaPow1 * yPow1_caPow1
+            = wrPow2 * cwaPow2 * yPow1_hbPow2 + wrPow2 * swaPow2 * yPow1_haPow2 + 2.0 * wrPow2 * cwaPow1_swaPow1 * yPow1_haPow1_hbPow1
                - predicted_mean(STATE::IDX::Y) * measurement_mean(MEASUREMENT::IDX::RSIN); // y_p * yaw
 
     state_observation_cov(STATE::IDX::YAW, MEASUREMENT::IDX::RCOS)
-            =   wrPow1 * cwaPow1 * yawPow1_caPow1 - wrPow1 * swaPow1 * yawPow1_saPow1
+            = wrPow2 * cwaPow2 * yawPow1_haPow2 + wrPow2 * swaPow2 * yawPow1_hbPow2 - 2.0 * wrPow2 * cwaPow1_swaPow1 * yawPow1_haPow1_hbPow1
                 - predicted_mean(STATE::IDX::YAW) * measurement_mean(MEASUREMENT::IDX::RCOS);
     state_observation_cov(STATE::IDX::YAW, MEASUREMENT::IDX::RSIN)
-            =    wrPow1 * cwaPow1 * yawPow1_saPow1 + wrPow1 * swaPow1 * yawPow1_caPow1
+            = wrPow2 * cwaPow2 * yawPow1_hbPow2 + wrPow2 * swaPow2 * yawPow1_haPow2 + 2.0 * wrPow2 * cwaPow1_swaPow1 * yawPow1_haPow1_hbPow1
                  - predicted_mean(STATE::IDX::YAW) * measurement_mean(MEASUREMENT::IDX::RSIN);
 
     return state_observation_cov;
