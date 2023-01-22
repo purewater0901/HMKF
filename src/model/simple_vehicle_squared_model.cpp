@@ -289,8 +289,6 @@ StateInfo SimpleVehicleSquaredModel::propagateStateMoments(const StateInfo &stat
 
     const double &v = control_inputs(INPUT::IDX::V);
     const double &u = control_inputs(INPUT::IDX::U);
-    const double &cu = std::cos(u);
-    const double &su = std::sin(u);
 
     // Dynamics updates.
     const double next_xPow1 = v*cPow1 + cPow1*wvPow1 + xPow1;
@@ -625,6 +623,10 @@ Eigen::MatrixXd SimpleVehicleSquaredModel::getStateMeasurementMatrix(const State
                                        - x_land * y_land * yawPow1_sPow2 - xPow1_yPow1_yawPow1_sPow2
                                        + x_land * yPow1_yawPow1_sPow2 + y_land * xPow1_yawPow1_sPow2;
 
+    std::cout << "E[X*MRCOS]: " << wrPow2 * cwaPow2 * xPow1_haPow2 + wrPow2 * swaPow2 * xPow1_hbPow2
+                                   - 2.0 * wrPow2 * cwaPow1_swaPow1 * xPow1_haPow1_hbPow1 << std::endl;
+    std::cout << "E[Y*MRCOS]: " << wrPow2 * cwaPow2 * yPow1_haPow2 + wrPow2 * swaPow2 * yPow1_hbPow2
+                                   - 2.0 * wrPow2 * cwaPow1_swaPow1 * yPow1_haPow1_hbPow1 << std::endl;
     Eigen::MatrixXd state_observation_cov(3, 2); // sigma = E[XY^T] - E[X]E[Y]^T
     state_observation_cov(STATE::IDX::X, MEASUREMENT::IDX::RCOS)
             = wrPow2 * cwaPow2 * xPow1_haPow2 + wrPow2 * swaPow2 * xPow1_hbPow2

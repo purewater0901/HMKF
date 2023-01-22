@@ -90,6 +90,10 @@ add_executable(test_simple_vehicle_model test/model/test_simple_vehicle_model.cp
 target_link_libraries(test_simple_vehicle_model GTest::GTest GTest::Main lib)
 gtest_add_tests(TARGET test_simple_vehicle_model)
 
+add_executable(test_squared_simple_vehicle_model test/model/test_squared_simple_vehicle_model.cpp)
+target_link_libraries(test_squared_simple_vehicle_model GTest::GTest GTest::Main lib)
+gtest_add_tests(TARGET test_squared_simple_vehicle_model)
+
 add_executable(test_example_hmkf test/filter/test_example_hmkf.cpp)
 target_link_libraries(test_example_hmkf GTest::GTest GTest::Main lib)
 gtest_add_tests(TARGET test_example_hmkf)
