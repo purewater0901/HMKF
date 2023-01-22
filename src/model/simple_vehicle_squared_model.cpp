@@ -75,12 +75,12 @@ Eigen::VectorXd SimpleVehicleSquaredModel::measureWithLandmark(const Eigen::Vect
     const double& y_land = landmark(1);
     const double& wr = observation_noise(MEASUREMENT_NOISE::IDX::WR); // length noise
     const double& wa = observation_noise(MEASUREMENT_NOISE::IDX::WA); // bearing noise
-    const double rcos_bearing = (x_land - x) * std::cos(yaw) + (y_land - y) * std::sin(yaw);
-    const double rsin_bearing = (y_land - y) * std::cos(yaw) - (x_land - x) * std::sin(yaw);
+    const double ha = (x_land - x) * std::cos(yaw) + (y_land - y) * std::sin(yaw);
+    const double hb = (y_land - y) * std::cos(yaw) - (x_land - x) * std::sin(yaw);
 
     Eigen::VectorXd y_next = Eigen::VectorXd::Zero(2);
-    const double rcos = wr * std::cos(wa) * rcos_bearing - wr * std::sin(wa) * rsin_bearing;
-    const double rsin = wr * std::cos(wa) * rsin_bearing + wr * std::sin(wa) * rcos_bearing;
+    const double rcos = wr * std::cos(wa) * ha - wr * std::sin(wa) * hb;
+    const double rsin = wr * std::cos(wa) * hb + wr * std::sin(wa) * ha;
     y_next(MEASUREMENT::IDX::RCOS) = rcos * rcos;
     y_next(MEASUREMENT::IDX::RSIN) = rsin * rsin;
 
@@ -102,8 +102,6 @@ Eigen::MatrixXd SimpleVehicleSquaredModel::getStateMatrix(const Eigen::VectorXd&
      * dy/dy = 1.0 dy/dyaw = (v_k + wv) * cos(yaw_k) * dt
      * dyaw/dyaw = 1.0
      */
-    const double& x = x_curr(STATE::IDX::X);
-    const double& y = x_curr(STATE::IDX::Y);
     const double& yaw = x_curr(STATE::IDX::YAW);
     const double& v_k = u_curr(0);
     const auto wv_dist_ptr = noise_map.at(SYSTEM_NOISE::IDX::WV);
@@ -177,7 +175,7 @@ Eigen::MatrixXd SimpleVehicleSquaredModel::getMeasurementMatrix(const Eigen::Vec
      * ha = (x_land - x) * cPow1 + (y_land - y) * sPow1 + mrcos
      * hb = (y_land - y) * cPow1 - (x_land - x) * sPow1 + mrsin
      * y1 = ha*vr*cos(v_phi) - hb*vr*sin(v_phi)
-     * y2 = ha*vr*cos(v_phi) - hb*vr*sin(v_phi)
+     * y2 = hb*vr*cos(v_phi) + ha*vr*sin(v_phi)
      * Y1 = y1 * y1
      * Y2 = y2 * y2
      *
@@ -189,25 +187,25 @@ Eigen::MatrixXd SimpleVehicleSquaredModel::getMeasurementMatrix(const Eigen::Vec
     const double& x_land = landmark(0);
     const double& y_land = landmark(1);
 
-    const double rcos_bearing = (x_land - x) * std::cos(yaw) + (y_land - y) * std::sin(yaw);
-    const double rsin_bearing = (y_land - y) * std::cos(yaw) - (x_land - x) * std::sin(yaw);
-    const double y1 = wr * std::cos(wa) * rcos_bearing - wr * std::sin(wa) * rsin_bearing;
-    const double y2 = wr * std::cos(wa) * rsin_bearing + wr * std::sin(wa) * rcos_bearing;
+    const double ha = (x_land - x) * std::cos(yaw) + (y_land - y) * std::sin(yaw);
+    const double hb = (y_land - y) * std::cos(yaw) - (x_land - x) * std::sin(yaw);
+    const double y1 = wr * std::cos(wa) * ha - wr * std::sin(wa) * hb;
+    const double y2 = wr * std::cos(wa) * hb + wr * std::sin(wa) * ha;
 
-    const double drcos_bearing_dx = -std::cos(yaw);
-    const double drcos_bearing_dy = -std::sin(yaw);
-    const double drcos_bearing_dyaw = -(x_land - x) * std::sin(yaw) + (y_land - y) * std::cos(yaw);
-    const double drsin_bearing_dx = std::sin(yaw);
-    const double drsin_bearing_dy = -std::cos(yaw);
-    const double drsin_bearing_dyaw = -(y_land - y) * std::sin(yaw) - (x_land - x) * std::cos(yaw);
+    const double dha_dx = -std::cos(yaw);
+    const double dha_dy = -std::sin(yaw);
+    const double dha_dyaw = -(x_land - x) * std::sin(yaw) + (y_land - y) * std::cos(yaw);
+    const double dhb_dx = std::sin(yaw);
+    const double dhb_dy = -std::cos(yaw);
+    const double dhb_dyaw = -(y_land - y) * std::sin(yaw) - (x_land - x) * std::cos(yaw);
 
     Eigen::MatrixXd H = Eigen::MatrixXd::Zero(2, 3);
-    const double dy1_dx = wr * std::cos(wa) * drcos_bearing_dx - wr * std::sin(wa) * drsin_bearing_dx;
-    const double dy1_dy = wr * std::cos(wa) * drcos_bearing_dy - wr * std::sin(wa) * drsin_bearing_dy;
-    const double dy1_dyaw = wr * std::cos(wa) * drcos_bearing_dyaw - wr * std::sin(wa) * drsin_bearing_dyaw;
-    const double dy2_dx = wr * std::cos(wa) * drsin_bearing_dx + wr * std::sin(wa) * drcos_bearing_dx;
-    const double dy2_dy = wr * std::cos(wa) * drsin_bearing_dy + wr * std::sin(wa) * drcos_bearing_dy;
-    const double dy2_dyaw = wr * std::cos(wa) * drsin_bearing_dyaw + wr * std::sin(wa) * drcos_bearing_dyaw;
+    const double dy1_dx = wr * std::cos(wa) * dha_dx - wr * std::sin(wa) * dhb_dx;
+    const double dy1_dy = wr * std::cos(wa) * dha_dy - wr * std::sin(wa) * dhb_dy;
+    const double dy1_dyaw = wr * std::cos(wa) * dha_dyaw - wr * std::sin(wa) * dhb_dyaw;
+    const double dy2_dx = wr * std::cos(wa) * dhb_dx + wr * std::sin(wa) * dha_dx;
+    const double dy2_dy = wr * std::cos(wa) * dhb_dy + wr * std::sin(wa) * dha_dy;
+    const double dy2_dyaw = wr * std::cos(wa) * dhb_dyaw + wr * std::sin(wa) * dha_dyaw;
     H(MEASUREMENT::IDX::RCOS, STATE::IDX::X) = 2.0 * y1 * dy1_dx;
     H(MEASUREMENT::IDX::RCOS, STATE::IDX::Y) = 2.0 * y1 * dy1_dy;
     H(MEASUREMENT::IDX::RCOS, STATE::IDX::YAW) = 2.0 * y1 * dy1_dyaw;
@@ -232,20 +230,20 @@ Eigen::MatrixXd SimpleVehicleSquaredModel::getMeasurementNoiseMatrix(const Eigen
     const double& yaw = x_curr(STATE::IDX::YAW);
     const double& x_land = landmark(0);
     const double& y_land = landmark(1);
-    const double rcos_bearing = (x_land - x) * std::cos(yaw) + (y_land - y) * std::sin(yaw);
-    const double rsin_bearing = (y_land - y) * std::cos(yaw) - (x_land - x) * std::sin(yaw);
-    const double y1 = mr * std::cos(ma) * rcos_bearing - mr * std::sin(ma) * rsin_bearing;
-    const double y2 = mr * std::cos(ma) * rsin_bearing + mr * std::sin(ma) * rcos_bearing;
+    const double ha = (x_land - x) * std::cos(yaw) + (y_land - y) * std::sin(yaw);
+    const double hb = (y_land - y) * std::cos(yaw) - (x_land - x) * std::sin(yaw);
+    const double y1 = mr * std::cos(ma) * ha - mr * std::sin(ma) * hb;
+    const double y2 = mr * std::cos(ma) * hb + mr * std::sin(ma) * ha;
 
     Eigen::MatrixXd R = Eigen::MatrixXd::Zero(2, 2);
     R(MEASUREMENT_NOISE::IDX::WR, MEASUREMENT_NOISE::IDX::WR) = mr_dist_ptr->calc_variance();
     R(MEASUREMENT_NOISE::IDX::WA, MEASUREMENT_NOISE::IDX::WA) = ma_dist_ptr->calc_variance();
 
     Eigen::MatrixXd L = Eigen::MatrixXd::Zero(2, 2);
-    const double dy1_dmr = std::cos(ma) * rcos_bearing - std::sin(ma) * rsin_bearing;
-    const double dy2_dmr = std::cos(ma) * rsin_bearing + std::sin(ma) * rcos_bearing;
-    const double dy1_dma = -mr * std::sin(ma) * rcos_bearing - mr * std::cos(ma) * rsin_bearing;
-    const double dy2_dma = -mr * std::sin(ma) * rsin_bearing + mr * std::cos(ma) * rcos_bearing;
+    const double dy1_dmr = std::cos(ma) * ha - std::sin(ma) * hb;
+    const double dy2_dmr = std::cos(ma) * hb + std::sin(ma) * ha;
+    const double dy1_dma = -mr * std::sin(ma) * ha - mr * std::cos(ma) * hb;
+    const double dy2_dma = -mr * std::sin(ma) * hb + mr * std::cos(ma) * ha;
     L(MEASUREMENT::IDX::RCOS, MEASUREMENT_NOISE::IDX::WR) = 2.0 * y1 * dy1_dmr;
     L(MEASUREMENT::IDX::RSIN, MEASUREMENT_NOISE::IDX::WR) = 2.0 * y2 * dy2_dmr;
     L(MEASUREMENT::IDX::RCOS, MEASUREMENT_NOISE::IDX::WA) = 2.0 * y1 * dy1_dma;
@@ -259,8 +257,6 @@ StateInfo SimpleVehicleSquaredModel::propagateStateMoments(const StateInfo &stat
                                                            const double dt,
                                                            const std::map<int, std::shared_ptr<BaseDistribution>> &noise_map)
 {
-    const auto& state_mean = state_info.mean;
-    const auto& state_cov = state_info.covariance;
     ThreeDimensionalNormalDistribution dist(state_info.mean, state_info.covariance);
 
     const double xPow1 = dist.calc_moment(STATE::IDX::X, 1); // x
@@ -369,16 +365,16 @@ StateInfo SimpleVehicleSquaredModel::getMeasurementMoments(const StateInfo &stat
     const double yPow2_cPow2 = dist.calc_xx_cos_z_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
     const double xPow2_sPow2 = dist.calc_xx_sin_z_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
     const double yPow2_sPow2 = dist.calc_xx_sin_z_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    const double xPow2_cPow1_sPow1 = dist.calc_xx_cos_z_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    const double yPow2_cPow1_sPow1 = dist.calc_xx_cos_z_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
+    const double xPow2_cPow1_sPow1 = dist.calc_xyz_cos_z_sin_z_moment(2, 0, 0, 1, 1);
+    const double yPow2_cPow1_sPow1 = dist.calc_xyz_cos_z_sin_z_moment(0, 2, 0, 1, 1);
     const double xPow1_yPow1_cPow2 = dist.calc_xy_cos_z_cos_z_moment();
     const double xPow1_yPow1_sPow2 = dist.calc_xy_sin_z_sin_z_moment();
-    const double xPow1_yPow1_cPow1_sPow1 = dist.calc_xy_cos_z_sin_z_moment();
+    const double xPow1_yPow1_cPow1_sPow1 = dist.calc_xyz_cos_z_sin_z_moment(1, 1, 0, 1, 1);
 
     const double xPow1_cPow4 = dist.calc_xyz_cos_z_sin_z_moment(1, 0, 0, 4, 0);
     const double xPow1_sPow4 = dist.calc_xyz_cos_z_sin_z_moment(1, 0, 0, 0, 4);
-    const double yPow1_cPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 0, 4, 0);
-    const double yPow1_sPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 1, 0, 0, 4);
+    const double yPow1_cPow4 = dist.calc_xyz_cos_z_sin_z_moment(0, 1, 0, 4, 0);
+    const double yPow1_sPow4 = dist.calc_xyz_cos_z_sin_z_moment(0, 1, 0, 0, 4);
     const double xPow1_cPow3_sPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 3, 1);
     const double xPow1_cPow2_sPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 2, 2);
     const double xPow1_cPow1_sPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 1, 0, 1, 3);
@@ -406,12 +402,12 @@ StateInfo SimpleVehicleSquaredModel::getMeasurementMoments(const StateInfo &stat
     const double xPow3_sPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 3, 0, 0, 4);
     const double yPow3_cPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 3, 0, 4, 0);
     const double yPow3_sPow4 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 3, 0, 0, 4);
-    const double xPow3_cPow3_sPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 3, 0, 3, 1);
-    const double xPow3_cPow1_sPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 3, 0, 1, 3);
-    const double xPow3_cPow2_sPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::X, STATE::IDX::YAW, 3, 0, 2, 2);
-    const double yPow3_cPow3_sPow1 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 3, 0, 3, 1);
-    const double yPow3_cPow1_sPow3 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 3, 0, 1, 3);
-    const double yPow3_cPow2_sPow2 = dist.calc_xy_cos_y_sin_y_moment(STATE::IDX::Y, STATE::IDX::YAW, 3, 0, 2, 2);
+    const double xPow3_cPow3_sPow1 = dist.calc_xy_cos_z_sin_z_moment(3, 0, 3, 1);
+    const double xPow3_cPow1_sPow3 = dist.calc_xy_cos_z_sin_z_moment(3, 0, 1, 3);
+    const double xPow3_cPow2_sPow2 = dist.calc_xy_cos_z_sin_z_moment(3, 0, 2, 2);
+    const double yPow3_cPow3_sPow1 = dist.calc_xy_cos_z_sin_z_moment(0, 3, 3, 1);
+    const double yPow3_cPow1_sPow3 = dist.calc_xy_cos_z_sin_z_moment(0, 3, 1, 3);
+    const double yPow3_cPow2_sPow2 = dist.calc_xy_cos_z_sin_z_moment(0, 3, 2, 2);
     const double xPow2_yPow1_cPow3_sPow1 = dist.calc_xy_cos_z_sin_z_moment(2, 1, 3, 1);
     const double xPow2_yPow1_cPow1_sPow3 = dist.calc_xy_cos_z_sin_z_moment(2, 1, 1, 3);
     const double xPow2_yPow1_cPow2_sPow2 = dist.calc_xy_cos_z_sin_z_moment(2, 1, 2, 2);
@@ -631,25 +627,31 @@ Eigen::MatrixXd SimpleVehicleSquaredModel::getStateMeasurementMatrix(const State
 
     Eigen::MatrixXd state_observation_cov(3, 2); // sigma = E[XY^T] - E[X]E[Y]^T
     state_observation_cov(STATE::IDX::X, MEASUREMENT::IDX::RCOS)
-            = wrPow2 * cwaPow2 * xPow1_haPow2 + wrPow2 * swaPow2 * xPow1_hbPow2 - 2.0 * wrPow2 * cwaPow1_swaPow1 * xPow1_haPow1_hbPow1
-              - predicted_mean(STATE::IDX::X) * measurement_mean(MEASUREMENT::IDX::RCOS);
+            = wrPow2 * cwaPow2 * xPow1_haPow2 + wrPow2 * swaPow2 * xPow1_hbPow2
+               - 2.0 * wrPow2 * cwaPow1_swaPow1 * xPow1_haPow1_hbPow1
+               - predicted_mean(STATE::IDX::X) * measurement_mean(MEASUREMENT::IDX::RCOS);
     state_observation_cov(STATE::IDX::X, MEASUREMENT::IDX::RSIN)
-            = wrPow2 * cwaPow2 * xPow1_hbPow2 + wrPow2 * swaPow2 * xPow1_haPow2 + 2.0 * wrPow2 * cwaPow1_swaPow1 * xPow1_haPow1_hbPow1
-              - predicted_mean(STATE::IDX::X) * measurement_mean(MEASUREMENT::IDX::RSIN); // x_p * yaw
+            = wrPow2 * cwaPow2 * xPow1_hbPow2 + wrPow2 * swaPow2 * xPow1_haPow2
+               + 2.0 * wrPow2 * cwaPow1_swaPow1 * xPow1_haPow1_hbPow1
+               - predicted_mean(STATE::IDX::X) * measurement_mean(MEASUREMENT::IDX::RSIN); // x_p * yaw
 
     state_observation_cov(STATE::IDX::Y, MEASUREMENT::IDX::RCOS)
-            = wrPow2 * cwaPow2 * yPow1_haPow2 + wrPow2 * swaPow2 * yPow1_hbPow2 - 2.0 * wrPow2 * cwaPow1_swaPow1 * yPow1_haPow1_hbPow1
+            = wrPow2 * cwaPow2 * yPow1_haPow2 + wrPow2 * swaPow2 * yPow1_hbPow2
+               - 2.0 * wrPow2 * cwaPow1_swaPow1 * yPow1_haPow1_hbPow1
                - predicted_mean(STATE::IDX::Y) * measurement_mean(MEASUREMENT::IDX::RCOS); // yp * (xp^2 + yp^2)
     state_observation_cov(STATE::IDX::Y, MEASUREMENT::IDX::RSIN)
-            = wrPow2 * cwaPow2 * yPow1_hbPow2 + wrPow2 * swaPow2 * yPow1_haPow2 + 2.0 * wrPow2 * cwaPow1_swaPow1 * yPow1_haPow1_hbPow1
+            = wrPow2 * cwaPow2 * yPow1_hbPow2 + wrPow2 * swaPow2 * yPow1_haPow2
+               + 2.0 * wrPow2 * cwaPow1_swaPow1 * yPow1_haPow1_hbPow1
                - predicted_mean(STATE::IDX::Y) * measurement_mean(MEASUREMENT::IDX::RSIN); // y_p * yaw
 
     state_observation_cov(STATE::IDX::YAW, MEASUREMENT::IDX::RCOS)
-            = wrPow2 * cwaPow2 * yawPow1_haPow2 + wrPow2 * swaPow2 * yawPow1_hbPow2 - 2.0 * wrPow2 * cwaPow1_swaPow1 * yawPow1_haPow1_hbPow1
-                - predicted_mean(STATE::IDX::YAW) * measurement_mean(MEASUREMENT::IDX::RCOS);
+            = wrPow2 * cwaPow2 * yawPow1_haPow2 + wrPow2 * swaPow2 * yawPow1_hbPow2
+               - 2.0 * wrPow2 * cwaPow1_swaPow1 * yawPow1_haPow1_hbPow1
+               - predicted_mean(STATE::IDX::YAW) * measurement_mean(MEASUREMENT::IDX::RCOS);
     state_observation_cov(STATE::IDX::YAW, MEASUREMENT::IDX::RSIN)
-            = wrPow2 * cwaPow2 * yawPow1_hbPow2 + wrPow2 * swaPow2 * yawPow1_haPow2 + 2.0 * wrPow2 * cwaPow1_swaPow1 * yawPow1_haPow1_hbPow1
-                 - predicted_mean(STATE::IDX::YAW) * measurement_mean(MEASUREMENT::IDX::RSIN);
+            = wrPow2 * cwaPow2 * yawPow1_hbPow2 + wrPow2 * swaPow2 * yawPow1_haPow2
+               + 2.0 * wrPow2 * cwaPow1_swaPow1 * yawPow1_haPow1_hbPow1
+               - predicted_mean(STATE::IDX::YAW) * measurement_mean(MEASUREMENT::IDX::RSIN);
 
     return state_observation_cov;
 }

@@ -75,12 +75,12 @@ Eigen::VectorXd SimpleVehicleModel::measureWithLandmark(const Eigen::VectorXd& x
     const double& y_land = landmark(1);
     const double& wr = observation_noise(MEASUREMENT_NOISE::IDX::WR); // length noise
     const double& wa = observation_noise(MEASUREMENT_NOISE::IDX::WA); // bearing noise
-    const double rcos_bearing = (x_land - x) * std::cos(yaw) + (y_land - y) * std::sin(yaw);
-    const double rsin_bearing = (y_land - y) * std::cos(yaw) - (x_land - x) * std::sin(yaw);
+    const double ha = (x_land - x) * std::cos(yaw) + (y_land - y) * std::sin(yaw);
+    const double hb = (y_land - y) * std::cos(yaw) - (x_land - x) * std::sin(yaw);
 
     Eigen::VectorXd y_next = Eigen::VectorXd::Zero(2);
-    y_next(MEASUREMENT::IDX::RCOS) =  wr * std::cos(wa) * rcos_bearing - wr * std::sin(wa) * rsin_bearing;
-    y_next(MEASUREMENT::IDX::RSIN) =  wr * std::cos(wa) * rsin_bearing + wr * std::sin(wa) * rcos_bearing;
+    y_next(MEASUREMENT::IDX::RCOS) =  wr * std::cos(wa) * ha - wr * std::sin(wa) * hb;
+    y_next(MEASUREMENT::IDX::RSIN) =  wr * std::cos(wa) * hb + wr * std::sin(wa) * ha;
 
     return y_next;
 }

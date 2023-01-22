@@ -229,7 +229,7 @@ int main() {
 
     size_t measurement_id = 0;
     size_t ground_truth_id = 0;
-    for(size_t odo_id = 0; odo_id < 20000; ++odo_id){
+    for(size_t odo_id = 0; odo_id < 2000; ++odo_id){
         std::cout << "Iteration: " << odo_id << std::endl;
         double current_time = odometry_time.at(odo_id);
         const double next_time = odometry_time.at(odo_id+1);
@@ -268,7 +268,7 @@ int main() {
 
                 // update
                 const Eigen::Vector2d meas = {measurement_range[measurement_id], measurement_bearing[measurement_id]}; // measurement value
-                const Eigen::Vector2d y = {meas(0)*std::cos(meas(1))*meas(0)*std::cos(meas(1)), meas(0)*std::sin(meas(1))*meas(0)*std::sin(meas(1))}; // transform
+                const Eigen::Vector2d y = {std::pow(meas(0)*std::cos(meas(1)), 2), std::pow(meas(0)*std::sin(meas(1)), 2)}; // transform
                 const auto landmark = landmark_map.at(measurement_subject.at(measurement_id));
                 const double updated_dt = std::max(1e-5, dt);
                 const std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map = {
