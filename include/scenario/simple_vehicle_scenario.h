@@ -32,9 +32,9 @@ struct SimpleVehicleGaussianScenario
 
         // Observation Noise
         const double mean_wr = 1.0;
-        const double cov_wr = std::pow(0.05, 2);
+        const double cov_wr = std::pow(0.08, 2);
         const double mean_wa = 0.0;
-        const double cov_wa = std::pow(M_PI/100.0, 2);
+        const double cov_wa = std::pow(M_PI/200.0, 2);
         observation_noise_map_ = {
                 {MEASUREMENT_NOISE::IDX::WR, std::make_shared<NormalDistribution>(mean_wr, cov_wr)},
                 {MEASUREMENT_NOISE::IDX::WA, std::make_shared<NormalDistribution>(mean_wa, cov_wa)}};

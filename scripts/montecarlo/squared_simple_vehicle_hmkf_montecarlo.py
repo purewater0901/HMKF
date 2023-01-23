@@ -5,22 +5,22 @@ sample_num = 10000 * 10000
 dt = 0.1
 
 # measurement noise
-mean_wr = 1.0
-cov_wr = 0.09 ** 2
-mean_wa = 0.0
-cov_wa = (math.pi/100.0)**2
+mean_wr = 1.5
+cov_wr = 0.1 ** 2
+mean_wa = math.pi/3
+cov_wa = (math.pi/10.0)**2
 mr_samples = np.random.normal(mean_wr, math.sqrt(cov_wr), sample_num)#np.random.exponential(mr_lambda, sample_num)
 mtheta_samples = np.random.normal(mean_wa, math.sqrt(cov_wa), sample_num) #np.random.uniform(upper_mtheta, lower_mtheta, sample_num)
 
-mean_x = 3.0045114484524555
-mean_y = 1.5082653269460484
-mean_yaw = 0.964168029865345
-cov_x = 0.10000238971645992
-cov_y = 0.10015079232158008
-cov_yaw = 0.10870760813388891
-cov_xy = 0.0009786270528993057
-cov_xyaw = -0.000979207100381796
-cov_yyaw = 0.00346968320345753
+mean_x = 3.0
+mean_y = 1.5
+mean_yaw = 0.964
+cov_x = 0.2
+cov_y = 0.2
+cov_yaw = 0.2
+cov_xy = 0.1
+cov_xyaw = -0.1
+cov_yyaw = 0.03
 
 state_mean = np.array([mean_x, mean_y, mean_yaw])
 state_cov = np.array([[cov_x, cov_xy, cov_xyaw],

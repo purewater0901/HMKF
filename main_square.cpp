@@ -175,7 +175,7 @@ int main() {
     std::shared_ptr<BaseModel> vehicle_model = std::make_shared<SimpleVehicleSquaredModel>(3, 2, 2, 2);
 
     EKF ekf(vehicle_model);
-    UKF ukf(vehicle_model);
+    UKF ukf(vehicle_model, 0.5);
     MKF mkf(vehicle_model);
     //SimpleVehicleHMKF hmkf(vehicle_model);
 

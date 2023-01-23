@@ -20,15 +20,15 @@ TEST(SimpleVehicleSquaredModel, getObservationMoments)
     const double epsilon = 0.001;
     SimpleVehicleSquaredModel model;
 
-    const double x_mean = 3.0045114484524555;
-    const double y_mean = 1.5082653269460484;
-    const double yaw_mean = 0.964168029865345;
-    const double x_cov = 0.10000238971645992;
-    const double y_cov = 0.10015079232158008;
-    const double yaw_cov = 0.10870760813388891;
-    const double xy_cov = 0.0009786270528993057;
-    const double xyaw_cov = -0.000979207100381796;
-    const double yyaw_cov = 0.00346968320345753;
+    const double x_mean = 3.0;
+    const double y_mean = 1.5;
+    const double yaw_mean = 0.964;
+    const double x_cov = 0.2;
+    const double y_cov = 0.2;
+    const double yaw_cov = 0.2;
+    const double xy_cov = 0.1;
+    const double xyaw_cov = -0.1;
+    const double yyaw_cov = 0.03;
     const Eigen::Vector3d mean = {x_mean, y_mean, yaw_mean};
     Eigen::Matrix3d cov;
     cov <<x_cov, xy_cov, xyaw_cov,
@@ -38,19 +38,14 @@ TEST(SimpleVehicleSquaredModel, getObservationMoments)
     ThreeDimensionalNormalDistribution dist(mean, cov);
 
     StateInfo state_info;
-    state_info.mean = Eigen::VectorXd::Zero(3);
-    state_info.mean(0) = x_mean;
-    state_info.mean(1) = y_mean;
-    state_info.mean(2) = yaw_mean;
+    state_info.mean = mean;
     state_info.covariance = cov;
 
     // Step2. Create Observation Noise
-    const double wr_mean = 1.0;
-    const double wr_cov = std::pow(0.09, 2);
-    const double wa_mean = 0.0;
-    const double wa_cov = std::pow(M_PI/100, 2);
-    auto wr_dist = NormalDistribution(wr_mean, wr_cov);
-    auto wa_dist = NormalDistribution(wa_mean, wa_cov);
+    const double wr_mean = 1.5;
+    const double wr_cov = std::pow(0.1, 2);
+    const double wa_mean = M_PI/3.0;
+    const double wa_cov = std::pow(M_PI/10, 2);
     std::map<int, std::shared_ptr<BaseDistribution>> observation_noise_map = {
         {MEASUREMENT_NOISE::IDX::WR , std::make_shared<NormalDistribution>(wr_mean, wr_cov)},
         {MEASUREMENT_NOISE::IDX::WA , std::make_shared<NormalDistribution>(wa_mean, wa_cov)}};

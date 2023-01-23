@@ -291,13 +291,14 @@ StateInfo SimpleVehicleSquaredModel::propagateStateMoments(const StateInfo &stat
     const double &u = control_inputs(INPUT::IDX::U);
 
     // Dynamics updates.
-    const double next_xPow1 = v*cPow1 + cPow1*wvPow1 + xPow1;
-    const double next_yPow1 = v*sPow1 + sPow1*wvPow1 + yPow1;
+    const double next_xPow1 = xPow1 + (v + wvPow1) * cPow1;
+    const double next_yPow1 = yPow1 + (v + wvPow1) * sPow1;
     const double next_yawPow1 = u + yawPow1 + wuPow1;
-    const double next_xPow2 = pow(v, 2)*cPow2 + 2*v*cPow1_xPow1 + 2*v*cPow2*wvPow1 + 2*cPow1_xPow1*wvPow1 + cPow2*wvPow2 + xPow2;
-    const double next_yPow2 = pow(v, 2)*sPow2 + 2*v*sPow1_yPow1 + 2*v*sPow2*wvPow1 + 2*sPow1_yPow1*wvPow1 + sPow2*wvPow2 + yPow2;
+    const double next_xPow2 = xPow2 + (v*v + wvPow2 + 2.0*v*wvPow1) * cPow2 + 2*(v + wvPow1)*cPow1_xPow1;
+    const double next_yPow2 = yPow2 + (v*v + wvPow2 + 2.0*v*wvPow1) * sPow2 + 2*(v + wvPow1)*sPow1_yPow1;
     const double next_yawPow2 = pow(u, 2) + 2*u*yawPow1 + 2*u*wuPow1 + 2*yawPow1*wuPow1 + yawPow2 + wuPow2;
-    const double next_xPow1_yPow1 = pow(v, 2)*cPow1_sPow1 + 2*v*cPow1_sPow1*wvPow1 + v*cPow1_yPow1 + v*sPow1_xPow1 + cPow1_sPow1*wvPow2 + cPow1_yPow1*wvPow1 + sPow1_xPow1*wvPow1 + xPow1_yPow1;
+    const double next_xPow1_yPow1 = pow(v, 2)*cPow1_sPow1 + 2*v*cPow1_sPow1*wvPow1 + v*cPow1_yPow1
+                                  + v*sPow1_xPow1 + cPow1_sPow1*wvPow2 + cPow1_yPow1*wvPow1 + sPow1_xPow1*wvPow1 + xPow1_yPow1;
     const double next_xPow1_yawPow1 = u*v*cPow1 + u*cPow1*wvPow1 + u*xPow1 + v*cPow1*wuPow1 + v*cPow1_yawPow1 + cPow1*wuPow1*wvPow1 + cPow1_yawPow1*wvPow1 + xPow1_yawPow1 + wuPow1*xPow1;
     const double next_yPow1_yawPow1 = u*v*sPow1 + u*sPow1*wvPow1 + u*yPow1 + v*sPow1*wuPow1 + v*sPow1_yawPow1 + sPow1*wuPow1*wvPow1 + sPow1_yawPow1*wvPow1 + yPow1_yawPow1 + wuPow1*yPow1;
 
@@ -359,15 +360,15 @@ StateInfo SimpleVehicleSquaredModel::getMeasurementMoments(const StateInfo &stat
     const double cPow1_sPow3 = dist.calc_cos_sin_moment(STATE::IDX::YAW, 1, 3);
     const double cPow3_sPow1 = dist.calc_cos_sin_moment(STATE::IDX::YAW, 3, 1);
     const double cPow2_sPow2 = dist.calc_cos_sin_moment(STATE::IDX::YAW, 2, 2);
-    const double xPow2_cPow2 = dist.calc_xx_cos_z_cos_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    const double yPow2_cPow2 = dist.calc_xx_cos_z_cos_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    const double xPow2_sPow2 = dist.calc_xx_sin_z_sin_z_moment(STATE::IDX::X, STATE::IDX::YAW);
-    const double yPow2_sPow2 = dist.calc_xx_sin_z_sin_z_moment(STATE::IDX::Y, STATE::IDX::YAW);
-    const double xPow2_cPow1_sPow1 = dist.calc_xyz_cos_z_sin_z_moment(2, 0, 0, 1, 1);
-    const double yPow2_cPow1_sPow1 = dist.calc_xyz_cos_z_sin_z_moment(0, 2, 0, 1, 1);
-    const double xPow1_yPow1_cPow2 = dist.calc_xy_cos_z_cos_z_moment();
-    const double xPow1_yPow1_sPow2 = dist.calc_xy_sin_z_sin_z_moment();
-    const double xPow1_yPow1_cPow1_sPow1 = dist.calc_xyz_cos_z_sin_z_moment(1, 1, 0, 1, 1);
+    const double xPow2_cPow2 = dist.calc_xy_cos_z_sin_z_moment(2, 0, 2, 0);
+    const double xPow2_sPow2 = dist.calc_xy_cos_z_sin_z_moment(2, 0, 0, 2);
+    const double yPow2_cPow2 = dist.calc_xy_cos_z_sin_z_moment(0, 2, 2, 0);
+    const double yPow2_sPow2 = dist.calc_xy_cos_z_sin_z_moment(0, 2, 0, 2);
+    const double xPow2_cPow1_sPow1 = dist.calc_xy_cos_z_sin_z_moment(2, 0, 1, 1);
+    const double yPow2_cPow1_sPow1 = dist.calc_xy_cos_z_sin_z_moment(0, 2, 1, 1);
+    const double xPow1_yPow1_cPow2 = dist.calc_xy_cos_z_sin_z_moment(1, 1, 2, 0);
+    const double xPow1_yPow1_sPow2 = dist.calc_xy_cos_z_sin_z_moment(1, 1, 0, 2);
+    const double xPow1_yPow1_cPow1_sPow1 = dist.calc_xy_cos_z_sin_z_moment(1, 1, 1, 1);
 
     const double xPow1_cPow4 = dist.calc_xyz_cos_z_sin_z_moment(1, 0, 0, 4, 0);
     const double xPow1_sPow4 = dist.calc_xyz_cos_z_sin_z_moment(1, 0, 0, 0, 4);
@@ -623,10 +624,6 @@ Eigen::MatrixXd SimpleVehicleSquaredModel::getStateMeasurementMatrix(const State
                                        - x_land * y_land * yawPow1_sPow2 - xPow1_yPow1_yawPow1_sPow2
                                        + x_land * yPow1_yawPow1_sPow2 + y_land * xPow1_yawPow1_sPow2;
 
-    std::cout << "E[X*MRCOS]: " << wrPow2 * cwaPow2 * xPow1_haPow2 + wrPow2 * swaPow2 * xPow1_hbPow2
-                                   - 2.0 * wrPow2 * cwaPow1_swaPow1 * xPow1_haPow1_hbPow1 << std::endl;
-    std::cout << "E[Y*MRCOS]: " << wrPow2 * cwaPow2 * yPow1_haPow2 + wrPow2 * swaPow2 * yPow1_hbPow2
-                                   - 2.0 * wrPow2 * cwaPow1_swaPow1 * yPow1_haPow1_hbPow1 << std::endl;
     Eigen::MatrixXd state_observation_cov(3, 2); // sigma = E[XY^T] - E[X]E[Y]^T
     state_observation_cov(STATE::IDX::X, MEASUREMENT::IDX::RCOS)
             = wrPow2 * cwaPow2 * xPow1_haPow2 + wrPow2 * swaPow2 * xPow1_hbPow2
@@ -635,16 +632,16 @@ Eigen::MatrixXd SimpleVehicleSquaredModel::getStateMeasurementMatrix(const State
     state_observation_cov(STATE::IDX::X, MEASUREMENT::IDX::RSIN)
             = wrPow2 * cwaPow2 * xPow1_hbPow2 + wrPow2 * swaPow2 * xPow1_haPow2
                + 2.0 * wrPow2 * cwaPow1_swaPow1 * xPow1_haPow1_hbPow1
-               - predicted_mean(STATE::IDX::X) * measurement_mean(MEASUREMENT::IDX::RSIN); // x_p * yaw
+               - predicted_mean(STATE::IDX::X) * measurement_mean(MEASUREMENT::IDX::RSIN);
 
     state_observation_cov(STATE::IDX::Y, MEASUREMENT::IDX::RCOS)
             = wrPow2 * cwaPow2 * yPow1_haPow2 + wrPow2 * swaPow2 * yPow1_hbPow2
                - 2.0 * wrPow2 * cwaPow1_swaPow1 * yPow1_haPow1_hbPow1
-               - predicted_mean(STATE::IDX::Y) * measurement_mean(MEASUREMENT::IDX::RCOS); // yp * (xp^2 + yp^2)
+               - predicted_mean(STATE::IDX::Y) * measurement_mean(MEASUREMENT::IDX::RCOS);
     state_observation_cov(STATE::IDX::Y, MEASUREMENT::IDX::RSIN)
             = wrPow2 * cwaPow2 * yPow1_hbPow2 + wrPow2 * swaPow2 * yPow1_haPow2
                + 2.0 * wrPow2 * cwaPow1_swaPow1 * yPow1_haPow1_hbPow1
-               - predicted_mean(STATE::IDX::Y) * measurement_mean(MEASUREMENT::IDX::RSIN); // y_p * yaw
+               - predicted_mean(STATE::IDX::Y) * measurement_mean(MEASUREMENT::IDX::RSIN);
 
     state_observation_cov(STATE::IDX::YAW, MEASUREMENT::IDX::RCOS)
             = wrPow2 * cwaPow2 * yawPow1_haPow2 + wrPow2 * swaPow2 * yawPow1_hbPow2
