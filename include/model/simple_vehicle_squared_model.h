@@ -45,62 +45,143 @@ namespace SimpleVehicleSquared
             WA = 1,
         };
     }
+
+    struct HighOrderMoments{
+        double cPow2{0.0};
+        double sPow2{0.0};
+        double cPow1_sPow1{0.0};
+
+        double xPow1_cPow2{0.0};
+        double xPow1_sPow2{0.0};
+        double yPow1_cPow2{0.0};
+        double yPow1_sPow2{0.0};
+        double xPow1_cPow1_sPow1{0.0};
+        double yPow1_cPow1_sPow1{0.0};
+        double yawPow1_cPow2{0.0};
+        double yawPow1_sPow2{0.0};
+        double yawPow1_cPow1_sPow1{0.0};
+
+        double cPow4{0.0};
+        double sPow4{0.0};
+        double cPow1_sPow3{0.0};
+        double cPow3_sPow1{0.0};
+        double cPow2_sPow2{0.0};
+        double xPow2_cPow2{0.0};
+        double xPow2_sPow2{0.0};
+        double yPow2_cPow2{0.0};
+        double yPow2_sPow2{0.0};
+        double xPow2_cPow1_sPow1{0.0};
+        double yPow2_cPow1_sPow1{0.0};
+        double xPow1_yPow1_cPow2{0.0};
+        double xPow1_yPow1_sPow2{0.0};
+        double xPow1_yPow1_cPow1_sPow1{0.0};
+        double xPow1_yawPow1_cPow1_sPow1{0.0};
+        double yPow1_yawPow1_cPow1_sPow1{0.0};
+        double xPow1_yawPow1_cPow2{0.0};
+        double xPow1_yawPow1_sPow2{0.0};
+        double yPow1_yawPow1_cPow2{0.0};
+        double yPow1_yawPow1_sPow2{0.0};
+
+        double xPow1_cPow4{0.0};
+        double xPow1_sPow4{0.0};
+        double yPow1_cPow4{0.0};
+        double yPow1_sPow4{0.0};
+        double xPow1_cPow3_sPow1{0.0};
+        double xPow1_cPow2_sPow2{0.0};
+        double xPow1_cPow1_sPow3{0.0};
+        double yPow1_cPow3_sPow1{0.0};
+        double yPow1_cPow2_sPow2{0.0};
+        double yPow1_cPow1_sPow3{0.0};
+        double xPow3_cPow2{0.0};
+        double xPow3_sPow2{0.0};
+        double yPow3_cPow2{0.0};
+        double yPow3_sPow2{0.0};
+        double xPow1_yPow2_cPow1_sPow1{0.0};
+        double xPow2_yPow1_cPow1_sPow1{0.0};
+        double xPow3_cPow1_sPow1{0.0};
+        double yPow3_cPow1_sPow1{0.0};
+        double xPow1_yPow2_cPow2{0.0};
+        double xPow1_yPow2_sPow2{0.0};
+        double xPow2_yPow1_cPow2{0.0};
+        double xPow2_yPow1_sPow2{0.0};
+        double xPow2_yawPow1_cPow2{0.0};
+        double xPow2_yawPow1_sPow2{0.0};
+        double yPow2_yawPow1_cPow2{0.0};
+        double yPow2_yawPow1_sPow2{0.0};
+        double xPow2_yawPow1_cPow1_sPow1{0.0};
+        double yPow2_yawPow1_cPow1_sPow1{0.0};
+        double xPow1_yPow1_yawPow1_cPow1_sPow1{0.0};
+        double xPow1_yPow1_yawPow1_cPow2{0.0};
+        double xPow1_yPow1_yawPow1_sPow2{0.0};
+
+        double xPow2_cPow4{0.0};
+        double xPow2_sPow4{0.0};
+        double yPow2_cPow4{0.0};
+        double yPow2_sPow4{0.0};
+        double xPow1_yPow1_cPow4{0.0};
+        double xPow1_yPow1_sPow4{0.0};
+        double xPow2_cPow2_sPow2{0.0};
+        double xPow2_cPow3_sPow1{0.0};
+        double xPow2_cPow1_sPow3{0.0};
+        double yPow2_cPow2_sPow2{0.0};
+        double yPow2_cPow3_sPow1{0.0};
+        double yPow2_cPow1_sPow3{0.0};
+        double xPow1_yPow1_cPow3_sPow1{0.0};
+        double xPow1_yPow1_cPow2_sPow2{0.0};
+        double xPow1_yPow1_cPow1_sPow3{0.0};
+
+        double xPow3_cPow4{0.0};
+        double xPow3_sPow4{0.0};
+        double yPow3_cPow4{0.0};
+        double yPow3_sPow4{0.0};
+        double xPow1_yPow2_cPow4{0.0};
+        double xPow1_yPow2_sPow4{0.0};
+        double xPow2_yPow1_cPow4{0.0};
+        double xPow2_yPow1_sPow4{0.0};
+        double xPow3_cPow3_sPow1{0.0};
+        double xPow3_cPow1_sPow3{0.0};
+        double xPow3_cPow2_sPow2{0.0};
+        double yPow3_cPow3_sPow1{0.0};
+        double yPow3_cPow1_sPow3{0.0};
+        double yPow3_cPow2_sPow2{0.0};
+        double xPow2_yPow1_cPow3_sPow1{0.0};
+        double xPow2_yPow1_cPow1_sPow3{0.0};
+        double xPow2_yPow1_cPow2_sPow2{0.0};
+        double xPow1_yPow2_cPow2_sPow2{0.0};
+        double xPow1_yPow2_cPow1_sPow3{0.0};
+        double xPow1_yPow2_cPow3_sPow1{0.0};
+
+        double xPow4_cPow4{0.0};
+        double xPow4_sPow4{0.0};
+        double yPow4_cPow4{0.0};
+        double yPow4_sPow4{0.0};
+        double xPow4_cPow2_sPow2{0.0};
+        double xPow4_cPow3_sPow1{0.0};
+        double xPow4_cPow1_sPow3{0.0};
+        double yPow4_cPow2_sPow2{0.0};
+        double yPow4_cPow3_sPow1{0.0};
+        double yPow4_cPow1_sPow3{0.0};
+        double xPow3_yPow1_cPow4{0.0};
+        double xPow1_yPow3_cPow4{0.0};
+        double xPow3_yPow1_sPow4{0.0};
+        double xPow1_yPow3_sPow4{0.0};
+        double xPow2_yPow2_cPow4{0.0};
+        double xPow2_yPow2_sPow4{0.0};
+        double xPow3_yPow1_cPow1_sPow3{0.0};
+        double xPow3_yPow1_cPow3_sPow1{0.0};
+        double xPow3_yPow1_cPow2_sPow2{0.0};
+        double xPow2_yPow2_cPow1_sPow3{0.0};
+        double xPow2_yPow2_cPow3_sPow1{0.0};
+        double xPow2_yPow2_cPow2_sPow2{0.0};
+        double xPow1_yPow3_cPow1_sPow3{0.0};
+        double xPow1_yPow3_cPow3_sPow1{0.0};
+        double xPow1_yPow3_cPow2_sPow2{0.0};
+    };
 }
 
 class SimpleVehicleSquaredModel : public BaseModel
 {
 public:
-    struct HighOrderMoments{
-        double xPow1{0.0};
-        double yPow1{0.0};
-        double yawPow1{0.0};
-        double cPow1{0.0};
-        double sPow1{0.0};
-
-        double xPow2{0.0};
-        double yPow2{0.0};
-        double yawPow2{0.0};
-        double cPow2{0.0};
-        double sPow2{0.0};
-        double xPow1_yPow1{0.0};
-        double xPow1_yawPow1{0.0};
-        double yPow1_yawPow1{0.0};
-        double xPow1_cPow1{0.0};
-        double yPow1_cPow1{0.0};
-        double xPow1_sPow1{0.0};
-        double yPow1_sPow1{0.0};
-        double cPow1_sPow1{0.0};
-        double yawPow1_cPow1{0.0};
-        double yawPow1_sPow1{0.0};
-
-        double xPow1_cPow2{0.0};
-        double yPow1_cPow2{0.0};
-        double xPow1_sPow2{0.0};
-        double yPow1_sPow2{0.0};
-        double xPow2_cPow1{0.0};
-        double xPow2_sPow1{0.0};
-        double yPow2_cPow1{0.0};
-        double yPow2_sPow1{0.0};
-        double xPow1_yPow1_cPow1{0.0};
-        double xPow1_yPow1_sPow1{0.0};
-        double xPow1_cPow1_sPow1{0.0};
-        double yPow1_cPow1_sPow1{0.0};
-        double xPow1_yawPow1_cPow1{0.0};
-        double xPow1_yawPow1_sPow1{0.0};
-        double yPow1_yawPow1_cPow1{0.0};
-        double yPow1_yawPow1_sPow1{0.0};
-
-        double xPow2_cPow2{0.0};
-        double yPow2_cPow2{0.0};
-        double xPow2_sPow2{0.0};
-        double yPow2_sPow2{0.0};
-        double xPow1_yPow1_cPow2{0.0};
-        double xPow1_yPow1_sPow2{0.0};
-        double xPow2_cPow1_sPow1{0.0};
-        double yPow2_cPow1_sPow1{0.0};
-        double xPow1_yPow1_cPow1_sPow1{0.0};
-    };
-
     SimpleVehicleSquaredModel(const size_t state_dim = 3,
                               const size_t system_noise_dim = 2,
                               const size_t measurement_dim = 2,

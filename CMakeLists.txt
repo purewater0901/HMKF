@@ -29,6 +29,7 @@ add_library(lib
             src/filter/example_hmkf.cpp
             src/filter/squared_example_hmkf.cpp
             src/filter/simple_vehicle_hmkf.cpp
+            src/filter/simple_vehicle_squared_hmkf.cpp
             src/filter/paper_example_2d_ukf.cpp
             src/filter/paper_example_3d_ukf.cpp
             src/distribution/base_distribution.cpp
