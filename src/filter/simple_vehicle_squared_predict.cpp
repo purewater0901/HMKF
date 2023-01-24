@@ -400,8 +400,8 @@ StateInfo SimpleVehicleSquaredHMKF::predict(const StateInfo& state_info,
     const double cwuPow2 = wu_dist_ptr->calc_cos_moment(2);
     const double swuPow2 = wu_dist_ptr->calc_sin_moment(2);
     const double cwuPow1_swuPow1 = wu_dist_ptr->calc_cos_sin_moment(1, 1);
-    const double cwuPow2_wuPow1 = wu_dist_ptr->calc_x_cos_moment(1, 1);
-    const double swuPow2_wuPow1 = wu_dist_ptr->calc_x_sin_moment(1, 1);
+    const double cwuPow2_wuPow1 = wu_dist_ptr->calc_x_cos_moment(1, 2);
+    const double swuPow2_wuPow1 = wu_dist_ptr->calc_x_sin_moment(1, 2);
     const double cwuPow1_swuPow1_wuPow1 = wu_dist_ptr->calc_x_cos_sin_moment(1, 1, 1);
     const double cwuPow4 = wu_dist_ptr->calc_cos_moment(4);
     const double swuPow4 = wu_dist_ptr->calc_sin_moment(4);
