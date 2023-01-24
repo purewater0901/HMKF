@@ -161,12 +161,12 @@ namespace SimpleVehicleSquared
         double yPow4_cPow2_sPow2{0.0};
         double yPow4_cPow3_sPow1{0.0};
         double yPow4_cPow1_sPow3{0.0};
-        double xPow3_yPow1_cPow4{0.0};
         double xPow1_yPow3_cPow4{0.0};
-        double xPow3_yPow1_sPow4{0.0};
         double xPow1_yPow3_sPow4{0.0};
         double xPow2_yPow2_cPow4{0.0};
         double xPow2_yPow2_sPow4{0.0};
+        double xPow3_yPow1_cPow4{0.0};
+        double xPow3_yPow1_sPow4{0.0};
         double xPow3_yPow1_cPow1_sPow3{0.0};
         double xPow3_yPow1_cPow3_sPow1{0.0};
         double xPow3_yPow1_cPow2_sPow2{0.0};

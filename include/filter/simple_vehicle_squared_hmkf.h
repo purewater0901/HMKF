@@ -18,7 +18,8 @@ public:
                       const double dt,
                       const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map,
                       std::shared_ptr<SimpleVehicleSquared::HighOrderMoments>& high_order_moments);
-    StateInfo update(const SimpleVehicleSquared::HighOrderMoments & predicted_moments,
+    StateInfo update(const StateInfo& state_info,
+                     const SimpleVehicleSquared::HighOrderMoments & predicted_moments,
                      const Eigen::VectorXd & observed_values,
                      const Eigen::Vector2d & landmark,
                      const std::map<int, std::shared_ptr<BaseDistribution>>& noise_map);

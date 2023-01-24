@@ -11,10 +11,10 @@
 #include "distribution/uniform_distribution.h"
 #include "distribution/normal_distribution.h"
 #include "distribution/two_dimensional_normal_distribution.h"
-#include "filter/simple_vehicle_hmkf.h"
 #include "filter/mkf.h"
 #include "filter/ukf.h"
 #include "filter/ekf.h"
+#include "filter/simple_vehicle_squared_hmkf.h"
 #include "model/simple_vehicle_squared_model.h"
 #include "scenario/simple_vehicle_scenario.h"
 
@@ -177,7 +177,7 @@ int main() {
     EKF ekf(vehicle_model);
     UKF ukf(vehicle_model, 0.5);
     MKF mkf(vehicle_model);
-    //SimpleVehicleHMKF hmkf(vehicle_model);
+    SimpleVehicleSquaredHMKF hmkf(vehicle_model);
 
     // External disturbances
     const double mean_wv = 0.0;
@@ -197,7 +197,7 @@ int main() {
     auto ekf_state_info = nkf_state_info;
     auto ukf_state_info = nkf_state_info;
     auto hmkf_state_info = nkf_state_info;
-    std::shared_ptr<SimpleVehicleModel::HighOrderMoments> hmkf_predicted_moments = nullptr;
+    std::shared_ptr<SimpleVehicleSquared::HighOrderMoments> hmkf_predicted_moments = nullptr;
 
     ////////////////////////////////////////////////////
     // Start Simulation
@@ -229,7 +229,7 @@ int main() {
 
     size_t measurement_id = 0;
     size_t ground_truth_id = 0;
-    for(size_t odo_id = 0; odo_id < 20000; ++odo_id){
+    for(size_t odo_id = 0; odo_id < 2000; ++odo_id){
         std::cout << "Iteration: " << odo_id << std::endl;
         double current_time = odometry_time.at(odo_id);
         const double next_time = odometry_time.at(odo_id+1);
@@ -256,14 +256,12 @@ int main() {
                 }
 
                 {
-                    /*
                     const double dt_hmkf = std::max(dt, 1e-6);
                     const Eigen::Vector2d inputs = {odometry_v.at(odo_id)*dt_hmkf, odometry_w.at(odo_id)*dt_hmkf};
                     const std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map = {
                             {SYSTEM_NOISE::IDX::WV, std::make_shared<NormalDistribution>(mean_wv*dt_hmkf, cov_wv*dt_hmkf*dt_hmkf)},
                             {SYSTEM_NOISE::IDX::WU, std::make_shared<NormalDistribution>(mean_wu*dt_hmkf, cov_wu*dt_hmkf*dt_hmkf)}};
                     hmkf_state_info = hmkf.predict(hmkf_state_info, inputs, dt, system_noise_map, hmkf_predicted_moments);
-                     */
                 }
 
                 // update
@@ -277,12 +275,10 @@ int main() {
                 ekf_state_info = ekf.update(ekf_state_info, y, measurement_noise_map, {landmark.x, landmark.y});
                 ukf_state_info = ukf.update(ukf_state_info, y, system_noise_map, measurement_noise_map, {landmark.x, landmark.y});
                 nkf_state_info = mkf.update(nkf_state_info, y, measurement_noise_map, {landmark.x, landmark.y});
-                /*
                 if(hmkf_predicted_moments) {
-                    hmkf_state_info = hmkf.update(*hmkf_predicted_moments, y, {landmark.x, landmark.y}, measurement_noise_map);
-                    hmkf.createHighOrderMoments(hmkf_state_info, hmkf_predicted_moments);
+                    hmkf_state_info = hmkf.update(hmkf_state_info, *hmkf_predicted_moments, y, {landmark.x, landmark.y}, measurement_noise_map);
+                    //hmkf.createHighOrderMoments(hmkf_state_info, hmkf_predicted_moments);
                 }
-                 */
 
                 current_time = measurement_time.at(measurement_id);
                 ++measurement_id;
@@ -318,7 +314,6 @@ int main() {
                     nkf_state_info = mkf.predict(nkf_state_info, inputs, dt, system_noise_map);
                 }
 
-                /*
                 {
                     const double dt_hmkf = std::max(dt, 1e-6);
                     const Eigen::Vector2d inputs = {odometry_v.at(odo_id)*dt_hmkf, odometry_w.at(odo_id)*dt_hmkf};
@@ -327,7 +322,6 @@ int main() {
                             {SYSTEM_NOISE::IDX::WU, std::make_shared<NormalDistribution>(mean_wu*dt_hmkf, cov_wu*dt_hmkf*dt_hmkf)}};
                     hmkf_state_info = hmkf.predict(hmkf_state_info, inputs, dt, system_noise_map, hmkf_predicted_moments);
                 }
-                */
 
                 // Compare
                 // update time
@@ -436,7 +430,7 @@ int main() {
             const std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map = {
                     {SYSTEM_NOISE::IDX::WV, std::make_shared<NormalDistribution>(mean_wv*dt_hmkf, cov_wv*dt_hmkf*dt_hmkf)},
                     {SYSTEM_NOISE::IDX::WU, std::make_shared<NormalDistribution>(mean_wu*dt_hmkf, cov_wu*dt_hmkf*dt_hmkf)}};
-            //hmkf_state_info = hmkf.predict(hmkf_state_info, inputs, dt, system_noise_map, hmkf_predicted_moments);
+            hmkf_state_info = hmkf.predict(hmkf_state_info, inputs, dt, system_noise_map, hmkf_predicted_moments);
         }
     }
 
