@@ -519,3 +519,51 @@ TEST(ExponentialDistribution, MIXED_TRIGONOMETRIC_MOMENT)
         }
     }
 }
+
+TEST(ExponentialDistribution, HIGHER_ORDER)
+{
+    {
+        // exact
+        const auto exact_moment = dist.calc_moment(8);
+
+        // monte carlo
+        double sum = 0.0;
+        for(int i=0; i<samples.size(); ++i) {
+            const double x = samples.at(i);
+            sum += std::pow(x, 8);
+        }
+        const double monte_carlo_moment = sum / num_sample;
+
+        EXPECT_NEAR(exact_moment, monte_carlo_moment, epsilon);
+    }
+
+    {
+        // exact
+        const auto exact_moment = dist.calc_x_sin_moment(4, 4);
+
+        // monte carlo
+        double sum = 0.0;
+        for(int i=0; i<samples.size(); ++i) {
+            const double x = samples.at(i);
+            sum += std::pow(x, 4) * std::pow(std::sin(x), 4);
+        }
+        const double monte_carlo_moment = sum / num_sample;
+
+        EXPECT_NEAR(exact_moment, monte_carlo_moment, epsilon);
+    }
+
+    {
+        // exact
+        const auto exact_moment = dist.calc_cos_sin_moment(3, 4);
+
+        // monte carlo
+        double sum = 0.0;
+        for(int i=0; i<samples.size(); ++i) {
+            const double x = samples.at(i);
+            sum += std::pow(std::cos(x), 3) * std::pow(std::sin(x), 4);
+        }
+        const double monte_carlo_moment = sum / num_sample;
+
+        EXPECT_NEAR(exact_moment, monte_carlo_moment, epsilon);
+    }
+}

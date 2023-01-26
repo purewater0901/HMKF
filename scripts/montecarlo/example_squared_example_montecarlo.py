@@ -2,19 +2,19 @@ import math
 import numpy as np
 
 sample_num = 10000 * 10000
-dt = 0.1
+dt = 1.0
 
 # initial state
-ini_mean = np.array([0.0, 0.0])
-ini_cov = np.array([[0.1**2, 0.0], [0.0, 0.1**2]])
+ini_mean = np.array([0.2, 0.5])
+ini_cov = np.array([[0.1**2, 0.05**2], [0.05**2, 0.1**2]])
 
 # control info
-controls = [1.0]
+controls = [0.1]
 
 # system noise
-wv_lambda = 1.0
-upper_wtheta = (np.pi/10.0)
-lower_wtheta = -(np.pi/10.0)
+wv_lambda = 0.1
+upper_wtheta = np.pi/3.0 + (np.pi/100.0)
+lower_wtheta = np.pi/3.0 - (np.pi/100.0)
 
 # get samples
 wv_samples = np.random.exponential(wv_lambda, sample_num)
@@ -22,7 +22,7 @@ wtheta_samples = np.random.uniform(upper_wtheta, lower_wtheta, sample_num)
 state_samples = np.random.multivariate_normal(ini_mean, ini_cov, sample_num)
 
 # measurement noise
-mr_lambda = 0.1
+mr_lambda = 1.0
 mr_samples = np.random.exponential(mr_lambda, sample_num)
 
 sum_x = 0.0
@@ -30,13 +30,16 @@ sum_y = 0.0
 sum_x2 = 0.0
 sum_y2 = 0.0
 sum_x1_y1 = 0.0
-sum_x3 = 0.0
-sum_y3 = 0.0
-sum_x2_y1 = 0.0
-sum_x1_y2 = 0.0
 sum_x4 = 0.0
 sum_y4 = 0.0
 sum_x2_y2 = 0.0
+sum_x5 = 0.0
+sum_y5 = 0.0
+sum_x1_y4 = 0.0
+sum_x4_y1 = 0.0
+sum_x8 = 0.0
+sum_y8 = 0.0
+sum_x4_y4 = 0.0
 next_x_samples = []
 next_y_samples = []
 for (state, wv, wtheta) in zip(state_samples, wv_samples, wtheta_samples):
@@ -52,26 +55,32 @@ for (state, wv, wtheta) in zip(state_samples, wv_samples, wtheta_samples):
     sum_x2 += next_x * next_x
     sum_y2 += next_y * next_y
     sum_x1_y1 += next_x * next_y
-    sum_x3 += next_x ** 3
-    sum_y3 += next_y ** 3
-    sum_x2_y1 += next_x**2 * next_y
-    sum_x1_y2 += next_x * next_y**2
     sum_x4 += next_x ** 4
     sum_y4 += next_y ** 4
     sum_x2_y2 += next_x**2 * next_y**2
+    sum_x5 += next_x ** 5
+    sum_y5 += next_y ** 5
+    sum_x1_y4 += next_x * next_y**4
+    sum_x4_y1 += next_x**4 * next_y
+    sum_x8 += next_x ** 8
+    sum_y8 += next_y ** 8
+    sum_x4_y4 += next_x**4 * next_y**4
 
 print('E[X]: ', sum_x/sample_num)
 print('E[Y]: ', sum_y/sample_num)
 print('E[X^2]: ', sum_x2/sample_num)
 print('E[Y^2]: ', sum_y2/sample_num)
 print('E[X*Y]: ', sum_x1_y1/sample_num)
-print('E[X^3]: ', sum_x3/sample_num)
-print('E[Y^3]: ', sum_y3/sample_num)
-print('E[X^2*Y]: ', sum_x2_y1/sample_num)
-print('E[X*Y^2]: ', sum_x1_y2/sample_num)
 print('E[X^4]: ', sum_x4/sample_num)
 print('E[Y^4]: ', sum_y4/sample_num)
 print('E[X^2Y^2]: ', sum_x2_y2/sample_num)
+print('E[X^5]: ', sum_x5/sample_num)
+print('E[Y^5]: ', sum_y5/sample_num)
+print('E[XY^4]: ', sum_x1_y4/sample_num)
+print('E[X^4Y]: ', sum_x4_y1/sample_num)
+print('E[X^8]: ', sum_x8/sample_num)
+print('E[Y^8]: ', sum_y8/sample_num)
+print('E[X^4Y^4]: ', sum_x4_y4/sample_num)
 
 sum_mr = 0.0
 sum_mr_square = 0.0

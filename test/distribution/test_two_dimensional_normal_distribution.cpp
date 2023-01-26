@@ -317,3 +317,37 @@ TEST(TwoDimensionalNormalDistribution, FOURTH_ORDER_INDEPENDENT)
         EXPECT_NEAR(exact_moment, 22.360585709185308, epsilon);
     }
 }
+
+TEST(TwoDimensionalNormalDistribution, HIGHER_ORDER_INDEPENDENT)
+{
+    const double epsilon = 0.01;
+    const Eigen::Vector2d mean{0.2, 0.5};
+    Eigen::Matrix2d covariance;
+    covariance << std::pow(0.1, 2), 0.05*0.05,
+            0.05*0.05, std::pow(0.1, 2);
+    TwoDimensionalNormalDistribution dist(mean, covariance);
+
+    // E[X^3Y^3]
+    {
+        const auto exact_moment = dist.calc_xy_cos_y_sin_y_moment(3, 3, 0, 0);
+        EXPECT_NEAR(exact_moment, 0.0022635750534243286, epsilon);
+    }
+
+    // E[X^3Y^4]
+    {
+        const auto exact_moment = dist.calc_xy_cos_y_sin_y_moment(3, 4, 0, 0);
+        EXPECT_NEAR(exact_moment, 0.0013110546012807863, epsilon);
+    }
+
+    // E[X^4Y^3]
+    {
+        const auto exact_moment = dist.calc_xy_cos_y_sin_y_moment(4, 3, 0, 0);
+        EXPECT_NEAR(exact_moment, 0.000716658203829099, epsilon);
+    }
+
+    // E[X^4Y^4]
+    {
+        const auto exact_moment = dist.calc_xy_cos_y_sin_y_moment(4, 4, 0, 0);
+        EXPECT_NEAR(exact_moment, 0.0004188272681060508, epsilon);
+    }
+}

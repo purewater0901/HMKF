@@ -21,7 +21,7 @@ PredictedMoments SquaredExampleHMKF::predict(const StateInfo &state,
     const double xPow2_yPow1 = dist.calc_xy_cos_y_sin_y_moment(2, 1, 0, 0);
     const double xPow1_yPow2 = dist.calc_xy_cos_y_sin_y_moment(1, 2, 0, 0);
     const double xPow4 = dist.calc_moment(STATE::IDX::X, 4); // x^4
-    const double yPow4 = dist.calc_xy_cos_y_sin_y_moment(0, 4, 0, 0); // y)^4
+    const double yPow4 = dist.calc_moment(STATE::IDX::Y, 4); // y^4
     const double xPow2_yPow2 = dist.calc_xy_cos_y_sin_y_moment(2, 2, 0, 0);
     const double xPow1_yPow3 = dist.calc_xy_cos_y_sin_y_moment(1, 3, 0, 0);
     const double xPow3_yPow1 = dist.calc_xy_cos_y_sin_y_moment(3, 1, 0, 0);
@@ -44,8 +44,8 @@ PredictedMoments SquaredExampleHMKF::predict(const StateInfo &state,
     const double xPow3_yPow4 = dist.calc_xy_cos_y_sin_y_moment(3, 4, 0, 0);
     const double xPow4_yPow3 = dist.calc_xy_cos_y_sin_y_moment(4, 3, 0, 0);
 
-    const double xPow8 = dist.calc_xy_cos_y_sin_y_moment(8, 0, 0, 0);
-    const double yPow8 = dist.calc_xy_cos_y_sin_y_moment(0, 8, 0, 0);
+    const double xPow8 = dist.calc_moment(STATE::IDX::X, 8); // x^8
+    const double yPow8 = dist.calc_moment(STATE::IDX::Y, 8); // y^8
     const double xPow4_yPow4 = dist.calc_xy_cos_y_sin_y_moment(4, 4, 0, 0);
 
     // Input
@@ -62,19 +62,22 @@ PredictedMoments SquaredExampleHMKF::predict(const StateInfo &state,
     const double wvPow6 = wv_dist_ptr->calc_moment(6);
     const double wvPow7 = wv_dist_ptr->calc_moment(7);
     const double wvPow8 = wv_dist_ptr->calc_moment(8);
+
     const double cwyawPow1 = wyaw_dist_ptr->calc_cos_moment(1);
     const double swyawPow1 = wyaw_dist_ptr->calc_sin_moment(1);
+    const double cwyawPow1_swyawPow1 = wyaw_dist_ptr->calc_cos_sin_moment(1, 1);
+
     const double cwyawPow2 = wyaw_dist_ptr->calc_cos_moment(2);
     const double swyawPow2 = wyaw_dist_ptr->calc_sin_moment(2);
+
     const double cwyawPow3 = wyaw_dist_ptr->calc_cos_moment(3);
     const double swyawPow3 = wyaw_dist_ptr->calc_sin_moment(3);
-    const double cwyawPow4 = wyaw_dist_ptr->calc_cos_moment(4);
-    const double swyawPow4 = wyaw_dist_ptr->calc_sin_moment(4);
-    const double cwyawPow1_swyawPow1 = wyaw_dist_ptr->calc_cos_sin_moment(1, 1);
     const double cwyawPow2_swyawPow2 = wyaw_dist_ptr->calc_cos_sin_moment(2, 2);
     const double cwyawPow2_swyawPow1 = wyaw_dist_ptr->calc_cos_sin_moment(2, 1);
     const double cwyawPow1_swyawPow2 = wyaw_dist_ptr->calc_cos_sin_moment(1, 2);
 
+    const double cwyawPow4 = wyaw_dist_ptr->calc_cos_moment(4);
+    const double swyawPow4 = wyaw_dist_ptr->calc_sin_moment(4);
     const double cwyawPow3_swyawPow1 = wyaw_dist_ptr->calc_cos_sin_moment(3, 1);
     const double cwyawPow1_swyawPow3 = wyaw_dist_ptr->calc_cos_sin_moment(1, 3);
 
@@ -183,7 +186,7 @@ MeasurementMoments SquaredExampleHMKF::getMeasurementMoments(const PredictedMome
 
     MeasurementMoments meas_moments;
     meas_moments.rPow1 = xPow4 + yPow4 + wrPow1;
-    meas_moments.rPow2 = xPow8 + yPow8 + +wrPow2 + 2.0*xPow4_yPow4 + 2.0*xPow4*wrPow1 + 2.0*yPow4*wrPow1;
+    meas_moments.rPow2 = xPow8 + yPow8 + wrPow2 + 2.0*xPow4_yPow4 + 2.0*xPow4*wrPow1 + 2.0*yPow4*wrPow1;
 
     return meas_moments;
 }

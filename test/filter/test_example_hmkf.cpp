@@ -246,6 +246,66 @@ TEST(ExampleHMKF, NonIndependentInitial)
     */
 }
 
+TEST(SquaredExampleHMKF, PredictTest)
+{
+    const size_t state_dim = 2;
+    const size_t system_noise_dim = 2;
+    const size_t measurement_dim = 1;
+    const size_t measurement_noise_dim = 1;
+    std::shared_ptr<BaseModel> example_model = std::make_shared<ExampleSquaredVehicleModel>(state_dim, system_noise_dim,
+                                                                                     measurement_dim,
+                                                                                     measurement_noise_dim);
+
+    SquaredExampleHMKF hmkf;
+
+    const double dt = 1.0;
+
+    // Initial State
+    StateInfo ini_state;
+    ini_state.mean = Eigen::VectorXd::Zero(2);
+    ini_state.mean(0) = 0.2;
+    ini_state.mean(1) = 0.5;
+    ini_state.covariance = Eigen::MatrixXd::Zero(2, 2);
+    ini_state.covariance(0, 0) = 0.1*0.1; // V[x]
+    ini_state.covariance(1, 1) = 0.1*0.1; // V[y]
+    ini_state.covariance(0, 1) = 0.05*0.05; // V[xy]
+    ini_state.covariance(1, 0) = ini_state.covariance(0, 1);
+
+    // Input
+    Eigen::VectorXd control_inputs = Eigen::VectorXd::Zero(1);
+    control_inputs(0) = 0.1;
+
+    // System Noise
+    const double wx_lambda = 10;
+    const double upper_wtheta = M_PI / 3.0 + (M_PI/100.0);
+    const double lower_wtheta = M_PI / 3.0 - (M_PI/100.0);
+    std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map{
+            {SYSTEM_NOISE::IDX::WV, std::make_shared<ExponentialDistribution>(wx_lambda)},
+            {SYSTEM_NOISE::IDX::WYAW, std::make_shared<UniformDistribution>(lower_wtheta, upper_wtheta)}};
+
+    // Measurement noise
+    const double mr_lambda = 1.0;
+    std::map<int, std::shared_ptr<BaseDistribution>> measurement_noise_map{
+            {MEASUREMENT_NOISE::IDX::WR, std::make_shared<ExponentialDistribution>(mr_lambda)}};
+
+    const auto predicted_moments = hmkf.predict(ini_state, control_inputs, dt, system_noise_map);
+
+    EXPECT_NEAR(predicted_moments.xPow1,  1.1996365795311699, epsilon);
+    EXPECT_NEAR(predicted_moments.yPow1,  2.231427772198646, epsilon);
+    EXPECT_NEAR(predicted_moments.xPow2,  1.70036079890483, epsilon);
+    EXPECT_NEAR(predicted_moments.yPow2,  5.740321, epsilon);
+    EXPECT_NEAR(predicted_moments.xPow1_yPow1,  3.11202, epsilon);
+    EXPECT_NEAR(predicted_moments.xPow4,  6.121027789330407, epsilon);
+    EXPECT_NEAR(predicted_moments.yPow4,  64.22084349670286, epsilon);
+    EXPECT_NEAR(predicted_moments.xPow5,  15.55418174139756, epsilon);
+    EXPECT_NEAR(predicted_moments.yPow5,  283.1075208763222, epsilon);
+    EXPECT_NEAR(predicted_moments.xPow1_yPow4, 157.29881127971032, epsilon);
+    EXPECT_NEAR(predicted_moments.xPow4_yPow1, 27.590423156399993, epsilon);
+    EXPECT_NEAR(predicted_moments.xPow8, 661.6233856085807, epsilon);
+    EXPECT_NEAR(predicted_moments.yPow8, 61929.39549915148, epsilon);
+    EXPECT_NEAR(predicted_moments.xPow4_yPow4, 6281.8921970086685, epsilon);
+}
+
 TEST(SquaredExampleHMKF, Predict)
 {
     const size_t state_dim = 2;
@@ -488,8 +548,8 @@ TEST(SquaredExampleHMKF, Simulation)
     MKF mkf(example_model);
     UKF ukf(example_model);
 
-    const double dt = 0.1;
-    size_t N = 5000;
+    const double dt = 1.0;
+    size_t N = 7000;
 
     // Initial State
     StateInfo ini_state;
@@ -497,28 +557,35 @@ TEST(SquaredExampleHMKF, Simulation)
     ini_state.mean(0) = 0.0;
     ini_state.mean(1) = 0.0;
     ini_state.covariance = Eigen::MatrixXd::Zero(2, 2);
-    ini_state.covariance(0, 0) = 0.1*0.1; // V[x]
-    ini_state.covariance(1, 1) = 0.1*0.1; // V[y]
+    ini_state.covariance(0, 0) = 1.0; // V[x]
+    ini_state.covariance(1, 1) = 1.0; // V[y]
+    ini_state.covariance(0, 1) = 0.8;
+    ini_state.covariance(1, 0) = ini_state.covariance(0, 1);
 
     Eigen::VectorXd x_true = ini_state.mean;
 
     // Input
     Eigen::VectorXd control_inputs = Eigen::VectorXd::Zero(1);
-    control_inputs(0) = 1.0;
+    control_inputs(0) = 0.5;
 
     // System Noise
     const double wv_lambda = 1.0;
-    const double wyaw_lower = -M_PI / 10.0;
-    const double wyaw_upper = M_PI / 10.0;
+    const double wyaw_lower = M_PI/4.0 - M_PI / 100.0;
+    const double wyaw_upper = M_PI/4.0 + M_PI / 100.0;
     std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map{
             {SYSTEM_NOISE::IDX::WV, std::make_shared<ExponentialDistribution>(wv_lambda)},
             {SYSTEM_NOISE::IDX::WYAW, std::make_shared<UniformDistribution>(wyaw_lower, wyaw_upper)}};
+    /*
+    std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map{
+        {SYSTEM_NOISE::IDX::WV, std::make_shared<NormalDistribution>(1.0, 0.1*0.1)},
+        {SYSTEM_NOISE::IDX::WYAW, std::make_shared<NormalDistribution>(0.0, M_PI/10 * M_PI/10)}};
+    */
 
     // measurement noise
     const double upper_mr = 100;
     const double lower_mr = 0.0;
     std::map<int, std::shared_ptr<BaseDistribution>> measurement_noise_map{
-            {MEASUREMENT_NOISE::IDX::WR, std::make_shared<UniformDistribution>(lower_mr,upper_mr)}};
+        {MEASUREMENT_NOISE::IDX::WR, std::make_shared<UniformDistribution>(lower_mr,upper_mr)}};
 
     // Random Variable Generator
     std::random_device seed_gen;
@@ -550,9 +617,10 @@ TEST(SquaredExampleHMKF, Simulation)
         const Eigen::VectorXd y = example_model->measure(x_true, measurement_noise);
 
         // Prediction
+        std::cout << hmkf_state_info.covariance << std::endl;
         const auto hmkf_predicted = hmkf.predict(hmkf_state_info, control_inputs, dt, system_noise_map);
-        ekf_state_info = ekf.predict(ekf_state_info, control_inputs, dt, system_noise_map);
         mkf_state_info = mkf.predict(mkf_state_info, control_inputs, dt, system_noise_map);
+        ekf_state_info = ekf.predict(ekf_state_info, control_inputs, dt, system_noise_map);
         ukf_state_info = ukf.predict(ukf_state_info, control_inputs, dt, system_noise_map, measurement_noise_map);
 
         // Update
@@ -607,4 +675,5 @@ TEST(SquaredExampleHMKF, Simulation)
     std::cout << "MKF mean dist diff: " << sum_mkf_xy_diff / mkf_xy_diff_vec.size() << std::endl;
     std::cout << "EKF mean dist diff: " << sum_ekf_xy_diff / ekf_xy_diff_vec.size() << std::endl;
     std::cout << "UKF mean dist diff: " << sum_ukf_xy_diff / ukf_xy_diff_vec.size() << std::endl;
+
 }
