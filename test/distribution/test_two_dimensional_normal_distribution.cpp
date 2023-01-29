@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <random>
 #include <iostream>
+#include <cmath>
 
 #include "distribution/two_dimensional_normal_distribution.h"
 

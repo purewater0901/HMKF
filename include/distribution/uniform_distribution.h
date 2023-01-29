@@ -16,8 +16,8 @@ public:
     double calc_mean();
     double calc_variance();
 
-    std::complex<double> calc_characteristic(const int t);
-    std::complex<double> calc_diff_characteristic(const int t, const int order);
+    std::complex<double> calc_characteristic(const std::complex<double>& t);
+    std::complex<double> calc_diff_characteristic(const std::complex<double>& t, const int order);
 
 private:
     const double l_;

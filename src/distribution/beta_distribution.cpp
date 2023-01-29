@@ -2,7 +2,7 @@
 #include <cmath>
 
 constexpr double TOLERANCE = 1.0e-10;
-std::complex<double> hypergeom(const double a, const double b, const double t)
+std::complex<double> hypergeom(const double a, const double b, const std::complex<double>& t)
 {
     const std::complex<double> i(0.0, 1.0);
 
@@ -24,7 +24,7 @@ std::complex<double> hypergeom(const double a, const double b, const double t)
     return value;
 }
 
-std::complex<double> diff_hypergeom(const double a, const double b, const double t, const int order)
+std::complex<double> diff_hypergeom(const double a, const double b, const std::complex<double>& t, const int order)
 {
     const std::complex<double> i(0.0, 1.0);
     double a_coeff = a;
@@ -50,15 +50,15 @@ double BetaDistribution::calc_variance()
     return  (alpha_*beta_)/((alpha_+beta_)*(alpha_+beta_)*(alpha_+beta_+1.0));
 }
 
-std::complex<double> BetaDistribution::calc_characteristic(const int t)
+std::complex<double> BetaDistribution::calc_characteristic(const std::complex<double>& t)
 {
     return hypergeom(alpha_, alpha_+beta_, t);
 }
 
-std::complex<double> BetaDistribution::calc_diff_characteristic(const int t, const int order)
+std::complex<double> BetaDistribution::calc_diff_characteristic(const std::complex<double>& t, const int order)
 {
     if(order==0) {
-        return calc_characteristic(order);
+        return calc_characteristic(t);
     }
 
     return diff_hypergeom(alpha_, alpha_+beta_, t, order);
