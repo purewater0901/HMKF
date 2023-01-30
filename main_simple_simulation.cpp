@@ -11,18 +11,18 @@
 #include "distribution/uniform_distribution.h"
 #include "distribution/normal_distribution.h"
 #include "distribution/three_dimensional_normal_distribution.h"
-#include "filter/simple_vehicle_squared_hmkf.h"
+#include "filter/simple_vehicle_hmkf.h"
 #include "filter/mkf.h"
 #include "filter/ukf.h"
 #include "filter/ekf.h"
-#include "model/simple_vehicle_squared_model.h"
+#include "model/simple_vehicle_model.h"
 
-using namespace SimpleVehicleSquared;
+using namespace SimpleVehicle;
 
 int main()
 {
     // simulation setting value
-    const size_t montecarlo_num = 10;
+    const size_t montecarlo_num = 30;
     const double land_x = 0.0;
     const double land_y = 0.0;
     const Eigen::Vector2d landmark = {land_x, land_y};
@@ -30,7 +30,7 @@ int main()
     const double dt = 1.0;
 
     // vehicle model
-    std::shared_ptr<BaseModel> vehicle_model = std::make_shared<SimpleVehicleSquaredModel>(3, 2, 2, 2);
+    std::shared_ptr<BaseModel> vehicle_model = std::make_shared<SimpleVehicleModel>(3, 2, 2, 2);
 
     // initial state
     const double x_ini = 3.0;
@@ -63,11 +63,12 @@ int main()
     const double cov_wu = std::pow(0.1*dt, 2);
     std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map = {
             //{SYSTEM_NOISE::IDX::WV, std::make_shared<NormalDistribution>(mean_wv, cov_wv)},
-            {SYSTEM_NOISE::IDX::WV, std::make_shared<NormalDistribution>(1.0, 0.3)},
+            //{SYSTEM_NOISE::IDX::WV, std::make_shared<NormalDistribution>(5.0, 3.0)},
+            {SYSTEM_NOISE::IDX::WV, std::make_shared<UniformDistribution>(0.0, 1.0)},
             {SYSTEM_NOISE::IDX::WU, std::make_shared<NormalDistribution>(mean_wu, cov_wu)}};
     //std::normal_distribution<double> wv_dist(mean_wv, std::sqrt(cov_wv));
     //std::extreme_value_distribution<double> wv_dist(3.0, 4.0);
-    std::uniform_real_distribution<double> wv_dist(0.0, 2.0);
+    std::uniform_real_distribution<double> wv_dist(0.0, 1.0);
     std::normal_distribution<double> wu_dist(mean_wu, std::sqrt(cov_wu));
 
     // measurement noise map
@@ -76,8 +77,8 @@ int main()
     const double mean_ma = 0.0;
     const double cov_ma = std::pow(M_PI/50.0, 2);
     std::map<int, std::shared_ptr<BaseDistribution>> measurement_noise_map = {
-        {MEASUREMENT_NOISE::IDX::WR, std::make_shared<NormalDistribution>(mean_mr, cov_mr)},
-        {MEASUREMENT_NOISE::IDX::WA, std::make_shared<NormalDistribution>(mean_ma, cov_ma)}};
+            {MEASUREMENT_NOISE::IDX::WR, std::make_shared<NormalDistribution>(mean_mr, cov_mr)},
+            {MEASUREMENT_NOISE::IDX::WA, std::make_shared<NormalDistribution>(mean_ma, cov_ma)}};
     std::normal_distribution<double> mr_dist(mean_mr, std::sqrt(cov_mr));
     std::normal_distribution<double> ma_dist(mean_ma, std::sqrt(cov_ma));
 
@@ -90,7 +91,7 @@ int main()
     EKF ekf(vehicle_model);
     UKF ukf(vehicle_model);
     MKF mkf(vehicle_model);
-    SimpleVehicleSquaredHMKF hmkf(vehicle_model);
+    SimpleVehicleHMKF hmkf(vehicle_model);
 
     std::vector<double> average_ekf_xy_errors;
     std::vector<double> average_ekf_yaw_errors;
@@ -135,7 +136,7 @@ int main()
         auto ukf_state_info = ini_state;
         auto mkf_state_info = ini_state;
         auto hmkf_state_info = ini_state;
-        std::shared_ptr<HighOrderMoments> hmkf_predicted_moments = nullptr;
+        std::shared_ptr<SimpleVehicleModel::HighOrderMoments> hmkf_predicted_moments = nullptr;
 
         for(size_t iter=1; iter<N; ++iter) {
             std::cout << "Iteration: " << iter << std::endl;
@@ -166,7 +167,7 @@ int main()
             ekf_state_info = ekf.update(ekf_state_info, y, measurement_noise_map, {landmark(0), landmark(1)});
             ukf_state_info = ukf.update(ukf_state_info, y, system_noise_map, measurement_noise_map, {landmark(0), landmark(1)});
             mkf_state_info = mkf.update(mkf_state_info, y, measurement_noise_map, {landmark(0), landmark(1)});
-            hmkf_state_info = hmkf.update(hmkf_state_info, *hmkf_predicted_moments, y, {landmark(0), landmark(1)}, measurement_noise_map);
+            hmkf_state_info = hmkf.update(*hmkf_predicted_moments, y, {landmark(0), landmark(1)}, measurement_noise_map);
 
             // insert true values
             times.at(i).at(iter) = times.at(i).at(iter-1) + dt;

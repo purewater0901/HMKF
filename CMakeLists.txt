@@ -54,6 +54,10 @@ add_executable(main_square main_square.cpp)
 target_include_directories(main_square PRIVATE ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
 target_link_libraries(main_square Python3::Python Python3::NumPy lib)
 
+add_executable(main_simple_simulation main_simple_simulation.cpp)
+target_include_directories(main_simple_simulation PRIVATE ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
+target_link_libraries(main_simple_simulation Python3::Python Python3::NumPy lib)
+
 add_executable(main_simulation main_simulation.cpp)
 target_include_directories(main_simulation PRIVATE ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
 target_link_libraries(main_simulation Python3::Python Python3::NumPy lib)
