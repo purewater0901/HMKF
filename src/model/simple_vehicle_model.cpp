@@ -31,9 +31,12 @@ Eigen::VectorXd SimpleVehicleModel::propagate(const Eigen::VectorXd &x_curr,
      */
 
     Eigen::Vector3d x_next;
-    x_next(STATE::IDX::X) = x_curr(STATE::IDX::X) + (u_curr(INPUT::IDX::V) + system_noise(SYSTEM_NOISE::IDX::WV))* std::cos(x_curr(STATE::IDX::YAW));
-    x_next(STATE::IDX::Y) = x_curr(STATE::IDX::Y) + (u_curr(INPUT::IDX::V) + system_noise(SYSTEM_NOISE::IDX::WV)) * std::sin(x_curr(STATE::IDX::YAW));
-    x_next(STATE::IDX::YAW) = x_curr(STATE::IDX::YAW) + (u_curr(INPUT::IDX::U) + system_noise(SYSTEM_NOISE::IDX::WU));
+    x_next(STATE::IDX::X) = x_curr(STATE::IDX::X) +
+            (u_curr(INPUT::IDX::V) + system_noise(SYSTEM_NOISE::IDX::WV)) * std::cos(x_curr(STATE::IDX::YAW));
+    x_next(STATE::IDX::Y) = x_curr(STATE::IDX::Y) +
+            (u_curr(INPUT::IDX::V) + system_noise(SYSTEM_NOISE::IDX::WV)) * std::sin(x_curr(STATE::IDX::YAW));
+    x_next(STATE::IDX::YAW) = x_curr(STATE::IDX::YAW)
+            + (u_curr(INPUT::IDX::U) + system_noise(SYSTEM_NOISE::IDX::WU));
 
     return x_next;
 }
