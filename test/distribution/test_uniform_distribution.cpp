@@ -33,7 +33,7 @@ UniformDistribution dist(lower, upper);
 const int num_sample = 10000*10000;
 const auto samples = getUniformDistributionSamples(lower, upper, num_sample);
 
-TEST(UnifromDistribution, X_MOMENT)
+TEST(UniformDistribution, X_MOMENT)
 {
     // First Order
     {
@@ -99,7 +99,7 @@ TEST(UnifromDistribution, X_MOMENT)
     }
 }
 
-TEST(UnifromDistribution, TRIGONOMETRIC_MOMENT)
+TEST(UniformDistribution, TRIGONOMETRIC_MOMENT)
 {
     // First Order
     {
@@ -327,7 +327,7 @@ TEST(UnifromDistribution, TRIGONOMETRIC_MOMENT)
     }
 }
 
-TEST(UnifromDistribution, HighOrderMoments)
+TEST(UniformDistribution, HighOrderMoments)
 {
     {
         // exact
@@ -442,7 +442,7 @@ TEST(UnifromDistribution, HighOrderMoments)
     }
 }
 
-TEST(UnifromDistribution, MIXED_TRIGONOMETRIC_MOMENT)
+TEST(UniformDistribution, MIXED_TRIGONOMETRIC_MOMENT)
 {
     // Second Order
     {
@@ -634,5 +634,221 @@ TEST(UnifromDistribution, MIXED_TRIGONOMETRIC_MOMENT)
 
             EXPECT_NEAR(exact_moment, monte_carlo_moment, epsilon);
         }
+    }
+}
+
+TEST(UniformDistribution, ExponentialMoment)
+{
+    {
+        // exact
+        const auto exact_moment = dist.calc_exp_moment(0);
+
+        // monte carlo
+        double sum = 0.0;
+        for(int i=0; i<samples.size(); ++i) {
+            const double x = samples.at(i);
+            sum += std::exp(0);
+        }
+        const double monte_carlo_moment = sum / num_sample;
+
+        EXPECT_NEAR(exact_moment, monte_carlo_moment, epsilon);
+    }
+
+    {
+        // exact
+        const auto exact_moment = dist.calc_exp_moment(1);
+
+        // monte carlo
+        double sum = 0.0;
+        for(int i=0; i<samples.size(); ++i) {
+            const double x = samples.at(i);
+            sum += std::exp(x);
+        }
+        const double monte_carlo_moment = sum / num_sample;
+
+        EXPECT_NEAR(exact_moment, monte_carlo_moment, epsilon);
+    }
+
+    {
+        // exact
+        const auto exact_moment = dist.calc_exp_moment(2);
+
+        // monte carlo
+        double sum = 0.0;
+        for(int i=0; i<samples.size(); ++i) {
+            const double x = samples.at(i);
+            sum += std::exp(2*x);
+        }
+        const double monte_carlo_moment = sum / num_sample;
+
+        EXPECT_NEAR(exact_moment, monte_carlo_moment, epsilon);
+    }
+
+    {
+        // exact
+        const auto exact_moment = dist.calc_exp_moment(3);
+
+        // monte carlo
+        double sum = 0.0;
+        for(int i=0; i<samples.size(); ++i) {
+            const double x = samples.at(i);
+            sum += std::exp(3*x);
+        }
+        const double monte_carlo_moment = sum / num_sample;
+
+        EXPECT_NEAR(exact_moment, monte_carlo_moment, 0.01);
+    }
+}
+
+TEST(UniformDistribution, ExponentialTrigonoemtricMoment)
+{
+    {
+        // exact
+        const auto exact_moment = dist.calc_exp_cos_moment(3, 4);
+
+        // monte carlo
+        double sum = 0.0;
+        for(int i=0; i<samples.size(); ++i) {
+            const double x = samples.at(i);
+            sum += std::exp(3*x)*std::pow(std::cos(x), 4);
+        }
+        const double monte_carlo_moment = sum / num_sample;
+
+        EXPECT_NEAR(exact_moment, monte_carlo_moment, epsilon);
+    }
+
+    {
+        // exact
+        const auto exact_moment = dist.calc_exp_cos_moment(1, 0);
+
+        // monte carlo
+        double sum = 0.0;
+        for(int i=0; i<samples.size(); ++i) {
+            const double x = samples.at(i);
+            sum += std::exp(x);
+        }
+        const double monte_carlo_moment = sum / num_sample;
+
+        EXPECT_NEAR(exact_moment, monte_carlo_moment, epsilon);
+    }
+
+    {
+        // exact
+        const auto exact_moment = dist.calc_exp_cos_moment(0, 1);
+
+        // monte carlo
+        double sum = 0.0;
+        for(int i=0; i<samples.size(); ++i) {
+            const double x = samples.at(i);
+            sum += std::cos(x);
+        }
+        const double monte_carlo_moment = sum / num_sample;
+
+        EXPECT_NEAR(exact_moment, monte_carlo_moment, epsilon);
+    }
+
+    {
+        // exact
+        const auto exact_moment = dist.calc_exp_sin_moment(3, 4);
+
+        // monte carlo
+        double sum = 0.0;
+        for(int i=0; i<samples.size(); ++i) {
+            const double x = samples.at(i);
+            sum += std::exp(3*x)*std::pow(std::sin(x), 4);
+        }
+        const double monte_carlo_moment = sum / num_sample;
+
+        EXPECT_NEAR(exact_moment, monte_carlo_moment, 0.02);
+    }
+
+    {
+        // exact
+        const auto exact_moment = dist.calc_exp_sin_moment(1, 0);
+
+        // monte carlo
+        double sum = 0.0;
+        for(int i=0; i<samples.size(); ++i) {
+            const double x = samples.at(i);
+            sum += std::exp(x);
+        }
+        const double monte_carlo_moment = sum / num_sample;
+
+        EXPECT_NEAR(exact_moment, monte_carlo_moment, epsilon);
+    }
+
+    {
+        // exact
+        const auto exact_moment = dist.calc_exp_sin_moment(0, 1);
+
+        // monte carlo
+        double sum = 0.0;
+        for(int i=0; i<samples.size(); ++i) {
+            const double x = samples.at(i);
+            sum += std::sin(x);
+        }
+        const double monte_carlo_moment = sum / num_sample;
+
+        EXPECT_NEAR(exact_moment, monte_carlo_moment, epsilon);
+    }
+
+    {
+        // exact
+        const auto exact_moment = dist.calc_exp_x_cos_sin_moment(2, 3, 4, 5);
+
+        // monte carlo
+        double sum = 0.0;
+        for(int i=0; i<samples.size(); ++i) {
+            const double x = samples.at(i);
+            sum += std::exp(2*x) * std::pow(x, 3) * std::pow(std::cos(x), 4) * std::pow(std::sin(x), 5);
+        }
+        const double monte_carlo_moment = sum / num_sample;
+
+        EXPECT_NEAR(exact_moment, monte_carlo_moment, epsilon);
+    }
+
+    {
+        // exact
+        const auto exact_moment = dist.calc_exp_x_cos_sin_moment(2, 2, 1, 1);
+
+        // monte carlo
+        double sum = 0.0;
+        for(int i=0; i<samples.size(); ++i) {
+            const double x = samples.at(i);
+            sum += std::exp(2*x) * std::pow(x, 2) * std::pow(std::cos(x), 1) * std::pow(std::sin(x), 1);
+        }
+        const double monte_carlo_moment = sum / num_sample;
+
+        EXPECT_NEAR(exact_moment, monte_carlo_moment, 0.01);
+    }
+
+    {
+        // exact
+        const auto exact_moment = dist.calc_exp_x_cos_sin_moment(1, 1, 2, 1);
+
+        // monte carlo
+        double sum = 0.0;
+        for(int i=0; i<samples.size(); ++i) {
+            const double x = samples.at(i);
+            sum += std::exp(1*x) * std::pow(x, 1) * std::pow(std::cos(x), 2) * std::pow(std::sin(x), 1);
+        }
+        const double monte_carlo_moment = sum / num_sample;
+
+        EXPECT_NEAR(exact_moment, monte_carlo_moment, epsilon);
+    }
+
+    {
+        // exact
+        const auto exact_moment = dist.calc_exp_x_cos_sin_moment(2, 3, 0, 0);
+
+        // monte carlo
+        double sum = 0.0;
+        for(int i=0; i<samples.size(); ++i) {
+            const double x = samples.at(i);
+            sum += std::exp(2*x) * std::pow(x, 3);
+        }
+        const double monte_carlo_moment = sum / num_sample;
+
+        EXPECT_NEAR(exact_moment, monte_carlo_moment, 0.01);
     }
 }
