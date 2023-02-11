@@ -27,7 +27,7 @@ int main()
     const double land_y = 0.0;
     const Eigen::Vector2d landmark = {land_x, land_y};
     const size_t N = 400;
-    const double dt = 1.0;
+    const double dt = 0.2;
 
     // vehicle model
     std::shared_ptr<BaseModel> vehicle_model = std::make_shared<SimpleVehicleModel>(3, 2, 2, 2);
@@ -57,19 +57,20 @@ int main()
     control_input(1) = u * dt;
 
     // system noise map
-    const double mean_wv = 10.0*dt;
-    const double cov_wv = std::pow(3.0*dt, 2);
+    const double mean_wv = 5.0*dt;
+    const double cov_wv = std::pow(5.0*dt, 2);
     const double mean_wu = 0.0*dt;
-    const double cov_wu = std::pow(0.1*dt, 2);
+    const double cov_wu = std::pow(M_PI/10*dt, 2);
     std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map = {
             //{SYSTEM_NOISE::IDX::WV, std::make_shared<NormalDistribution>(mean_wv, cov_wv)},
-            //{SYSTEM_NOISE::IDX::WV, std::make_shared<NormalDistribution>(5.0, 3.0)},
-            {SYSTEM_NOISE::IDX::WV, std::make_shared<UniformDistribution>(0.0, 1.0)},
-            {SYSTEM_NOISE::IDX::WU, std::make_shared<NormalDistribution>(mean_wu, cov_wu)}};
-    //std::normal_distribution<double> wv_dist(mean_wv, std::sqrt(cov_wv));
-    //std::extreme_value_distribution<double> wv_dist(3.0, 4.0);
-    std::uniform_real_distribution<double> wv_dist(0.0, 1.0);
-    std::normal_distribution<double> wu_dist(mean_wu, std::sqrt(cov_wu));
+            {SYSTEM_NOISE::IDX::WV, std::make_shared<UniformDistribution>(0.0*dt, 0.5*dt)},
+            //{SYSTEM_NOISE::IDX::WU, std::make_shared<NormalDistribution>(mean_wu, cov_wu)}};
+            {SYSTEM_NOISE::IDX::WU, std::make_shared<UniformDistribution>(-M_PI/10.0*dt, M_PI/10.0*dt)}};
+//std::normal_distribution<double> wv_dist(mean_wv, std::sqrt(cov_wv));
+    //std::extreme_value_distribution<double> wv_dist(3.0*dt, 4.0*dt);
+    std::uniform_real_distribution<double> wv_dist(0.0*dt, 0.9*dt);
+    //std::normal_distribution<double> wu_dist(mean_wu, std::sqrt(cov_wu));
+    std::uniform_real_distribution<double> wu_dist(-M_PI/8.0*dt, M_PI/8.0*dt);
 
     // measurement noise map
     const double mean_mr = 1.0;

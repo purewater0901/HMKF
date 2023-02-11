@@ -63,18 +63,19 @@ int main()
     const double cov_wu = std::pow(0.1*dt, 2);
     std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map = {
             //{SYSTEM_NOISE::IDX::WV, std::make_shared<NormalDistribution>(mean_wv, cov_wv)},
-            {SYSTEM_NOISE::IDX::WV, std::make_shared<NormalDistribution>(1.0, 0.3)},
+            //{SYSTEM_NOISE::IDX::WV, std::make_shared<NormalDistribution>(1.0, 0.3)},
+            {SYSTEM_NOISE::IDX::WV, std::make_shared<UniformDistribution>(0.0*dt, 4.0*dt)},
             {SYSTEM_NOISE::IDX::WU, std::make_shared<NormalDistribution>(mean_wu, cov_wu)}};
     //std::normal_distribution<double> wv_dist(mean_wv, std::sqrt(cov_wv));
     //std::extreme_value_distribution<double> wv_dist(3.0, 4.0);
-    std::uniform_real_distribution<double> wv_dist(0.0, 2.0);
+    std::uniform_real_distribution<double> wv_dist(0.0*dt, 4.0*dt);
     std::normal_distribution<double> wu_dist(mean_wu, std::sqrt(cov_wu));
 
     // measurement noise map
     const double mean_mr = 1.0;
     const double cov_mr = std::pow(0.1, 2);
     const double mean_ma = 0.0;
-    const double cov_ma = std::pow(M_PI/50.0, 2);
+    const double cov_ma = std::pow(M_PI/100.0, 2);
     std::map<int, std::shared_ptr<BaseDistribution>> measurement_noise_map = {
         {MEASUREMENT_NOISE::IDX::WR, std::make_shared<NormalDistribution>(mean_mr, cov_mr)},
         {MEASUREMENT_NOISE::IDX::WA, std::make_shared<NormalDistribution>(mean_ma, cov_ma)}};
