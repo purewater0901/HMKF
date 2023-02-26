@@ -48,29 +48,35 @@ void outputResultToFile(const std::string& filename, const std::vector<double>& 
 
 void outputResultToFile(const std::string& filename, const std::vector<double>& time,
                         const std::vector<double>& x_true, const std::vector<double>& y_true, const std::vector<double>& yaw_true,
-                        const std::vector<double>& nkf_x, const std::vector<double>& nkf_y, const std::vector<double>& nkf_yaw,
+                        const std::vector<double>& hmkf_x, const std::vector<double>& hmkf_y, const std::vector<double>& hmkf_yaw,
+                        const std::vector<double>& mkf_x, const std::vector<double>& mkf_y, const std::vector<double>& mkf_yaw,
                         const std::vector<double>& ekf_x, const std::vector<double>& ekf_y, const std::vector<double>& ekf_yaw,
                         const std::vector<double>& ukf_x, const std::vector<double>& ukf_y, const std::vector<double>& ukf_yaw,
-                        const std::vector<double>& nkf_xy_errors, const std::vector<double>& nkf_yaw_errors,
+                        const std::vector<double>& hmkf_xy_errors, const std::vector<double>& hmkf_yaw_errors,
+                        const std::vector<double>& mkf_xy_errors, const std::vector<double>& mkf_yaw_errors,
                         const std::vector<double>& ekf_xy_errors, const std::vector<double>& ekf_yaw_errors,
                         const std::vector<double>& ukf_xy_errors, const std::vector<double>& ukf_yaw_errors)
 {
     std::ofstream writing_file;
     writing_file.open(filename, std::ios::out);
     writing_file << "time," << "x_true," << "y_true," << "yaw_true,"
-                 << "nkf_x," << "nkf_y," << "nkf_yaw,"
+                 << "hmkf_x," << "hmkf_y," << "hmkf_yaw,"
+                 << "mkf_x," << "mkf_y," << "mkf_yaw,"
                  << "ekf_x," << "ekf_y," << "ekf_yaw,"
                  << "ukf_x," << "ukf_y," << "ukf_yaw,"
-                 << "nkf_xy_error," << "nkf_yaw_error,"
+                 << "hmkf_xy_error," << "hmkf_yaw_error,"
+                 << "mkf_xy_error," << "mkf_yaw_error,"
                  << "ekf_xy_error," << "ekf_yaw_error,"
                  << "ukf_xy_error," << "ukf_yaw_error" << std::endl;
-    for(size_t i=0; i<nkf_xy_errors.size(); ++i) {
+    for(size_t i=0; i<mkf_xy_errors.size(); ++i) {
         writing_file << time.at(i) << ","
                      << x_true.at(i) << "," << y_true.at(i) << "," << yaw_true.at(i) << ","
-                     << nkf_x.at(i) << "," << nkf_y.at(i) << "," << nkf_yaw.at(i) << ","
+                     << hmkf_x.at(i) << "," << hmkf_y.at(i) << "," << hmkf_yaw.at(i) << ","
+                     << mkf_x.at(i) << "," << mkf_y.at(i) << "," << mkf_yaw.at(i) << ","
                      << ekf_x.at(i) << "," << ekf_y.at(i) << "," << ekf_yaw.at(i) << ","
                      << ukf_x.at(i) << "," << ukf_y.at(i) << "," << ukf_yaw.at(i) << ","
-                     << nkf_xy_errors.at(i) << "," << nkf_yaw_errors.at(i) << ","
+                     << hmkf_xy_errors.at(i) << "," << hmkf_yaw_errors.at(i) << ","
+                     << mkf_xy_errors.at(i) << "," << mkf_yaw_errors.at(i) << ","
                      << ekf_xy_errors.at(i) << "," << ekf_yaw_errors.at(i) << ","
                      << ukf_xy_errors.at(i) << "," << ukf_yaw_errors.at(i) << std::endl;
     }

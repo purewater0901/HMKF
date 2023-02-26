@@ -34,10 +34,12 @@ void outputResultToFile(const std::string& filename, const std::vector<double>& 
 
 void outputResultToFile(const std::string& filename, const std::vector<double>& time,
                         const std::vector<double>& x_true, const std::vector<double>& y_true, const std::vector<double>& yaw_true,
-                        const std::vector<double>& nkf_x, const std::vector<double>& nkf_y, const std::vector<double>& nkf_yaw,
+                        const std::vector<double>& hmkf_x, const std::vector<double>& hmkf_y, const std::vector<double>& hmkf_yaw,
+                        const std::vector<double>& mkf_x, const std::vector<double>& mkf_y, const std::vector<double>& mkf_yaw,
                         const std::vector<double>& ekf_x, const std::vector<double>& ekf_y, const std::vector<double>& ekf_yaw,
                         const std::vector<double>& ukf_x, const std::vector<double>& ukf_y, const std::vector<double>& ukf_yaw,
-                        const std::vector<double>& nkf_xy_errors, const std::vector<double>& nkf_yaw_errors,
+                        const std::vector<double>& hmkf_xy_errors, const std::vector<double>& hmkf_yaw_errors,
+                        const std::vector<double>& mkf_xy_errors, const std::vector<double>& mkf_yaw_errors,
                         const std::vector<double>& ekf_xy_errors, const std::vector<double>& ekf_yaw_errors,
                         const std::vector<double>& ukf_xy_errors, const std::vector<double>& ukf_yaw_errors);
 
