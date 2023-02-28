@@ -17,32 +17,7 @@ CMake >= 3.22
 ```
 
 ## Getting Started
-```
-git clone https://github.com/purewater0901/MKF.git
-cd MKF
-mkdir build && cd build
-cmake ..
-make -j8
-```
-
-- Run MKF with Gaussian measurements
-```
-./main
-```
-
-- Run MKF with non-Gaussian measurements  
-Before running the code for non-Gaussian environment, you need to preprocess the dataset. After that you can run the main code.
-```
-./data_preprocessor
-./main_non_gaussian
-```
-
-## Result with UTIAS dataset
-#### Robot1
-![](./result/picture/robot1/utlas_simulation_result_trajectory.png)
-
-#### Robot2
-![](./result/picture/robot2/utlas_simulation_result_trajectory.png)
+coming soon..
 
 
 ## References
