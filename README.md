@@ -1,15 +1,12 @@
-# Higher-order Moment-based Kalman Filter: Nonlinear Kalman Filtering with Exact Moment Propagation
+# High-order Moment-based Kalman Filter: Nonlinear Kalman Filtering with Exact Moment Propagation
 
-Moment-based Kalman Filter(MKF) is a nonlinear Kalman filter that uses exact moment propagation method to estimate state from noisy measurements.
+High-order Moment-based Kalman Filter(HMKF) is a nonlinear Kalman filter that uses exact moment propagation method to estimate state from noisy measurements.
 
 ## Paper 
 coming soon...
 
 ## Language and test environment
-The main code is written in C++ and visualization code is mainly used Python. However, we also use [matplotlib.cpp](https://github.com/lava/matplotlib-cpp) for the simple visualization in C++. Note that we only test our code on Ubuntu20.04.
-
-## Dataset for the experiment
-We use [UTIAS Multi-Robot Cooperative Localization and Mapping Dataset](http://asrl.utias.utoronto.ca/datasets/mrclam/index.html) to evaluate the MKF.
+The main code is written in C++ and visualization code is mainly used Python. However, we also use [matplotlib.cpp](https://github.com/lava/matplotlib-cpp) for the simple visualization in C++. Note that we only test our code on Ubuntu22.04.
 
 ## Requirements
 ```
