@@ -9,12 +9,12 @@ import os
 
 if __name__ == '__main__':
     dt = 0.2
-    data_num = 30
+    data_num = 20
     os.chdir('../../')
     path = os.getcwd()
     data = []
     for i in range(data_num):
-        data.append(pd.read_csv(path + "/result/data/simulation_result/result_monte_carlo_" + str(i) +  ".csv"))
+        data.append(pd.read_csv(path + "/result/data/simulation_result/squared_result_monte_carlo_" + str(i) +  ".csv"))
 
     times = []
     ini_data = data[0]

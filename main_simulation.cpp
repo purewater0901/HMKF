@@ -22,7 +22,7 @@ using namespace SimpleVehicleSquared;
 int main()
 {
     // simulation setting value
-    const size_t montecarlo_num = 10;
+    const size_t montecarlo_num = 20;
     const double land_x = 0.0;
     const double land_y = 0.0;
     const Eigen::Vector2d landmark = {land_x, land_y};
