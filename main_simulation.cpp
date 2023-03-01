@@ -27,7 +27,7 @@ int main()
     const double land_y = 0.0;
     const Eigen::Vector2d landmark = {land_x, land_y};
     const size_t N = 400;
-    const double dt = 1.0;
+    const double dt = 0.5;
 
     // vehicle model
     std::shared_ptr<BaseModel> vehicle_model = std::make_shared<SimpleVehicleSquaredModel>(3, 2, 2, 2);
@@ -64,12 +64,14 @@ int main()
     std::map<int, std::shared_ptr<BaseDistribution>> system_noise_map = {
             //{SYSTEM_NOISE::IDX::WV, std::make_shared<NormalDistribution>(mean_wv, cov_wv)},
             //{SYSTEM_NOISE::IDX::WV, std::make_shared<NormalDistribution>(1.0, 0.3)},
-            {SYSTEM_NOISE::IDX::WV, std::make_shared<UniformDistribution>(0.0*dt, 4.0*dt)},
+            {SYSTEM_NOISE::IDX::WV, std::make_shared<UniformDistribution>(0.0*dt, 0.5*dt)},
             {SYSTEM_NOISE::IDX::WU, std::make_shared<NormalDistribution>(mean_wu, cov_wu)}};
     //std::normal_distribution<double> wv_dist(mean_wv, std::sqrt(cov_wv));
     //std::extreme_value_distribution<double> wv_dist(3.0, 4.0);
-    std::uniform_real_distribution<double> wv_dist(0.0*dt, 4.0*dt);
+    std::uniform_real_distribution<double> wv_dist(0.0*dt, 0.5*dt);
     std::normal_distribution<double> wu_dist(mean_wu, std::sqrt(cov_wu));
+    //std::uniform_real_distribution<double> wv_dist(0.0*dt, 0.9*dt);
+    //std::uniform_real_distribution<double> wu_dist(-M_PI/10.0*dt, M_PI/10.0*dt);
 
     // measurement noise map
     const double mean_mr = 1.0;
@@ -83,8 +85,6 @@ int main()
     std::normal_distribution<double> ma_dist(mean_ma, std::sqrt(cov_ma));
 
     // random value engine
-    //std::random_device seed_gen(0);
-    //std::default_random_engine engine(seed_gen());
     std::default_random_engine engine;
 
     // Filters
@@ -231,6 +231,31 @@ int main()
                 hmkf_y_estimate.at(i).at(iter) = hmkf_state_info.mean(1);
                 hmkf_yaw_estimate.at(i).at(iter) = hmkf_state_info.mean(2);
             }
+        }
+
+        // output to file
+        {
+            std::string output_parent_dir = std::string("");
+            for(const auto& p : std::filesystem::directory_iterator("../result/data/"))
+            {
+                const auto abs_p = std::filesystem::canonical(p);
+                const auto flag_find = abs_p.string().find("simulation_result");
+                if(flag_find != std::string::npos) {
+                    output_parent_dir = abs_p.string();
+                }
+            }
+            std::filesystem::create_directories(output_parent_dir);
+            const std::string filename = output_parent_dir + "/squared_result_monte_carlo_" + std::to_string(i) + ".csv";
+            outputResultToFile(filename, times.at(i),
+                               x_true_vec.at(i), y_true_vec.at(i), yaw_true_vec.at(i),
+                               hmkf_x_estimate.at(i), hmkf_y_estimate.at(i), hmkf_yaw_estimate.at(i),
+                               mkf_x_estimate.at(i), mkf_y_estimate.at(i), mkf_yaw_estimate.at(i),
+                               ekf_x_estimate.at(i), ekf_y_estimate.at(i), ekf_yaw_estimate.at(i),
+                               ukf_x_estimate.at(i), ukf_y_estimate.at(i), ukf_yaw_estimate.at(i),
+                               hmkf_xy_errors.at(i), hmkf_yaw_errors.at(i),
+                               mkf_xy_errors.at(i), mkf_yaw_errors.at(i),
+                               ekf_xy_errors.at(i), ekf_yaw_errors.at(i),
+                               ukf_xy_errors.at(i), ukf_yaw_errors.at(i));
         }
 
         const double mean_hmkf_xy_error = std::accumulate(hmkf_xy_errors.at(i).begin(), hmkf_xy_errors.at(i).end(), 0.0) / N;
