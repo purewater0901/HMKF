@@ -8,7 +8,7 @@ import platform
 import os
 
 if __name__ == '__main__':
-    dt = 0.2
+    dt = 0.5
     data_num = 20
     os.chdir('../../')
     path = os.getcwd()
@@ -33,15 +33,14 @@ if __name__ == '__main__':
     plt.rcParams['ytick.direction'] = 'in' # y axis in
     plt.rcParams['font.family'] = 'Times New Roman'
 
-    plt.plot(target_data["x_true"], target_data["y_true"], color="purple", linewidth=3.0, label="True")
-    plt.plot(target_data["hmkf_x"], target_data["hmkf_y"], color="black", linewidth=3.0, label="HMKF")
-    plt.plot(target_data["mkf_x"], target_data["mkf_y"], color="red", linewidth=3.0, label="MKF",  linestyle="dotted")
-    plt.plot(target_data["ekf_x"], target_data["ekf_y"], color="blue", linewidth=2.5, label="EKF", linestyle="dashed")
-    plt.plot(target_data["ukf_x"], target_data["ukf_y"], color="green", linewidth=2.5, label="UKF", linestyle="dashdot")
+    plt.plot(target_data["x_true"], target_data["y_true"], color="purple", linewidth=5.0, label="True")
+    plt.plot(target_data["hmkf_x"], target_data["hmkf_y"], color="black", linewidth=5.0, label="HMKF")
+    plt.plot(target_data["mkf_x"], target_data["mkf_y"], color="red", linewidth=4.5, label="MKF",  linestyle="dotted")
+    plt.plot(target_data["ekf_x"], target_data["ekf_y"], color="blue", linewidth=4.5, label="EKF", linestyle="dashed")
+    plt.plot(target_data["ukf_x"], target_data["ukf_y"], color="green", linewidth=4.5, label="UKF", linestyle="dashdot")
     plt.xlabel(r"x[m]", fontsize=40)
     plt.ylabel(r"y[m]", fontsize=40)
     plt.legend(fontsize=25)
-    plt.title("Estimation Result")
 
     plt.savefig(path + "/result/picture/simulation_result/simulation_result_trajectory.eps", bbox_inches="tight", pad_inches=0.05)
     plt.show()

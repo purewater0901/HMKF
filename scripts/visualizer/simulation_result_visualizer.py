@@ -8,8 +8,8 @@ import platform
 import os
 
 if __name__ == '__main__':
-    dt = 0.2
-    data_num = 20
+    dt = 0.5
+    data_num = 30
     os.chdir('../../')
     path = os.getcwd()
     data = []
@@ -78,10 +78,10 @@ if __name__ == '__main__':
     #ax1.set_title("Position RMSE")
 
     ax2 = fig.add_subplot(212)
-    ax2.plot(times, hmkf_yaw_ame, color="black", linewidth=2.0, label="HMKF", linestyle="solid")
-    ax2.plot(times, mkf_yaw_ame, color="red", linewidth=2.0, label="MKF", linestyle="dotted")
-    ax2.plot(times, ekf_yaw_ame, color="blue", linewidth=1.5, label="EKF", linestyle="dashed")
-    ax2.plot(times, ukf_yaw_ame, color="green", linewidth=1.5, label="UKF", linestyle="dashdot")
+    ax2.plot(times, hmkf_yaw_ame, color="black", linewidth=6.0, label="HMKF", linestyle="solid")
+    ax2.plot(times, mkf_yaw_ame, color="red", linewidth=6.0, label="MKF", linestyle="dotted")
+    ax2.plot(times, ekf_yaw_ame, color="blue", linewidth=5.5, label="EKF", linestyle="dashed")
+    ax2.plot(times, ukf_yaw_ame, color="green", linewidth=5.5, label="UKF", linestyle="dashdot")
     ax2.set_xlabel(r"time [s]", fontsize=40)
     ax2.set_ylabel(r"Yaw AME", fontsize=38)
     #ax2.legend(fontsize=25)
